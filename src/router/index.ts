@@ -8,7 +8,7 @@ import MiniProgramDemo from '@/demos/mini-program/MiniProgramDemo.vue'
 import ComponentLibraryDemo from '@/components/Demo.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior() {
     return { top: 0 }
   },
