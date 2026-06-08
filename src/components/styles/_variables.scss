@@ -1,0 +1,69 @@
+$lx-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+  "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+$lx-color-primary: #f4341b;
+$lx-color-primary-deep: #d92c17;
+$lx-color-primary-soft: #fff1ef;
+$lx-color-secondary: #101828;
+$lx-color-text: #101828;
+$lx-color-text-muted: #6a7282;
+$lx-color-text-light: #98a2b3;
+$lx-color-bg: #f8f8f8;
+$lx-color-surface: #ffffff;
+$lx-color-surface-warm: #fffdfc;
+$lx-color-border: #f3f4f6;
+$lx-color-border-strong: rgba(244, 52, 27, 0.16);
+$lx-color-success: #16a34a;
+$lx-color-warning: #f59e0b;
+$lx-color-disabled: #d0d5dd;
+
+$lx-radius-xs: 6px;
+$lx-radius-sm: 8px;
+$lx-radius-md: 12px;
+$lx-radius-lg: 16px;
+$lx-radius-xl: 22px;
+$lx-radius-pill: 999px;
+
+$lx-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.04);
+$lx-shadow-card-hover: 0 12px 28px rgba(244, 52, 27, 0.12);
+$lx-shadow-modal: 0 24px 80px rgba(16, 24, 40, 0.22);
+
+$lx-space-1: 4px;
+$lx-space-2: 8px;
+$lx-space-3: 12px;
+$lx-space-4: 16px;
+$lx-space-5: 20px;
+$lx-space-6: 24px;
+
+$lx-duration-fast: 0.14s;
+$lx-duration-base: 0.2s;
+$lx-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+
+@mixin lx-font-base {
+  font-family: $lx-font-family;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@mixin lx-control-reset {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@mixin lx-pressable {
+  cursor: pointer;
+  transition:
+    transform $lx-duration-fast $lx-ease-standard,
+    box-shadow $lx-duration-base $lx-ease-standard,
+    background $lx-duration-base $lx-ease-standard,
+    color $lx-duration-base $lx-ease-standard,
+    border-color $lx-duration-base $lx-ease-standard;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
