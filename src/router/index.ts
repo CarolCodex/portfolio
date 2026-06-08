@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Cases from '@/views/Cases.vue'
 import CaseDetail from '@/views/CaseDetail.vue'
@@ -8,7 +8,9 @@ import MiniProgramDemo from '@/demos/mini-program/MiniProgramDemo.vue'
 import ComponentLibraryDemo from '@/components/Demo.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: import.meta.env.PROD
+    ? createWebHashHistory(import.meta.env.BASE_URL)
+    : createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior() {
     return { top: 0 }
   },
