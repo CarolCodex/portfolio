@@ -1,6 +1,19 @@
-# UI/UED Designer Portfolio
+# 曹兰个人简历作品集
 
-一个面向面试展示的 UI/UED 设计师个人简历作品集网站，突出「设计策略 + 前端落地 + AI 工作流」的复合能力。
+这是曹兰的个人简历与 UI/UED 设计作品集网站，用于公开展示个人经历、设计能力、项目案例、前端落地能力，以及 AI 辅助设计工作流。
+
+线上访问地址：
+
+[https://carolcodex.github.io/portfolio/](https://carolcodex.github.io/portfolio/)
+
+## 项目内容
+
+- 个人简介与职业定位
+- UI/UED 设计能力展示
+- 项目案例与设计过程说明
+- 良选小程序案例与交互 Demo
+- 简历信息与工作流页面
+- 面向 GitHub Pages 的自动部署流程
 
 ## 技术栈
 
@@ -8,9 +21,10 @@
 - Vite
 - TypeScript
 - Vue Router
-- 普通 CSS，无后端服务，无复杂 UI 库
+- GitHub Actions
+- GitHub Pages
 
-## 启动方式
+## 本地启动
 
 ```bash
 npm install
@@ -22,6 +36,15 @@ npm run dev
 ```bash
 npm run build
 ```
+
+## 部署方式
+
+项目已配置 GitHub Actions：
+
+- 当代码 push 到 `main` 分支时自动执行构建
+- 构建产物输出到 `dist`
+- 自动发布到 `gh-pages` 分支
+- GitHub Pages 使用 `/portfolio/` 子路径访问
 
 ## 目录结构
 
@@ -51,10 +74,3 @@ src/
     Resume.vue          简历页
     Workflow.vue        AI 工作流页
 ```
-
-## 后续扩展建议
-
-- 将 `src/data/cases.ts` 中的渐变 `cover` 替换为脱敏后的真实项目截图。
-- 为案例详情增加 `gallery`、`metrics`、`process` 等字段，展示更完整的设计过程。
-- 增加 PDF 简历下载入口，或将简历数据拆成更细的模块。
-- 若需要部署，可直接使用 Vercel、Netlify 或静态服务器托管 `npm run build` 生成的 `dist` 目录。
