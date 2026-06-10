@@ -1,5 +1,7 @@
 export type CaseItem = {
   id: string
+  /** 自定义跳转路径；未设置时默认进入 `/cases/:id` 详情页 */
+  link?: string
   title: string
   subtitle: string
   category: string
@@ -31,13 +33,14 @@ const blueCover = (start: string, mid: string, end: string) =>
 export const cases: CaseItem[] = [
   {
     id: 'liangxuan-mini-program',
-    title: '靓轩电商小程序设计优化',
-    subtitle: '移动端商城体验设计 / 商品列表 / 分类筛选 / 活动商品 / 购物车转化',
-    category: '移动端 / 小程序 / 电商',
-    role: 'UI/UED + 前端高保真重构',
+    link: '/demos/mini-program',
+    title: '靓轩小程序设计',
+    subtitle: '移动端商城设计 / 商品列表 / 分类筛选 / 活动商品 / 购物车转化',
+    category: '小程序 / 电商',
+    role: 'UI + 前端高保真实现',
     year: '2026',
     platform: 'WeChat Mini Program',
-    tags: ['微信小程序', '电商', '商品卡片', '分类筛选', '购物车', 'Figma MCP', 'Codex'],
+    tags: ['微信小程序', '电商', 'Figma MCP', 'Codex'],
     priority: 1,
     cover: blueCover('#eff8ff', '#d9ecff', '#f5f2ff'),
     summary: '围绕商品体系、首页营销模块、列表筛选和详情转化链路，展示移动端体验设计与小程序前端还原能力。',
@@ -57,9 +60,9 @@ export const cases: CaseItem[] = [
     subtitle: '面向触屏终端的购物、称重、软键盘与结算流程设计',
     category: '终端设备 / 触屏交互 / .NET MAUI',
     role: '终端 UI 设计 / 触屏交互 / .NET MAUI 界面实现',
-    year: '2025',
+    year: '2026',
     platform: '.NET MAUI / Touch Terminal',
-    tags: ['终端设备', '触屏交互', '.NET MAUI', '购物流程'],
+    tags: ['终端设备', '触屏交互', '.NET MAUI'],
     priority: 2,
     cover: blueCover('#eef9ff', '#d7f0ff', '#e9f4ff'),
     summary: '展示特殊设备界面设计、软键盘输入、购物称重流程、大屏触控适配与跨端界面落地能力。',

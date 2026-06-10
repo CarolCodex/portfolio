@@ -32,7 +32,13 @@
       <div class="hero-cover-visual" aria-label="作品集主视觉">
         <picture class="hero-folder-picture">
           <source srcset="/images/home/hero-folder.webp" type="image/webp" />
-          <img src="/images/home/hero-folder.webp" alt="Portfolio 作品集主视觉" />
+          <img
+            src="/images/home/hero-folder.webp"
+            alt="Portfolio 作品集主视觉"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
         </picture>
       </div>
     </div>

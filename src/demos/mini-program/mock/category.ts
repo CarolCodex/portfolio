@@ -24,20 +24,20 @@ export const categoryIcons = {
 }
 
 export const categoryNavItems: CategoryNavItem[] = [
-  { id: 'fruit', name: '时令鲜果', image: `${categoryBase}/images/cat-fruit.png`, badge: '热' },
-  { id: 'vegetable', name: '新鲜蔬菜', image: `${categoryBase}/images/cat-vegetable.png`, badge: '新' },
-  { id: 'meat', name: '肉禽蛋品', image: `${categoryBase}/images/cat-meat.png` },
-  { id: 'seafood', name: '海鲜水产', image: `${categoryBase}/images/cat-seafood.png` },
-  { id: 'bakery', name: '乳品烘焙', image: `${categoryBase}/images/cat-bakery.png` },
-  { id: 'cooked', name: '餐饮熟食', image: `${categoryBase}/images/cat-cooked.png` },
+  { id: 'fruit', name: '时令鲜果', image: `${categoryBase}/images/cat-fruit.webp`, badge: '热' },
+  { id: 'vegetable', name: '新鲜蔬菜', image: `${categoryBase}/images/cat-vegetable.webp`, badge: '新' },
+  { id: 'meat', name: '肉禽蛋品', image: `${categoryBase}/images/cat-meat.webp` },
+  { id: 'seafood', name: '海鲜水产', image: `${categoryBase}/images/cat-seafood.webp` },
+  { id: 'bakery', name: '乳品烘焙', image: `${categoryBase}/images/cat-bakery.webp` },
+  { id: 'cooked', name: '餐饮熟食', image: `${categoryBase}/images/cat-cooked.webp` },
   { id: 'snack', name: '休闲零食', image: `${categoryBase}/images/cat-snack.jpg` },
   { id: 'drink', name: '酒水饮料', image: `${categoryBase}/images/cat-drink.jpg` },
   { id: 'oil', name: '粮油调味', image: `${categoryBase}/images/cat-oil.jpg` },
   { id: 'clean', name: '个护清洁', image: `${categoryBase}/images/cat-daily.jpg` },
   { id: 'daily', name: '日用百货', image: `${categoryBase}/images/cat-daily.jpg` },
-  { id: 'flower', name: '鲜花绿植', image: `${categoryBase}/images/cat-flower.png` },
+  { id: 'flower', name: '鲜花绿植', image: `${categoryBase}/images/cat-flower.webp` },
   { id: 'pet', name: '宠物用品', image: `${categoryBase}/images/cat-pet.jpg` },
-  { id: 'health', name: '医药健康', image: `${categoryBase}/images/cat-health.png` },
+  { id: 'health', name: '医药健康', image: `${categoryBase}/images/cat-health.webp` },
   { id: 'imported', name: '进口好物', image: `${categoryBase}/images/cat-imported.jpg` },
 ]
 

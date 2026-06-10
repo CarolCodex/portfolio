@@ -9,7 +9,7 @@
     <section class="container section core-capabilities-section">
       <SectionTitle
         title="核心能力"
-        description="围绕复杂业务、产品原型、移动端体验、前端落地与 AI 工作流，形成从需求理解到可运行界面的交付闭环。"
+        description="围绕业务分析、原型设计和多端体验，结合 AI 辅助的设计工作流，实现从需求到可运行界面的完整交付。"
       />
       <div class="capability-grid">
         <CapabilityCard
@@ -24,30 +24,19 @@
     <section class="container section showcase-section">
       <div class="showcase-heading">
         <div>
-          <h2>精选作品案例</h2>
-          <p>以目录式视角呈现移动端、小程序、终端设备与 B 端系统项目，突出设计判断、结构能力与前端落地过程。</p>
+          <h2>项目案例</h2>
+          <p>参与多类项目，从需求分析到上线落地，关注真实用户体验与业务价值的实现过程。</p>
         </div>
         <RouterLink class="showcase-all-link" to="/cases">全部案例</RouterLink>
       </div>
       <div class="home-case-grid">
-        <RouterLink
+        <CaseCard
           v-for="(item, index) in featuredCases.slice(0, 4)"
           :key="item.id"
-          class="showcase-card"
-          :to="`/cases/${item.id}`"
-        >
-          <span class="showcase-index">{{ String(index + 1).padStart(2, '0') }}</span>
-          <span class="showcase-cover" :style="{ background: item.cover }">
-            <span>{{ item.category }}</span>
-          </span>
-          <span class="showcase-card-body">
-            <strong>{{ item.title }}</strong>
-            <em>{{ item.summary }}</em>
-            <span class="showcase-tags">
-              <small v-for="tag in item.tags.slice(0, 4)" :key="tag">{{ tag }}</small>
-            </span>
-          </span>
-        </RouterLink>
+          :item="item"
+          :index="index"
+          :preparing="index > 0"
+        />
       </div>
     </section>
 
@@ -77,6 +66,7 @@ import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import HeroSection from '@/components/HeroSection.vue'
 import CapabilityCard from '@/components/CapabilityCard.vue'
+import CaseCard from '@/components/CaseCard.vue'
 import ProfileIntroCard from '@/components/ProfileIntroCard.vue'
 import { featuredCases } from '@/data/cases'
 import SectionTitle from '@/components/SectionTitle.vue'
@@ -129,6 +119,13 @@ const capabilities = [
   border-radius: 999px;
   background: radial-gradient(circle, rgba(89, 174, 255, 0.2), transparent 70%);
   transform: translateX(-50%);
+}
+
+@supports (content-visibility: auto) {
+  .home-page > .section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 760px;
+  }
 }
 
 .contact-modal-mask {
@@ -303,131 +300,6 @@ const capabilities = [
   gap: 34px;
 }
 
-.showcase-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding-top: 34px;
-  border-radius: var(--showcase-radius);
-  color: inherit;
-}
-
-.showcase-index {
-  position: absolute;
-  top: 9px;
-  left: 10px;
-  z-index: 0;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(9, 43, 102, 0.075);
-  font-size: clamp(54px, 5.2vw, 82px);
-  font-weight: 850;
-  line-height: 0.8;
-  transform: translateY(-34%);
-  pointer-events: none;
-}
-
-.showcase-cover {
-  position: relative;
-  z-index: 1;
-  display: block;
-  overflow: hidden;
-  aspect-ratio: 16 / 10.2;
-  border: 1px solid rgba(9, 43, 102, 0.08);
-  border-radius: var(--showcase-radius);
-  background-blend-mode: screen;
-  box-shadow: 0 18px 44px rgba(15, 42, 95, 0.08);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-
-.showcase-cover::before {
-  content: '';
-  position: absolute;
-  inset: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  border-radius: calc(var(--showcase-radius) - 4px);
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.12)),
-    radial-gradient(circle at 76% 34%, rgba(255, 255, 255, 0.58), transparent 30%);
-}
-
-.showcase-cover::after {
-  content: '';
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
-  width: 42%;
-  height: 38%;
-  border: 1px solid rgba(255, 255, 255, 0.64);
-  border-radius: calc(var(--showcase-radius) - 4px);
-  background: rgba(255, 255, 255, 0.42);
-  backdrop-filter: blur(12px);
-}
-
-.showcase-cover span {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 2;
-  max-width: calc(100% - 32px);
-  border-radius: var(--showcase-radius);
-  color: rgba(9, 43, 102, 0.56);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.45;
-}
-
-.showcase-card-body {
-  display: block;
-  padding-top: 24px;
-}
-
-.showcase-card-body strong {
-  display: block;
-  color: #12233b;
-  font-size: 24px;
-  font-weight: 850;
-  line-height: 1.28;
-}
-
-.showcase-card-body em {
-  display: -webkit-box;
-  min-height: 58px;
-  margin-top: 12px;
-  overflow: hidden;
-  color: #66788e;
-  font-size: 14px;
-  font-style: normal;
-  line-height: 1.7;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.showcase-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.showcase-tags small {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 5px 10px;
-  border: 1px solid rgba(9, 43, 102, 0.14);
-  border-radius: var(--showcase-radius);
-  color: #4f6278;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.showcase-card:hover .showcase-cover {
-  box-shadow: 0 24px 58px rgba(15, 42, 95, 0.12);
-  transform: translateY(-4px);
-}
-
 .history-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -510,12 +382,5 @@ const capabilities = [
     font-size: clamp(28px, 9vw, 36px);
   }
 
-  .showcase-card {
-    padding-top: 32px;
-  }
-
-  .showcase-card-body strong {
-    font-size: 22px;
-  }
 }
 </style>

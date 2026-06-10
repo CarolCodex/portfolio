@@ -1,9 +1,16 @@
 <template>
-  <header class="app-header" :class="{ 'app-header--home': route.path === '/' }">
+  <header
+    class="app-header"
+    :class="{
+      'app-header--home': route.path === '/',
+      'app-header--home-banner': isHomeBanner,
+      'app-header--workflow': route.path === '/workflow',
+    }"
+  >
     <div class="header-inner">
       <div class="header-leading">
         <RouterLink class="brand" to="/" aria-label="返回首页">
-          <img class="brand-mark" :src="avatarUrl" alt="曹兰头像" />
+          <img class="brand-mark" :src="avatarUrl" alt="曹兰头像" decoding="async" />
           <span>曹兰+简历作品集</span>
         </RouterLink>
         <RouterLink v-if="headerBackLink" class="case-back-link" :to="headerBackLink.to">
@@ -20,14 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import avatarUrl from '@/assets/avatar-cao-lan.jpg'
 
 const route = useRoute()
+const isHomeBanner = ref(false)
+let headerFrame = 0
+
 const headerBackLink = computed(() => {
   if (route.path === '/demos/mini-program') {
-    return { label: '返回小程序案例', to: '/cases/liangxuan-mini-program' }
+    return { label: '返回案例列表', to: '/cases' }
   }
 
   if (route.path.startsWith('/cases/')) {
@@ -43,6 +53,54 @@ const navItems = [
   { label: 'AI 工作流', path: '/workflow' },
   { label: '简历', path: '/resume' },
 ]
+
+const updateHomeHeaderState = () => {
+  if (route.path !== '/') {
+    isHomeBanner.value = false
+    return
+  }
+
+  const firstContentSection = document.querySelector<HTMLElement>('.home-page > .container.section')
+  if (!firstContentSection) {
+    isHomeBanner.value = window.scrollY < 120
+    return
+  }
+
+  isHomeBanner.value = firstContentSection.getBoundingClientRect().top > 150
+}
+
+const scheduleHomeHeaderStateUpdate = () => {
+  if (headerFrame) return
+
+  headerFrame = window.requestAnimationFrame(() => {
+    headerFrame = 0
+    updateHomeHeaderState()
+  })
+}
+
+onMounted(() => {
+  updateHomeHeaderState()
+  window.addEventListener('scroll', scheduleHomeHeaderStateUpdate, { passive: true })
+  window.addEventListener('resize', scheduleHomeHeaderStateUpdate)
+})
+
+onBeforeUnmount(() => {
+  if (headerFrame) {
+    window.cancelAnimationFrame(headerFrame)
+    headerFrame = 0
+  }
+
+  window.removeEventListener('scroll', scheduleHomeHeaderStateUpdate)
+  window.removeEventListener('resize', scheduleHomeHeaderStateUpdate)
+})
+
+watch(
+  () => route.path,
+  async () => {
+    await nextTick()
+    scheduleHomeHeaderStateUpdate()
+  },
+)
 </script>
 
 <style scoped>
@@ -64,6 +122,9 @@ const navItems = [
   left: 0;
   z-index: 80;
   margin-bottom: 0;
+}
+
+.app-header--home-banner {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.3) 0%,
@@ -72,6 +133,12 @@ const navItems = [
   );
   border-bottom-color: rgba(255, 255, 255, 0.14);
   box-shadow: none;
+}
+
+.app-header--workflow {
+  border-bottom-color: rgba(91, 140, 255, 0.16);
+  background: rgba(5, 7, 13, 0.82);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
 }
 
 .header-inner {
@@ -150,10 +217,30 @@ const navItems = [
   -webkit-backdrop-filter: blur(14px);
 }
 
-.app-header--home .nav-links {
+.app-header--home-banner .nav-links {
   border-color: rgba(255, 255, 255, 0.46);
   background: rgba(255, 255, 255, 0.38);
   box-shadow: 0 10px 28px rgba(0, 72, 170, 0.08);
+}
+
+.app-header--home-banner .brand span {
+  color: #fff;
+  text-shadow: 0 8px 22px rgba(0, 74, 170, 0.18);
+}
+
+.app-header--workflow .brand span {
+  color: #f5f8ff;
+}
+
+.app-header--workflow .brand-mark {
+  border-color: rgba(91, 140, 255, 0.32);
+  box-shadow: 0 0 28px rgba(47, 107, 255, 0.26);
+}
+
+.app-header--workflow .nav-links {
+  border-color: rgba(91, 140, 255, 0.18);
+  background: rgba(11, 20, 36, 0.7);
+  box-shadow: 0 0 34px rgba(47, 107, 255, 0.12);
 }
 
 .nav-links a {
@@ -165,13 +252,27 @@ const navItems = [
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.app-header--home .nav-links a {
-  color: rgba(15, 42, 95, 0.78);
+.app-header--home-banner .nav-links a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.app-header--workflow .nav-links a {
+  color: rgba(190, 205, 230, 0.78);
 }
 
 .nav-links a:hover {
   background: rgba(232, 244, 255, 0.72);
   color: #0b4bb3;
+}
+
+.app-header--home-banner .nav-links a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.app-header--workflow .nav-links a:hover {
+  background: rgba(47, 107, 255, 0.14);
+  color: #f5f8ff;
 }
 
 .nav-links a.router-link-active {
@@ -180,9 +281,15 @@ const navItems = [
   box-shadow: 0 10px 24px rgba(13, 110, 253, 0.24);
 }
 
-.app-header--home .nav-links a.router-link-active {
+.app-header--home-banner .nav-links a.router-link-active {
   color: #fff;
   box-shadow: 0 10px 24px rgba(13, 110, 253, 0.26);
+}
+
+.app-header--workflow .nav-links a.router-link-active {
+  background: linear-gradient(135deg, #2f6bff, #27c3ff 58%, #8b5cff);
+  color: #fff;
+  box-shadow: 0 0 28px rgba(47, 107, 255, 0.34);
 }
 
 @media (max-width: 720px) {

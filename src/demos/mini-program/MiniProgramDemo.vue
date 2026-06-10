@@ -2,7 +2,7 @@
   <div class="demo-page">
     <section class="demo-hero">
       <aside class="demo-copy">
-        <h1>靓轩电商小程序高保真交互 Demo</h1>
+        <h1>靓轩小程序可交互Demo</h1>
         <p>
           第一阶段优先还原 Figma 首页：红色商城头部、新人专区、分类金刚区、营销模块、双列商品流和小程序底部导航。
         </p>
@@ -24,11 +24,19 @@
         </PhoneFrame>
       </div>
     </section>
+
+    <section id="mini-program-visual-spec" class="demo-visual-spec">
+      <div class="demo-section-title">
+        <h2>视觉规范</h2>
+      </div>
+      <MiniProgramVisualSpec />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import MiniProgramVisualSpec from '@/cases/liangxuan-mini-program/MiniProgramVisualSpec.vue'
 import MiniAppShell from './components/MiniAppShell.vue'
 import PhoneFrame from './components/PhoneFrame.vue'
 
@@ -100,8 +108,13 @@ p {
   margin-top: 28px;
 }
 
-.demo-actions button {
+.demo-actions button,
+.demo-actions a {
   cursor: pointer;
+}
+
+.demo-actions a {
+  text-decoration: none;
 }
 
 .interaction-notes {
@@ -131,6 +144,24 @@ p {
   line-height: 1.6;
 }
 
+.demo-visual-spec {
+  width: min(100% - 96px, 1320px);
+  margin: 0 auto;
+  padding: 8px 0 120px;
+  scroll-margin-top: 104px;
+}
+
+.demo-section-title {
+  margin-bottom: 26px;
+}
+
+.demo-section-title h2 {
+  margin: 0;
+  color: #0f2a5f;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.16;
+}
+
 @media (max-width: 940px) {
   .demo-hero {
     grid-template-columns: 1fr;
@@ -147,6 +178,11 @@ p {
   .demo-phone-stage {
     justify-content: center;
   }
+
+  .demo-visual-spec {
+    width: min(100% - 48px, 720px);
+    padding-bottom: 88px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -157,6 +193,11 @@ p {
   .demo-hero {
     width: min(100% - 40px, 720px);
     padding: 32px 0 64px;
+  }
+
+  .demo-visual-spec {
+    width: min(100% - 40px, 720px);
+    padding-bottom: 72px;
   }
 }
 </style>

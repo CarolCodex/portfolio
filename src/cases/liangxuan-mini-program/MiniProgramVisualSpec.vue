@@ -87,7 +87,12 @@
       <div class="product-system-grid">
         <article class="product-anatomy" aria-label="标准商品卡片结构">
           <div class="anatomy-image">
-            <img src="/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-shrimp.png" alt="鲜活基围虾" />
+            <img
+              src="/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-shrimp.png"
+              alt="鲜活基围虾"
+              loading="lazy"
+              decoding="async"
+            />
             <span class="badge-top">状态角标</span>
           </div>
           <div class="anatomy-info">
@@ -114,7 +119,7 @@
         <div class="variant-matrix">
           <article v-for="variant in productVariants" :key="variant.name" class="variant-row">
             <div class="variant-visual" :class="variant.type">
-              <img :src="variant.image" :alt="variant.name" />
+              <img :src="variant.image" :alt="variant.name" loading="lazy" decoding="async" />
               <span>{{ variant.badge }}</span>
             </div>
             <div class="variant-copy">
@@ -197,7 +202,12 @@
       <div class="interaction-strip">
         <div class="mini-carousel">
           <span>Carousel</span>
-          <img src="/case-assets/liangxuan-mini-program/demo-home-assets/banners/banner-peach.png" alt="首页轮播示例" />
+          <img
+            src="/case-assets/liangxuan-mini-program/demo-home-assets/banners/banner-peach.png"
+            alt="首页轮播示例"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
         <div class="mini-modal">
           <span>Modal</span>

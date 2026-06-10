@@ -9,7 +9,7 @@
         @click="$emit('select', category.id)"
       >
         <span class="category-icon category-icon-large">
-          <img :src="category.image" :alt="category.name" />
+          <img :src="category.image" :alt="category.name" loading="lazy" decoding="async" />
         </span>
         <strong>{{ formatCategoryName(category.name) }}</strong>
       </button>
@@ -24,7 +24,7 @@
         @click="$emit('select', category.id)"
       >
         <span class="category-icon category-icon-small">
-          <img :src="category.image" :alt="category.name" />
+          <img :src="category.image" :alt="category.name" loading="lazy" decoding="async" />
         </span>
         <strong>{{ formatCategoryName(category.name) }}</strong>
       </button>

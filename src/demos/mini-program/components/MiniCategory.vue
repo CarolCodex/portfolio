@@ -2,7 +2,7 @@
   <section class="mini-category-page">
     <header class="category-search">
       <label class="category-search-box">
-        <img :src="categoryIcons.search" alt="" aria-hidden="true" />
+        <img :src="categoryIcons.search" alt="" aria-hidden="true" decoding="async" />
         <input type="search" placeholder="搜你想要的商品..." readonly />
       </label>
     </header>
@@ -18,14 +18,14 @@
           @click="selectTop(item.id)"
         >
           <span>
-            <img :src="item.image" :alt="item.name" />
+            <img :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
           </span>
           <strong>{{ item.name }}</strong>
         </button>
       </div>
       <button class="category-all-button" type="button" @click="showCategoryDropdown = true">
         <span>全部</span>
-        <img :src="categoryIcons.chevronDown" alt="" aria-hidden="true" />
+        <img :src="categoryIcons.chevronDown" alt="" aria-hidden="true" decoding="async" />
       </button>
     </div>
 
@@ -61,13 +61,13 @@
             @click="selectedSort = 'filter'"
           >
             筛选
-            <img :src="categoryIcons.filterArrow" alt="" aria-hidden="true" />
+            <img :src="categoryIcons.filterArrow" alt="" aria-hidden="true" decoding="async" />
           </button>
         </nav>
 
         <div class="category-product-list">
           <article v-for="product in categoryProducts" :key="product.id" class="category-product-card">
-            <img class="product-image" :src="product.image" :alt="product.name" />
+            <img class="product-image" :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
             <div class="product-info">
               <h3>{{ product.name }}</h3>
               <p>{{ product.spec }}</p>
@@ -81,7 +81,7 @@
                   <small>/份</small>
                 </div>
                 <button class="category-plus" type="button" aria-label="加入购物车" @click="$emit('addToCart')">
-                  <img :src="categoryIcons.plus" alt="" aria-hidden="true" />
+                  <img :src="categoryIcons.plus" alt="" aria-hidden="true" decoding="async" />
                 </button>
               </div>
             </div>
@@ -96,7 +96,7 @@
           <strong>全部分类</strong>
           <button type="button" @click="showCategoryDropdown = false">
             收起
-            <img :src="categoryIcons.chevronUp" alt="" aria-hidden="true" />
+            <img :src="categoryIcons.chevronUp" alt="" aria-hidden="true" decoding="async" />
           </button>
         </div>
         <div class="dropdown-grid">
@@ -108,7 +108,7 @@
             @click="selectFromDropdown(item.id)"
           >
             <span>
-              <img :src="item.image" :alt="item.name" />
+              <img :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
             </span>
             <strong>{{ item.name }}</strong>
           </button>

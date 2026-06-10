@@ -59,24 +59,24 @@ export const newbieProducts: MiniProduct[] = [
 ]
 
 export const miniCategories = [
-  { id: 'flower', name: '水果鲜花', image: `${assetBase}/category-icons/fruit-flower.png` },
-  { id: 'veg', name: '新鲜蔬菜', image: `${assetBase}/category-icons/fresh-veg.png` },
-  { id: 'meat', name: '肉禽蛋品', image: `${assetBase}/category-icons/meat-egg.png` },
-  { id: 'seafood', name: '海鲜水产', image: `${assetBase}/category-icons/seafood.png` },
-  { id: 'milk', name: '乳品烘焙', image: `${assetBase}/category-icons/bakery-milk.png` },
-  { id: 'food', name: '餐饮熟食', image: `${assetBase}/category-icons/cooked-food.png` },
-  { id: 'snack', name: '休闲零食', image: `${assetBase}/category-icons/snacks.png` },
-  { id: 'drink', name: '酒水饮料', image: `${assetBase}/category-icons/drinks.png` },
-  { id: 'grain-oil', name: '粮油调味', image: `${assetBase}/category-icons/grain-oil.png` },
-  { id: 'personal-care', name: '个护清洁', image: `${assetBase}/category-icons/personal-care.png` },
+  { id: 'flower', name: '水果鲜花', image: `${assetBase}/category-icons/fruit-flower.webp` },
+  { id: 'veg', name: '新鲜蔬菜', image: `${assetBase}/category-icons/fresh-veg.webp` },
+  { id: 'meat', name: '肉禽蛋品', image: `${assetBase}/category-icons/meat-egg.webp` },
+  { id: 'seafood', name: '海鲜水产', image: `${assetBase}/category-icons/seafood.webp` },
+  { id: 'milk', name: '乳品烘焙', image: `${assetBase}/category-icons/bakery-milk.webp` },
+  { id: 'food', name: '餐饮熟食', image: `${assetBase}/category-icons/cooked-food.webp` },
+  { id: 'snack', name: '休闲零食', image: `${assetBase}/category-icons/snacks.webp` },
+  { id: 'drink', name: '酒水饮料', image: `${assetBase}/category-icons/drinks.webp` },
+  { id: 'grain-oil', name: '粮油调味', image: `${assetBase}/category-icons/grain-oil.webp` },
+  { id: 'personal-care', name: '个护清洁', image: `${assetBase}/category-icons/personal-care.webp` },
 ]
 
 export const miniCategoryShortcuts = [
-  { id: 'daily', name: '日用百货', image: `${assetBase}/category-icons/daily.png` },
-  { id: 'plant', name: '鲜花绿植', image: `${assetBase}/category-icons/plant.png` },
+  { id: 'daily', name: '日用百货', image: `${assetBase}/category-icons/daily.webp` },
+  { id: 'plant', name: '鲜花绿植', image: `${assetBase}/category-icons/plant.webp` },
   { id: 'pet', name: '宠物用品', image: `${assetBase}/category-icons/pet.jpg` },
-  { id: 'health', name: '医药健康', image: `${assetBase}/category-icons/health.png` },
-  { id: 'imported', name: '进口好物', image: `${assetBase}/category-icons/imported.png` },
+  { id: 'health', name: '医药健康', image: `${assetBase}/category-icons/health.webp` },
+  { id: 'imported', name: '进口好物', image: `${assetBase}/category-icons/imported.webp` },
   { id: 'imported-more', name: '进口好物', image: `${assetBase}/category-icons/imported-more.jpg` },
 ]
 
@@ -183,7 +183,7 @@ export const homeGoods: MiniProduct[] = [
     name: '蒙牛 纯牛奶 250ml*16盒',
     description: '整箱装 营养早餐',
     price: '45.9',
-    image: `${assetBase}/product-milk.png`,
+    image: `${assetBase}/product-milk.webp`,
     imageHeight: 150,
   },
   {
@@ -191,7 +191,7 @@ export const homeGoods: MiniProduct[] = [
     name: '新疆红心火龙果 2个装',
     description: '单果约400g 汁水丰富',
     price: '15.8',
-    image: `${assetBase}/product-dragonfruit.png`,
+    image: `${assetBase}/product-dragonfruit.webp`,
     imageHeight: 170,
   },
   {
@@ -207,7 +207,7 @@ export const homeGoods: MiniProduct[] = [
     name: '澳洲谷饲西冷牛排 200g',
     description: '原肉原切 鲜嫩多汁',
     price: '39.9',
-    image: `${assetBase}/product-steak.png`,
+    image: `${assetBase}/product-steak.webp`,
     imageHeight: 160,
   },
 ]
@@ -226,7 +226,7 @@ export const feedProducts: MiniProduct[] = [
     name: '蒙牛 纯牛奶 250ml*16盒',
     description: '营养早餐 整箱装',
     price: '45.9',
-    image: `${assetBase}/product-milk.png`,
+    image: `${assetBase}/product-milk.webp`,
     imageHeight: 150,
   },
   {
@@ -242,7 +242,7 @@ export const feedProducts: MiniProduct[] = [
     name: '新疆红心火龙果 2个装',
     description: '单果约400g 汁水丰富',
     price: '15.8',
-    image: `${assetBase}/product-dragonfruit.png`,
+    image: `${assetBase}/product-dragonfruit.webp`,
     imageHeight: 170,
   },
   {
@@ -250,10 +250,10 @@ export const feedProducts: MiniProduct[] = [
     name: '澳洲谷饲西冷牛排 200g',
     description: '原肉原切 鲜嫩多汁',
     price: '39.9',
-    image: `${assetBase}/product-steak.png`,
+    image: `${assetBase}/product-steak.webp`,
     imageHeight: 160,
   },
 ]
 
 export const promoMain = `${assetBase}/promo-main.png`
-export const promoPomegranate = `${assetBase}/banner-pomegranate.png`
+export const promoPomegranate = `${assetBase}/banner-pomegranate.webp`

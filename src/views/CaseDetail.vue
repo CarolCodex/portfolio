@@ -1,6 +1,5 @@
 <template>
-  <LiangxuanCase v-if="isLiangxuanCase" />
-  <div v-else-if="item" class="container page">
+  <div v-if="item" class="container page">
     <section class="detail-hero">
       <div>
         <span class="eyebrow">{{ item.year }} · {{ item.category }}</span>
@@ -78,7 +77,7 @@
       <p>{{ item.review }}</p>
     </section>
   </div>
-  <div v-else-if="!isLiangxuanCase" class="container page">
+  <div v-else class="container page">
     <SectionTitle title="案例不存在" description="该案例可能已被移动或尚未添加。" />
     <RouterLink class="button primary" to="/cases">返回案例列表</RouterLink>
   </div>
@@ -90,10 +89,8 @@ import { RouterLink, useRoute } from 'vue-router'
 import BeforeAfter from '@/components/BeforeAfter.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
 import SkillTag from '@/components/SkillTag.vue'
-import LiangxuanCase from '@/cases/liangxuan-mini-program/LiangxuanCase.vue'
 import { cases } from '@/data/cases'
 
 const route = useRoute()
 const item = computed(() => cases.find((caseItem) => caseItem.id === route.params.id))
-const isLiangxuanCase = computed(() => route.params.id === 'liangxuan-mini-program' || route.params.id === 'mini-program')
 </script>

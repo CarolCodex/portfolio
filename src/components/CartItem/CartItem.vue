@@ -10,7 +10,7 @@
       <span aria-hidden="true"></span>
     </button>
 
-    <img v-if="image" class="lx-cart-item__image" :src="image" :alt="name" />
+    <img v-if="image" class="lx-cart-item__image" :src="image" :alt="name" loading="lazy" decoding="async" />
 
     <div class="lx-cart-item__content">
       <header>

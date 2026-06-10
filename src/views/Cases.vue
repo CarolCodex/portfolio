@@ -1,11 +1,11 @@
 <template>
   <div class="container page cases-page">
     <SectionTitle
-      title="项目案例"
-      description="以下案例均使用脱敏描述和渐变占位图，重点展示设计思路、问题拆解、AI 参与方式与前端落地能力。"
+      title="精选作品案例"
+      description="以目录视角呈现移动端、小程序、终端设备与 B 端系统项目，突出设计判断、结构能力与前端落地过程。"
     />
-    <div class="case-grid">
-      <CaseCard v-for="(item, index) in cases" :key="item.id" :item="item" :index="index" />
+    <div class="cases-showcase-grid">
+      <CaseCard v-for="(item, index) in featuredCases" :key="item.id" :item="item" :index="index" />
     </div>
   </div>
 </template>
@@ -13,24 +13,33 @@
 <script setup lang="ts">
 import CaseCard from '@/components/CaseCard.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
-import { cases } from '@/data/cases'
+import { featuredCases } from '@/data/cases'
 </script>
 
 <style scoped>
-.cases-page .case-grid {
+.cases-page {
+  padding-top: 104px;
+}
+
+.cases-showcase-grid {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 38px 34px;
-  margin-top: 36px;
+  gap: 56px 34px;
+  margin-top: 44px;
 }
 
 @media (max-width: 1120px) {
-  .cases-page .case-grid {
+  .cases-showcase-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
-  .cases-page .case-grid {
+  .cases-page {
+    padding-top: 72px;
+  }
+
+  .cases-showcase-grid {
     grid-template-columns: 1fr;
     gap: 34px;
   }

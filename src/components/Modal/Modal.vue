@@ -5,7 +5,7 @@
         <button class="lx-modal__close" type="button" aria-label="关闭弹窗" @click="close">×</button>
 
         <div v-if="image || status !== 'normal'" class="lx-modal__visual" :class="`is-${status}`">
-          <img v-if="image" :src="image" alt="" aria-hidden="true" />
+          <img v-if="image" :src="image" alt="" aria-hidden="true" loading="lazy" decoding="async" />
           <span v-else aria-hidden="true">{{ status === 'success' ? '✓' : '!' }}</span>
         </div>
 

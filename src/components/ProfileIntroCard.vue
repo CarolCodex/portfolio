@@ -5,7 +5,7 @@
         <span class="profile-kicker">Hello! 我是曹兰</span>
         <h2>{{ profile.aboutTitle }}</h2>
       </div>
-      <img class="profile-avatar" :src="avatarUrl" alt="曹兰头像" />
+      <img class="profile-avatar" :src="avatarUrl" alt="曹兰头像" loading="lazy" decoding="async" />
     </div>
 
     <div class="profile-info-grid">

@@ -16,7 +16,7 @@ defineProps<{
 
 <style scoped>
 .section-title {
-  max-width: 780px;
+  max-width: 1200px;
   margin-bottom: 32px;
 }
 

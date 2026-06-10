@@ -5,7 +5,7 @@
     @click="emitCardClick"
   >
     <div class="lx-product-card__image">
-      <img :src="image" :alt="imageAlt || title" />
+      <img :src="image" :alt="imageAlt || title" loading="lazy" decoding="async" />
       <span v-if="status === 'top1'" class="lx-product-card__rank">TOP 1</span>
       <span v-else-if="status === 'hot'" class="lx-product-card__hot">热卖</span>
       <span v-if="tagLabel" class="lx-product-card__tag">{{ tagLabel }}</span>

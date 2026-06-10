@@ -52,7 +52,7 @@
         </div>
         <div class="newbie-list">
           <article v-for="product in newbieProducts" :key="product.id" class="newbie-product">
-            <img class="newbie-product-image" :src="product.image" :alt="product.name" />
+            <img class="newbie-product-image" :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
             <div class="newbie-name">
               <span>{{ product.tag }}</span>
               <strong>{{ product.name }}</strong>
@@ -91,6 +91,8 @@
                 class="promo-title-image"
                 :src="item.titleImage"
                 :alt="item.title"
+                loading="lazy"
+                decoding="async"
                 :style="{ width: `${item.titleImageWidth}px`, height: `${item.titleImageHeight}px` }"
               />
               <span v-if="item.badge" :style="{ background: item.badgeTone }">{{ item.badge }}</span>
@@ -99,7 +101,7 @@
           </div>
           <div class="promo-products">
             <div v-for="product in item.products" :key="product.image" class="promo-product">
-              <img :src="product.image" alt="" />
+              <img :src="product.image" alt="" loading="lazy" decoding="async" />
               <em>
                 <span>¥ {{ product.priceMain }}</span>
                 <small>{{ product.priceDecimal }}</small>
@@ -127,7 +129,7 @@
         <div class="home-goods-masonry">
           <div class="home-goods-column">
             <div class="home-banner-card" role="button" tabindex="0" :aria-label="activeBanner.alt">
-              <img :key="activeBanner.id" :src="activeBanner.image" :alt="activeBanner.alt" />
+              <img :key="activeBanner.id" :src="activeBanner.image" :alt="activeBanner.alt" loading="lazy" decoding="async" />
               <span class="home-banner-dots">
                 <button
                   v-for="(banner, index) in homeBanners"
@@ -209,7 +211,7 @@ function handlePromoOpen(type: ActivityType) {
 function startBannerAutoplay() {
   stopBannerAutoplay()
 
-  if (homeBanners.length <= 1) {
+  if (homeBanners.length <= 1 || document.hidden) {
     return
   }
 
@@ -230,8 +232,19 @@ function setActiveBanner(index: number) {
   startBannerAutoplay()
 }
 
-onMounted(startBannerAutoplay)
-onBeforeUnmount(stopBannerAutoplay)
+function handleVisibilityChange() {
+  document.hidden ? stopBannerAutoplay() : startBannerAutoplay()
+}
+
+onMounted(() => {
+  startBannerAutoplay()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  stopBannerAutoplay()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
 </script>
 
 <style scoped>

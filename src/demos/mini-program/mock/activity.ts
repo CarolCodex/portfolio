@@ -83,7 +83,7 @@ export const activityHeroSlides: ActivityHeroSlide[] = [
     title: '热卖商品',
     subtitle: '精选好物 · 超值特惠',
     tag: '限时',
-    bannerImage: `${imageBase}/banner-hot.png`,
+    bannerImage: `${imageBase}/banner-hot.webp`,
     cards: [
       { id: 1, name: '泰国进口 金枕榴莲肉', tag: '热卖商品', price: '298', image: `${imageBase}/product-durian-slice.png` },
       { id: 2, name: '新鲜红肉蜜柚 2只约2.5kg', tag: '热卖商品', price: '99', image: `${imageBase}/product-pomelo.png` },
@@ -101,7 +101,7 @@ export const activityHeroSlides: ActivityHeroSlide[] = [
     title: '团购商品',
     subtitle: '精选好物 · 超值特惠',
     tag: '限时',
-    bannerImage: `${imageBase}/banner-group.png`,
+    bannerImage: `${imageBase}/banner-group.webp`,
     cards: [
       { id: 9, name: '新鲜山东红富士苹果 5kg一箱', tag: '团购商品', price: '19.9-29.9', image: `${imageBase}/product-apple-box.png` },
       { id: 10, name: '泰国金枕头榴莲 3-4kg', tag: '团购商品', price: '139', image: `${imageBase}/product-durian.png` },
@@ -119,7 +119,7 @@ export const activityHeroSlides: ActivityHeroSlide[] = [
     title: '预售商品',
     subtitle: '精选好物 · 超值特惠',
     tag: '限时',
-    bannerImage: `${imageBase}/banner-presale.png`,
+    bannerImage: `${imageBase}/banner-presale.webp`,
     cards: [
       { id: 17, name: '阳澄湖大闸蟹 礼券 4对装', tag: '预售特惠', price: '298', image: `${imageBase}/product-crab.png` },
       { id: 18, name: '中秋限定 广式月饼 8枚礼盒', tag: '预售特惠', price: '99', image: `${imageBase}/product-mooncake.png` },
@@ -137,7 +137,7 @@ export const activityHeroSlides: ActivityHeroSlide[] = [
     title: '秒杀商品',
     subtitle: '手慢无 · 限时疯狂抢',
     tag: '限时',
-    bannerImage: `${imageBase}/banner-seckill.png`,
+    bannerImage: `${imageBase}/banner-seckill.webp`,
     cards: [
       { id: 25, name: '南美白对虾 净重1.5kg/盒', tag: '秒杀商品', price: '298', image: `${imageBase}/product-shrimp.png` },
       { id: 26, name: '精选澳洲原切谷饲西冷牛排', tag: '秒杀商品', price: '29.9', image: `${imageBase}/product-steak.png` },

@@ -21,7 +21,13 @@
             :class="{ active: activeHeroIndex === index }"
             :aria-hidden="activeHeroIndex !== index"
           >
-            <img class="activity-hero-image" :src="slide.bannerImage" :alt="slide.title" />
+            <img
+              class="activity-hero-image"
+              :src="slide.bannerImage"
+              :alt="slide.title"
+              :loading="index === activeHeroIndex ? 'eager' : 'lazy'"
+              decoding="async"
+            />
             <div class="hero-shade">
               <h1>{{ slide.title }}</h1>
               <p>
@@ -43,7 +49,7 @@
             aria-label="活动精选"
           >
             <article v-for="product in slide.cards" :key="product.id" class="feature-card">
-              <img :src="product.image" :alt="product.name" />
+              <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
               <div>
                 <strong>{{ product.name }}</strong>
                 <span>{{ product.tag }}</span>
@@ -107,6 +113,7 @@ let heroTimer: number | undefined
 let dotId = 0
 const flyTimers: number[] = []
 const flyDuration = 650
+const preloadedActivityImages = new Set<string>()
 
 const products = computed(() => activityProducts[activeActivityTab.value])
 
@@ -127,6 +134,8 @@ function setActivityTab(type: ActivityType) {
 
 function startHeroAutoplay() {
   stopHeroAutoplay()
+  if (document.hidden) return
+
   heroTimer = window.setInterval(() => {
     activeHeroIndex.value = (activeHeroIndex.value + 1) % activityHeroSlides.length
   }, 3000)
@@ -213,16 +222,50 @@ function handleAddToCart(event: MouseEvent) {
   }, flyDuration + 120)
 }
 
-function preloadActivityImages() {
-  activityHeroSlides.forEach((slide) => {
-    const banner = new Image()
-    banner.src = slide.bannerImage
+function preloadActivityImage(src: string) {
+  if (preloadedActivityImages.has(src)) return
 
-    slide.cards.forEach((card) => {
-      const image = new Image()
-      image.src = card.image
-    })
-  })
+  preloadedActivityImages.add(src)
+
+  const image = new Image()
+  image.decoding = 'async'
+  image.src = src
+}
+
+function scheduleNearbyActivityImagePreload() {
+  const preload = () => {
+    const slide = activityHeroSlides[activeHeroIndex.value]
+    const nextSlide = activityHeroSlides[(activeHeroIndex.value + 1) % activityHeroSlides.length]
+
+    if (slide) {
+      preloadActivityImage(slide.bannerImage)
+      slide.cards.slice(0, 2).forEach((card) => preloadActivityImage(card.image))
+    }
+
+    if (nextSlide) {
+      preloadActivityImage(nextSlide.bannerImage)
+    }
+  }
+
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(preload, { timeout: 1200 })
+    return
+  }
+
+  window.setTimeout(preload, 200)
+}
+
+function preloadActivityImages() {
+  const firstSlide = activityHeroSlides[activeHeroIndex.value]
+
+  if (firstSlide) {
+    const banner = new Image()
+    banner.decoding = 'async'
+    banner.src = firstSlide.bannerImage
+    preloadedActivityImages.add(firstSlide.bannerImage)
+  }
+
+  scheduleNearbyActivityImagePreload()
 }
 
 watch(
@@ -233,14 +276,23 @@ watch(
   { immediate: true },
 )
 
-watch(activeHeroIndex, resetFeatureScroll)
+watch(activeHeroIndex, () => {
+  resetFeatureScroll()
+  scheduleNearbyActivityImagePreload()
+})
+
+function handleVisibilityChange() {
+  document.hidden ? stopHeroAutoplay() : startHeroAutoplay()
+}
 
 onMounted(() => {
   preloadActivityImages()
   startHeroAutoplay()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 onBeforeUnmount(() => {
   stopHeroAutoplay()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
   flyTimers.forEach((timer) => window.clearTimeout(timer))
   flyTimers.length = 0
 })

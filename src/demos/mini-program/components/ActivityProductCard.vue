@@ -14,7 +14,7 @@
 
       <div class="presale-body">
         <div class="product-image-wrap">
-          <img :src="product.image" :alt="product.name" />
+          <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
           <span class="presale-image-badge">{{ product.badge }}</span>
         </div>
 
@@ -46,7 +46,7 @@
 
     <template v-else-if="type === 'seckill'">
       <div class="product-image-wrap">
-        <img :src="product.image" :alt="product.name" />
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
         <span class="flash-status-badge" :class="{ waiting: product.waiting }">
           <i :class="product.waiting ? 'clock-mini' : 'flame-mini'" aria-hidden="true"></i>
           {{ product.soldText }}
@@ -95,7 +95,7 @@
 
     <template v-else>
       <div class="product-image-wrap">
-        <img :src="product.image" :alt="product.name" />
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
         <span v-if="product.rank" class="rank-badge" :class="rankClass(product.rank)">{{ product.rank }}</span>
         <span v-else-if="product.groupSize" class="group-badge">
           <i aria-hidden="true"></i>
@@ -125,7 +125,7 @@
         <div class="label-row">
           <span class="group-selling-tag">{{ product.description }}</span>
           <span v-if="product.service" class="activity-delivery-tag">
-            <img :src="deliveryIconFor(product.service)" alt="" aria-hidden="true" />
+            <img :src="deliveryIconFor(product.service)" alt="" aria-hidden="true" decoding="async" />
             <span>{{ product.service }}</span>
           </span>
         </div>
@@ -143,7 +143,7 @@
             </div>
           </div>
           <button class="group-cart-button" type="button" @click="$emit('add', $event)">
-            <img :src="cartIcon" alt="" aria-hidden="true" />
+            <img :src="cartIcon" alt="" aria-hidden="true" decoding="async" />
             <span>{{ product.actionText }}</span>
           </button>
         </div>
@@ -202,7 +202,7 @@ function secondsToCountdown(totalSeconds: number): [string, string, string] {
 function startCountdown() {
   stopCountdown()
 
-  if (props.type !== 'seckill' || countdownSeconds.value <= 0) return
+  if (props.type !== 'seckill' || countdownSeconds.value <= 0 || document.hidden) return
 
   countdownTimer = window.setInterval(() => {
     countdownSeconds.value = Math.max(0, countdownSeconds.value - 1)
@@ -220,6 +220,10 @@ function stopCountdown() {
   }
 }
 
+function handleVisibilityChange() {
+  document.hidden ? stopCountdown() : startCountdown()
+}
+
 watch(
   () => props.product.countdown,
   (countdown) => {
@@ -228,8 +232,15 @@ watch(
   },
 )
 
-onMounted(startCountdown)
-onBeforeUnmount(stopCountdown)
+onMounted(() => {
+  startCountdown()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  stopCountdown()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
 </script>
 
 <style scoped>

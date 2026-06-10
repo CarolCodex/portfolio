@@ -56,7 +56,7 @@
         <p class="intro">
           围绕零售商品浏览、活动商品展示、分类筛选与购物车转化链路，对小程序界面结构和关键交互进行体验优化。
         </p>
-        <RouterLink class="hero-demo-link" to="/demos/mini-program">查看小程序高保真 Demo</RouterLink>
+        <RouterLink class="hero-demo-link" to="/demos/mini-program">返回高保真 Demo</RouterLink>
       </div>
       <div class="hero-phones" aria-label="靓轩小程序手机 Mockup">
         <div class="hero-phone phone-left">
@@ -65,7 +65,7 @@
             <div class="phone-screen">
               <img
                 class="phone-shot phone-shot-home"
-                src="/case-assets/liangxuan-mini-program/liangxuan-home.png"
+                src="/case-assets/liangxuan-mini-program/liangxuan-home.webp"
                 alt="靓轩小程序首页商品流截图"
               />
             </div>
@@ -77,7 +77,7 @@
             <div class="phone-screen">
               <img
                 class="phone-shot phone-shot-activity"
-                src="/case-assets/liangxuan-mini-program/liangxuan-activity.png"
+                src="/case-assets/liangxuan-mini-program/liangxuan-activity.webp"
                 alt="靓轩小程序活动商品截图"
               />
             </div>

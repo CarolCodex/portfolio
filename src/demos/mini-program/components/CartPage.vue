@@ -35,7 +35,7 @@
             :class="{ last: index === group.items.length - 1 }"
           >
             <span class="cart-check item-check" aria-hidden="true"></span>
-            <img class="cart-item-image" :src="item.image" :alt="item.name" />
+            <img class="cart-item-image" :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
             <div class="cart-item-info">
               <h3>{{ item.name }}</h3>
               <span class="cold-tag">{{ item.tag }}</span>

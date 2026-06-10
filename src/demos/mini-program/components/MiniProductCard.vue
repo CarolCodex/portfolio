@@ -1,7 +1,7 @@
 <template>
   <article class="product-card">
     <div class="product-image" :style="{ height: `${product.imageHeight ?? 150}px` }">
-      <img :src="product.image" :alt="product.name" />
+      <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
     </div>
     <div class="product-info">
       <h3>{{ product.name }}</h3>

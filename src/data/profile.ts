@@ -13,7 +13,7 @@ export const profile = {
   ],
   profileInfo: [
     { label: '求职意向', value: 'UI + 前端复合岗' },
-    { label: '期望薪资', value: '15K' },
+    { label: '期望薪资', value: '13-16K' },
     { label: '城市', value: '成都' },
     { label: '经验', value: '9 年 UI/UED 设计经验' },
     { label: '教育', value: '四川师范大学视觉传达设计全日制本科' },

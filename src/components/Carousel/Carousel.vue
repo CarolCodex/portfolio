@@ -1,5 +1,5 @@
 <template>
-  <section class="lx-carousel" @mouseenter="pause" @mouseleave="resume">
+  <section ref="carouselRoot" class="lx-carousel" @mouseenter="pause" @mouseleave="resume">
     <div
       class="lx-carousel__viewport"
       @touchstart.passive="onTouchStart"
@@ -102,7 +102,10 @@ const emit = defineEmits<{
 const activeIndex = ref(props.modelValue)
 const touchStartX = ref(0)
 const touchDeltaX = ref(0)
+const carouselRoot = ref<HTMLElement | null>(null)
+const isCarouselVisible = ref(true)
 let timer: ReturnType<typeof window.setInterval> | undefined
+let visibilityObserver: IntersectionObserver | undefined
 
 const safeSlidesPerView = computed(() => Math.max(1, Math.min(props.slidesPerView, props.items.length || 1)))
 const pageCount = computed(() => Math.max(0, props.items.length - safeSlidesPerView.value + 1))
@@ -162,7 +165,15 @@ function prev() {
 
 function startTimer() {
   stopTimer()
-  if (!props.autoplay || props.items.length <= safeSlidesPerView.value || typeof window === 'undefined') return
+  if (
+    !props.autoplay ||
+    props.items.length <= safeSlidesPerView.value ||
+    typeof window === 'undefined' ||
+    document.hidden ||
+    !isCarouselVisible.value
+  ) {
+    return
+  }
 
   timer = window.setInterval(next, props.interval)
 }
@@ -180,6 +191,10 @@ function pause() {
 
 function resume() {
   startTimer()
+}
+
+function handleDocumentVisibilityChange() {
+  document.hidden ? stopTimer() : startTimer()
 }
 
 function onTouchStart(event: TouchEvent) {
@@ -204,8 +219,28 @@ function onTouchEnd() {
 
 watch(() => [props.autoplay, props.interval, props.items.length, props.slidesPerView], startTimer)
 
-onMounted(startTimer)
-onBeforeUnmount(stopTimer)
+onMounted(() => {
+  document.addEventListener('visibilitychange', handleDocumentVisibilityChange)
+
+  if ('IntersectionObserver' in window && carouselRoot.value) {
+    visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isCarouselVisible.value = Boolean(entry?.isIntersecting)
+        isCarouselVisible.value ? startTimer() : stopTimer()
+      },
+      { threshold: 0.01 },
+    )
+    visibilityObserver.observe(carouselRoot.value)
+  }
+
+  startTimer()
+})
+
+onBeforeUnmount(() => {
+  stopTimer()
+  document.removeEventListener('visibilitychange', handleDocumentVisibilityChange)
+  visibilityObserver?.disconnect()
+})
 </script>
 
 <style scoped lang="scss">
