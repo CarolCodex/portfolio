@@ -10,7 +10,7 @@
     <div class="header-inner">
       <div class="header-leading">
         <RouterLink class="brand" to="/" aria-label="返回首页">
-          <img class="brand-mark" :src="avatarUrl" alt="曹兰头像" decoding="async" />
+          <img class="brand-mark" :src="avatarUrl" alt="曹兰头像" width="36" height="36" loading="eager" decoding="async" />
           <span>曹兰+简历作品集</span>
         </RouterLink>
         <RouterLink v-if="headerBackLink" class="case-back-link" :to="headerBackLink.to">
@@ -29,11 +29,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import avatarUrl from '@/assets/avatar-cao-lan.jpg'
+import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 
 const route = useRoute()
 const isHomeBanner = ref(false)
 let headerFrame = 0
+let isHomeHeaderListening = false
 
 const headerBackLink = computed(() => {
   if (route.path === '/demos/mini-program') {
@@ -70,6 +71,7 @@ const updateHomeHeaderState = () => {
 }
 
 const scheduleHomeHeaderStateUpdate = () => {
+  if (route.path !== '/') return
   if (headerFrame) return
 
   headerFrame = window.requestAnimationFrame(() => {
@@ -78,10 +80,33 @@ const scheduleHomeHeaderStateUpdate = () => {
   })
 }
 
-onMounted(() => {
-  updateHomeHeaderState()
+const addHomeHeaderListeners = () => {
+  if (isHomeHeaderListening) return
   window.addEventListener('scroll', scheduleHomeHeaderStateUpdate, { passive: true })
   window.addEventListener('resize', scheduleHomeHeaderStateUpdate)
+  isHomeHeaderListening = true
+}
+
+const removeHomeHeaderListeners = () => {
+  if (!isHomeHeaderListening) return
+  window.removeEventListener('scroll', scheduleHomeHeaderStateUpdate)
+  window.removeEventListener('resize', scheduleHomeHeaderStateUpdate)
+  isHomeHeaderListening = false
+}
+
+const syncHomeHeaderState = () => {
+  if (route.path === '/') {
+    addHomeHeaderListeners()
+    updateHomeHeaderState()
+    return
+  }
+
+  removeHomeHeaderListeners()
+  isHomeBanner.value = false
+}
+
+onMounted(() => {
+  syncHomeHeaderState()
 })
 
 onBeforeUnmount(() => {
@@ -90,15 +115,14 @@ onBeforeUnmount(() => {
     headerFrame = 0
   }
 
-  window.removeEventListener('scroll', scheduleHomeHeaderStateUpdate)
-  window.removeEventListener('resize', scheduleHomeHeaderStateUpdate)
+  removeHomeHeaderListeners()
 })
 
 watch(
   () => route.path,
   async () => {
     await nextTick()
-    scheduleHomeHeaderStateUpdate()
+    syncHomeHeaderState()
   },
 )
 </script>

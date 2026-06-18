@@ -190,6 +190,6 @@ export const resume = {
       '在校期间成绩优秀，多次参加设计大赛，荣获校级 70 周年校庆Logo设计三等奖、校级安全文化节Logo设计优秀奖、华侨城“梦想之城”海报设计奖等。',
   },
   certificates: ['大学英语四级'],
-  /** 学历证书文件，支持 PDF 或图片（jpg/png/webp/svg），放在 public/images/resume/ 下 */
-  diplomaImage: '/images/resume/diploma-placeholder.pdf',
+  /** 学历证书图片，放在 public/images/resume/ 下 */
+  diplomaImage: '/images/resume/diploma-preview.webp',
 }

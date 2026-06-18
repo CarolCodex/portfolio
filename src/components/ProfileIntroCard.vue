@@ -5,7 +5,7 @@
         <span class="profile-kicker">Hello! 我是曹兰</span>
         <h2>{{ profile.aboutTitle }}</h2>
       </div>
-      <img class="profile-avatar" :src="avatarUrl" alt="曹兰头像" loading="lazy" decoding="async" />
+      <img class="profile-avatar" :src="avatarUrl" alt="曹兰头像" width="320" height="320" loading="lazy" decoding="async" />
     </div>
 
     <div class="profile-info-grid">
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import avatarUrl from '@/assets/avatar-cao-lan.jpg'
+import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 import { profile } from '@/data/profile'
 
 const aboutSummaryList = computed(() =>
@@ -45,7 +45,10 @@ const aboutSummaryList = computed(() =>
     radial-gradient(circle at 16% 92%, rgba(118, 195, 255, 0.16), transparent 34%);
   box-shadow: 0 30px 80px rgba(43, 112, 198, 0.12);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  clip-path: inset(0 round 34px);
   overflow: hidden;
+  isolation: isolate;
 }
 
 .profile-overview::after {
@@ -180,6 +183,7 @@ h2 {
   .profile-overview {
     padding: 24px;
     border-radius: 24px;
+    clip-path: inset(0 round 24px);
   }
 
   .profile-header {

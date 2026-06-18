@@ -5,6 +5,8 @@
         class="cover-art"
         :src="coverArtUrl"
         alt="曹兰 AI 时代 UI 与前端复合岗封面肖像"
+        width="1672"
+        height="941"
         loading="eager"
         decoding="async"
         fetchpriority="high"
@@ -30,7 +32,7 @@
           下载完整简历
         </button>
       </div>
-      <img class="print-avatar" :src="avatarUrl" alt="曹兰头像" loading="lazy" decoding="async" />
+      <img class="print-avatar" :src="avatarUrl" alt="曹兰头像" width="320" height="320" loading="lazy" decoding="async" />
 
       <div class="cover-stats" aria-label="简历概览">
         <div v-for="item in heroStats" :key="item.label">
@@ -138,36 +140,35 @@
           aria-labelledby="certificate-modal-title"
           @click="closeCertificateModal"
         >
-          <div class="certificate-modal" :class="{ 'is-expanded': isCertificateExpanded }" @click.stop>
+          <div class="certificate-modal" @click.stop>
             <div class="certificate-modal__head">
               <h3 id="certificate-modal-title">学历证书</h3>
               <div class="certificate-modal__actions">
-                <button class="certificate-modal-toggle" type="button" @click="isCertificateExpanded = !isCertificateExpanded">
-                  {{ isCertificateExpanded ? '收回' : '放大' }}
-                </button>
                 <button class="certificate-modal-close" type="button" aria-label="关闭" @click="closeCertificateModal">
                   ×
                 </button>
               </div>
             </div>
             <div class="certificate-modal__body">
-              <object
-                v-if="isDiplomaPdf"
-                class="certificate-modal__document"
-                :data="resume.diplomaImage"
-                type="application/pdf"
-                aria-label="学历证书 PDF"
-              >
-                <a :href="resume.diplomaImage" target="_blank" rel="noopener">打开学历证书 PDF</a>
-              </object>
-              <img
-                v-else
-                class="certificate-modal__preview"
-                :src="resume.diplomaImage"
-                alt="学历证书"
-                loading="lazy"
-                decoding="async"
-              />
+              <div class="certificate-modal__stage">
+                <img
+                  class="certificate-modal__preview"
+                  :src="resume.diplomaImage"
+                  alt="学历证书"
+                  loading="lazy"
+                  decoding="async"
+                  :style="{ width: `${certificateZoom}%` }"
+                />
+              </div>
+              <div class="certificate-zoom" aria-label="学历证书缩放">
+                <button type="button" aria-label="缩小学历证书" :disabled="certificateZoom <= minCertificateZoom" @click="zoomCertificate(-10)">
+                  -
+                </button>
+                <span>{{ certificateZoom }}%</span>
+                <button type="button" aria-label="放大学历证书" :disabled="certificateZoom >= maxCertificateZoom" @click="zoomCertificate(10)">
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -178,7 +179,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import avatarUrl from '@/assets/avatar-cao-lan.jpg'
+import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 import { resume } from '@/data/resume'
 
 const coverArtUrl = '/images/resume/hero-cover-1920.png'
@@ -217,9 +218,9 @@ const personalAdvantages = [
 ]
 
 const showCertificateModal = ref(false)
-const isCertificateExpanded = ref(false)
-
-const isDiplomaPdf = computed(() => /\.pdf$/i.test(resume.diplomaImage))
+const minCertificateZoom = 60
+const maxCertificateZoom = 180
+const certificateZoom = ref(100)
 
 const openCertificateModal = () => {
   showCertificateModal.value = true
@@ -227,7 +228,11 @@ const openCertificateModal = () => {
 
 const closeCertificateModal = () => {
   showCertificateModal.value = false
-  isCertificateExpanded.value = false
+  certificateZoom.value = 100
+}
+
+const zoomCertificate = (step: number) => {
+  certificateZoom.value = Math.min(maxCertificateZoom, Math.max(minCertificateZoom, certificateZoom.value + step))
 }
 
 const exportPdf = () => {
@@ -716,20 +721,12 @@ const exportPdf = () => {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(100%, 640px);
-  max-height: min(88vh, 760px);
+  width: min(92vw, 760px);
+  height: min(88vh, 860px);
   padding: 20px 20px 24px;
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 28px 80px rgba(15, 42, 95, 0.24);
-  transition:
-    width 0.24s ease,
-    max-height 0.24s ease;
-}
-
-.certificate-modal.is-expanded {
-  width: min(96vw, 980px);
-  max-height: 94vh;
 }
 
 .certificate-modal__head {
@@ -754,73 +751,96 @@ const exportPdf = () => {
 }
 
 .certificate-modal__body {
+  position: relative;
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   border-radius: 12px;
-  background: #f7f9fc;
+  background: #eef4fb;
   box-shadow: inset 0 0 0 1px rgba(91, 124, 166, 0.12);
 }
 
-.certificate-modal__document,
+.certificate-modal__stage {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px;
+}
+
 .certificate-modal__preview {
   display: block;
-  width: 100%;
+  max-width: none;
+  min-width: 280px;
+  height: auto;
   margin-inline: auto;
   border: 0;
-  background: #f7f9fc;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 42, 95, 0.14);
+  transition: width 0.16s ease;
 }
 
-.certificate-modal__document {
-  height: min(70vh, 620px);
+.certificate-zoom {
+  display: inline-grid;
+  flex: 0 0 auto;
+  grid-template-columns: 44px 72px 44px;
+  align-items: center;
+  overflow: hidden;
+  margin: 12px auto 16px;
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 34px rgba(15, 42, 95, 0.22);
 }
 
-.certificate-modal__preview {
-  height: auto;
-}
-
-.certificate-modal__document a {
-  display: inline-flex;
-  margin: 24px;
-  color: var(--resume-blue);
-  font-weight: 900;
-}
-
-.certificate-modal.is-expanded .certificate-modal__document {
-  height: min(82vh, 780px);
-}
-
-.certificate-modal.is-expanded .certificate-modal__preview {
-  width: min(100%, 860px);
-}
-
-.certificate-modal-toggle,
-.certificate-modal-close {
+.certificate-zoom button {
   display: grid;
   place-items: center;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 0;
-  background: rgba(22, 119, 255, 0.08);
-  color: var(--resume-muted);
-  cursor: pointer;
-}
-
-.certificate-modal-toggle {
-  min-width: 58px;
-  padding: 0 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.certificate-modal-close {
-  width: 32px;
   border-radius: 50%;
+  background: #e9edf3;
+  color: var(--resume-deep);
+  cursor: pointer;
   font-size: 24px;
   line-height: 1;
 }
 
-.certificate-modal-toggle:hover,
+.certificate-zoom button:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+.certificate-zoom button:not(:disabled):hover {
+  background: rgba(22, 119, 255, 0.16);
+}
+
+.certificate-zoom span {
+  color: var(--resume-text);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.certificate-modal-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(22, 119, 255, 0.08);
+  color: var(--resume-muted);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
 .certificate-modal-close:hover {
   background: rgba(22, 119, 255, 0.16);
   color: var(--resume-deep);

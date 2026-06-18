@@ -13,19 +13,19 @@
 
 <style scoped>
 .workflow-hero {
-  max-width: 980px;
+  max-width: 1120px;
   margin: 0 auto 40px;
   text-align: center;
 }
 
 h1 {
-  max-width: 1060px;
+  max-width: 100%;
   margin: 0;
   color: #f5f8ff;
-  font-size: clamp(40px, 3vw, 72px);
+  font-size: clamp(30px, 2.8vw, 42px);
   font-weight: 900;
   line-height: 1.08;
-  text-wrap: balance;
+  white-space: nowrap;
   text-shadow: 0 18px 58px rgba(47, 107, 255, 0.22);
 }
 
@@ -51,7 +51,7 @@ h1 {
   }
 
   h1 {
-    font-size: clamp(34px, 10vw, 48px);
+    font-size: clamp(16px, 4.1vw, 30px);
     line-height: 1.14;
   }
 

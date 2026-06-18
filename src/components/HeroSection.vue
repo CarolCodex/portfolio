@@ -35,6 +35,8 @@
           <img
             src="/images/home/hero-folder.webp"
             alt="Portfolio 作品集主视觉"
+            width="2092"
+            height="1800"
             loading="eager"
             decoding="async"
             fetchpriority="high"
@@ -63,7 +65,7 @@ const entries = [
   { label: '精选案例', value: '电商小程序 / 电子秤终端系统 / 设备健康管理', to: '/cases' },
   { label: '前端实现', value: 'Vue / 小程序 / .NET MAUI', to: '/cases/smart-scale-shopping-system' },
   { label: 'AI 工作流', value: 'ChatGPT / Figma Make / Codex', to: '/workflow' },
-  { label: '在线简历', value: '10 年综合经验 / 9 年 UI/UED', to: '/resume' },
+  { label: '工作经验', value: '9年UI工程师', to: '/resume' },
 ]
 </script>
 

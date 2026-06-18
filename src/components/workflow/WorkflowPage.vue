@@ -16,9 +16,22 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
 import WorkflowHero from './WorkflowHero.vue'
 import WorkflowTimeline from './WorkflowTimeline.vue'
 import type { WorkflowStep } from './workflowTypes'
+
+const workflowRouteClass = 'workflow-route'
+
+onMounted(() => {
+  document.documentElement.classList.add(workflowRouteClass)
+  document.body.classList.add(workflowRouteClass)
+})
+
+onUnmounted(() => {
+  document.documentElement.classList.remove(workflowRouteClass)
+  document.body.classList.remove(workflowRouteClass)
+})
 
 const workflowItems: WorkflowStep[] = [
   {
@@ -65,6 +78,19 @@ const workflowItems: WorkflowStep[] = [
 </script>
 
 <style scoped>
+:global(html.workflow-route),
+:global(body.workflow-route) {
+  background: #05070d;
+}
+
+:global(body.workflow-route::before) {
+  opacity: 0;
+}
+
+:global(body.workflow-route main) {
+  background: #05070d;
+}
+
 .workflow-page {
   position: relative;
   isolation: isolate;
