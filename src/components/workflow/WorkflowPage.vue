@@ -37,12 +37,12 @@ const workflowItems: WorkflowStep[] = [
   {
     title: '任务拆解',
     icon: 'brief',
-    description: '拿到任务后，先用 ChatGPT 梳理业务背景、页面目标、用户路径和关键约束，避免一开始就直接画界面。',
+    description: '拿到任务后，先用 ChatGPT 或 Gemini 梳理业务背景、页面目标、用户路径和关键约束，避免一开始就直接画界面。',
   },
   {
     title: '初稿设计',
     icon: 'draft',
-    description: '基于已梳理的信息，用 Figma Make 快速生成初版页面，先验证大方向，包括布局、模块顺序和主要信息层级。',
+    description: '基于已梳理的信息，用 Figma Make 或 Stitch 快速生成初版页面，先验证大方向，包括布局、模块顺序和主要信息层级。',
   },
   {
     title: '设计精修',
@@ -67,7 +67,7 @@ const workflowItems: WorkflowStep[] = [
   {
     title: '问题修复',
     icon: 'fix',
-    description: '联调过程中发现的问题，继续用 Codex 辅助定位和修复，包括样式错位、状态异常、组件复用问题和接口兼容问题。',
+    description: '联调后集中处理样式错位、交互异常、接口兼容和移动端适配问题，并在发布前完成图片压缩、懒加载、代码分包和资源清理，提升页面加载速度。',
   },
   {
     title: '代码提交',
