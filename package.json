@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build && npm run generate:pages-404",
     "preview": "vite preview",
+    "generate:pages-404": "node scripts/generate-pages-404.mjs",
     "export:figma": "node scripts/export-design-screenshots.mjs"
   },
   "dependencies": {
