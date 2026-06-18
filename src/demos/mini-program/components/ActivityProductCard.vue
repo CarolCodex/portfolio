@@ -1,5 +1,14 @@
 <template>
-  <article class="activity-product-card" :class="type">
+  <article
+    class="activity-product-card"
+    :class="type"
+    role="button"
+    tabindex="0"
+    :aria-label="`查看商品详情：${product.name}`"
+    @click="$emit('open', product)"
+    @keydown.enter.prevent="$emit('open', product)"
+    @keydown.space.prevent="$emit('open', product)"
+  >
     <template v-if="type === 'presale'">
       <div class="presale-bar">
         <span class="presale-assurance">
@@ -30,7 +39,7 @@
               <span class="price-symbol">¥</span>
               <strong class="price-number">{{ product.price }}</strong>
             </div>
-            <button type="button" @click="$emit('add', $event)">{{ product.actionText }}</button>
+            <button type="button" @click.stop="$emit('add', $event)">{{ product.actionText }}</button>
           </div>
         </div>
       </div>
@@ -85,7 +94,7 @@
               <span class="price-number">{{ product.price }}</span>
             </strong>
           </div>
-          <button type="button" :class="{ waiting: product.waiting }" @click="$emit('add', $event)">
+          <button type="button" :class="{ waiting: product.waiting }" @click.stop="$emit('add', $event)">
             <i :class="product.waiting ? 'bell-mini' : 'bolt-mini'" aria-hidden="true"></i>
             {{ product.actionText }}
           </button>
@@ -114,7 +123,7 @@
             <span class="price-symbol">¥</span>
             <span class="price-number">{{ product.price }}</span>
           </strong>
-          <button type="button" aria-label="加入购物车" @click="$emit('add', $event)">
+          <button type="button" aria-label="加入购物车" @click.stop="$emit('add', $event)">
             <i aria-hidden="true"></i>
           </button>
         </div>
@@ -142,7 +151,7 @@
               </strong>
             </div>
           </div>
-          <button class="group-cart-button" type="button" @click="$emit('add', $event)">
+          <button class="group-cart-button" type="button" @click.stop="$emit('add', $event)">
             <img :src="cartIcon" alt="" aria-hidden="true" decoding="async" />
             <span>{{ product.actionText }}</span>
           </button>
@@ -158,9 +167,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { ActivityProduct, ActivityType } from '../mock/activity'
+import type { DetailProduct } from '../mock/detail'
 
 const props = defineProps<{ product: ActivityProduct; type: ActivityType }>()
-defineEmits<{ add: [event: MouseEvent] }>()
+defineEmits<{ add: [event: MouseEvent]; open: [product: DetailProduct] }>()
 
 const cartIcon = '/case-assets/liangxuan-mini-program/demo-activity-assets/icons/cart-white.svg'
 

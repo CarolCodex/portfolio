@@ -8,7 +8,7 @@
           <span class="cart-check" aria-hidden="true"></span>
           <strong>到家商品 <span>（已选{{ cartItems.length }}种）</span></strong>
           <button type="button" @click="$emit('clear')">
-            <span class="trash-icon" aria-hidden="true"></span>
+            <img class="trash-icon" src="/case-assets/liangxuan-mini-program/demo-cart-assets/icons/trash.svg" alt="" aria-hidden="true" />
             清空购物车
           </button>
         </section>
@@ -33,6 +33,33 @@
             :key="item.id"
             class="cart-item-row"
             :class="{ last: index === group.items.length - 1 }"
+            role="button"
+            tabindex="0"
+            :aria-label="`查看商品详情：${item.name}`"
+            @click="$emit('openProduct', {
+              id: item.id,
+              name: item.name,
+              description: item.tag,
+              price: formatPrice(item.price),
+              image: item.image,
+              tag: item.tag,
+            })"
+            @keydown.enter.prevent="$emit('openProduct', {
+              id: item.id,
+              name: item.name,
+              description: item.tag,
+              price: formatPrice(item.price),
+              image: item.image,
+              tag: item.tag,
+            })"
+            @keydown.space.prevent="$emit('openProduct', {
+              id: item.id,
+              name: item.name,
+              description: item.tag,
+              price: formatPrice(item.price),
+              image: item.image,
+              tag: item.tag,
+            })"
           >
             <span class="cart-check item-check" aria-hidden="true"></span>
             <img class="cart-item-image" :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
@@ -48,9 +75,9 @@
                   <del v-if="item.originPrice">¥{{ formatPrice(item.originPrice) }}</del>
                 </div>
                 <div class="quantity-stepper" aria-label="修改商品数量">
-                  <button class="minus" type="button" aria-label="减少数量" @click="$emit('decrement', item.id)">−</button>
+                  <button class="minus" type="button" aria-label="减少数量" @click.stop="$emit('decrement', item.id)">−</button>
                   <span>{{ item.quantity }}</span>
-                  <button class="plus" type="button" aria-label="增加数量" @click="$emit('increment', item.id)">+</button>
+                  <button class="plus" type="button" aria-label="增加数量" @click.stop="$emit('increment', item.id)">+</button>
                 </div>
               </div>
             </div>
@@ -63,6 +90,7 @@
       <RecommendGrid
         :items="recommendItems"
         @add="handleRecommendAdd"
+        @open="$emit('openProduct', $event)"
       />
     </div>
 
@@ -81,7 +109,7 @@
           <p>合计: <span>¥ {{ totalPrice }}</span></p>
           <small>免配送费</small>
         </div>
-        <button type="button">去结算（{{ cartItems.length }}）</button>
+        <button type="button" @click="$emit('checkout')">去结算（{{ cartItems.length }}）</button>
       </section>
     </template>
 
@@ -98,6 +126,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { cartGroupMeta, cartRecommendItems, type CartItem, type CartRecommendItem } from '../mock/cart'
+import type { DetailProduct } from '../mock/detail'
 
 const props = defineProps<{ cartItems: CartItem[] }>()
 const emit = defineEmits<{
@@ -105,7 +134,9 @@ const emit = defineEmits<{
   increment: [id: number]
   decrement: [id: number]
   addRecommend: [item: CartRecommendItem]
+  openProduct: [product: DetailProduct]
   goShopping: []
+  checkout: []
 }>()
 
 const flyDuration = 650
@@ -194,8 +225,13 @@ export const CartAddressBar = defineComponent({
         h('img', { class: 'chevron', src: chevronIcon, alt: '', 'aria-hidden': 'true' }),
       ]),
       h('button', { class: 'mini-capsule', type: 'button', 'aria-label': '小程序菜单' }, [
-        h('span', '•••'),
-        h('i'),
+        h('span', { class: 'mini-more-icon', 'aria-hidden': 'true' }, [
+          h('i'),
+          h('i'),
+          h('i'),
+        ]),
+        h('span', { class: 'mini-capsule-divider', 'aria-hidden': 'true' }),
+        h('span', { class: 'mini-target-icon', 'aria-hidden': 'true' }),
       ]),
     ])
   },
@@ -229,7 +265,7 @@ export const RecommendGrid = defineComponent({
       required: true,
     },
   },
-  emits: ['add'],
+  emits: ['add', 'open'],
   setup(props, { emit }) {
     return () => h('section', { class: 'recommend-section' }, [
       h('h2', [
@@ -237,7 +273,34 @@ export const RecommendGrid = defineComponent({
         '好物推荐',
         h('span', '✻'),
       ]),
-      h('div', { class: 'recommend-grid' }, props.items.map((item) => h('article', { class: 'recommend-card', key: item.id }, [
+      h('div', { class: 'recommend-grid' }, props.items.map((item) => h('article', {
+        class: 'recommend-card',
+        key: item.id,
+        role: 'button',
+        tabindex: 0,
+        'aria-label': `查看商品详情：${item.name}`,
+        onClick: () => emit('open', {
+          id: item.id,
+          name: item.name,
+          description: item.spec,
+          price: item.price,
+          image: item.image,
+          tag: item.cartItem.tag,
+        }),
+        onKeydown: (event: KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+
+          event.preventDefault()
+          emit('open', {
+            id: item.id,
+            name: item.name,
+            description: item.spec,
+            price: item.price,
+            image: item.image,
+            tag: item.cartItem.tag,
+          })
+        },
+      }, [
         h('img', { src: item.image, alt: item.name }),
         h('div', { class: 'recommend-info' }, [
           h('h3', item.name),
@@ -252,7 +315,10 @@ export const RecommendGrid = defineComponent({
             h('button', {
               type: 'button',
               'aria-label': `加入购物车：${item.name}`,
-              onClick: (event: MouseEvent) => emit('add', item, event),
+              onClick: (event: MouseEvent) => {
+                event.stopPropagation()
+                emit('add', item, event)
+              },
             }, '+'),
           ]),
         ]),
@@ -280,12 +346,12 @@ export const RecommendGrid = defineComponent({
 .cart-address-bar {
   position: relative;
   z-index: 3;
-  flex: 0 0 44px;
+  flex: 0 0 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 44px;
-  padding: 7px 16px;
+  height: 56px;
+  padding: 12px 16px 7px;
   background: #fff;
 }
 
@@ -329,46 +395,55 @@ export const RecommendGrid = defineComponent({
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  width: 77px;
   height: 30px;
+  padding: 5px 9px;
   border: 0.591px solid #f3f4f6;
   border-radius: 999px;
   background: #f9fafb;
   color: #111827;
-  padding: 5px 9px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
 }
 
-.mini-capsule span {
-  position: relative;
-  display: inline-flex;
+.mini-more-icon {
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 2.5px;
   width: 20px;
   height: 20px;
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 18px;
-  transform: translateY(-2px);
 }
 
-.mini-capsule span::after {
-  position: absolute;
-  right: -7px;
-  top: 4px;
+.mini-more-icon i {
+  width: 3.2px;
+  height: 3.2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.mini-capsule-divider {
   width: 1px;
   height: 12px;
   background: #e5e7eb;
-  content: '';
-  transform: translateY(2px);
 }
 
-.mini-capsule i {
+.mini-target-icon {
+  position: relative;
   width: 16px;
   height: 16px;
-  border: 3px solid #111827;
+  border: 2px solid currentColor;
   border-radius: 999px;
-  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.mini-target-icon::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  content: '';
+  transform: translate(-50%, -50%);
 }
 
 .cart-scroll {
@@ -392,13 +467,14 @@ export const RecommendGrid = defineComponent({
 .cart-selected-strip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 68px;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 46px;
   margin-bottom: 12px;
+  padding: 12.558px 14.558px;
   border: 0.558px solid rgba(255, 223, 221, 0.5);
   border-radius: 14px;
   background: #fff0ef;
-  padding: 12.558px 14.558px;
   color: #ef3322;
 }
 
@@ -418,7 +494,9 @@ export const RecommendGrid = defineComponent({
 .cart-selected-strip button {
   display: flex;
   align-items: center;
-  gap: 5px;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: rgba(237, 55, 34, 0.8);
@@ -450,23 +528,10 @@ export const RecommendGrid = defineComponent({
 }
 
 .trash-icon {
-  position: relative;
+  display: block;
   width: 14px;
   height: 14px;
-  border: 1.5px solid currentColor;
-  border-top: 0;
-  border-radius: 1px 1px 3px 3px;
-}
-
-.trash-icon::before {
-  position: absolute;
-  left: 1px;
-  right: 1px;
-  top: -4px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  content: '';
+  object-fit: contain;
 }
 
 .cart-group-card {

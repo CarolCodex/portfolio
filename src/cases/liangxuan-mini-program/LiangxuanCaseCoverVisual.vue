@@ -1,23 +1,18 @@
 <template>
   <span class="liangxuan-cover-visual" aria-hidden="true">
-    <span class="cover-grid"></span>
-    <span class="cover-orb cover-orb--cyan"></span>
-    <span class="cover-orb cover-orb--blue"></span>
-    <span class="cover-glass">
-      <svg viewBox="0 0 900 620" preserveAspectRatio="xMidYMid meet">
-        <path d="M214 110 C371 40 602 75 734 206 C811 283 779 430 657 503 C509 592 271 552 164 415 C78 305 100 167 214 110Z" />
-        <path d="M94 360 C229 116 523 38 760 184" />
-        <path d="M161 438 C325 220 595 162 810 292" />
-        <circle cx="637" cy="220" r="10" />
-      </svg>
-    </span>
-
     <span class="cover-phones">
       <span class="cover-phone cover-phone--left">
         <span class="phone-shell">
           <span class="phone-notch"></span>
           <span class="phone-screen">
-            <img src="/case-assets/liangxuan-mini-program/liangxuan-home.webp" alt="" loading="lazy" decoding="async" />
+            <img
+              src="/case-assets/liangxuan-mini-program/liangxuan-home.webp"
+              alt=""
+              width="198"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
           </span>
         </span>
       </span>
@@ -25,10 +20,49 @@
         <span class="phone-shell">
           <span class="phone-notch"></span>
           <span class="phone-screen">
-            <img src="/case-assets/liangxuan-mini-program/liangxuan-activity.webp" alt="" loading="lazy" decoding="async" />
+            <img
+              src="/case-assets/liangxuan-mini-program/liangxuan-activity.webp"
+              alt=""
+              width="270"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
           </span>
         </span>
       </span>
+    </span>
+
+    <span class="cover-caption">
+      <span class="cover-icon-stack">
+        <span class="cover-icon cover-icon--rotated">
+          <img
+            src="/case-assets/liangxuan-mini-program/cover-icon-rotated.png"
+            alt=""
+            width="160"
+            height="160"
+            loading="lazy"
+            decoding="async"
+          />
+        </span>
+        <span class="cover-icon cover-icon--front">
+          <img
+            src="/case-assets/liangxuan-mini-program/cover-icon-front.png"
+            alt=""
+            width="160"
+            height="160"
+            loading="lazy"
+            decoding="async"
+          />
+        </span>
+      </span>
+      <strong class="cover-title">
+        <span class="cover-title-line">
+          <span class="cover-title-stitch">Stitch</span>
+          <span>生成UI界面</span>
+        </span>
+        <span class="cover-title-subtitle">Codex落地代码、接口联调</span>
+      </strong>
     </span>
   </span>
 </template>
@@ -39,136 +73,37 @@
   inset: 0;
   display: block;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 78% 22%, rgba(117, 244, 255, 0.36), transparent 31%),
-    radial-gradient(circle at 88% 78%, rgba(128, 102, 255, 0.2), transparent 29%),
-    radial-gradient(circle at 8% 18%, rgba(255, 255, 255, 0.94), transparent 38%),
-    linear-gradient(120deg, #f9fdff 0%, #eaf8ff 32%, #c9f2ff 58%, #cbd9ff 82%, #edf4ff 100%);
-  background-size: 130% 130%;
-}
-
-.liangxuan-cover-visual::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  content: '';
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.18) 42%, transparent 78%);
-}
-
-.cover-grid {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(rgba(55, 129, 212, 0.065) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(55, 129, 212, 0.065) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.3), black 44%, transparent 98%);
-}
-
-.cover-orb {
-  position: absolute;
-  z-index: 0;
-  border-radius: 999px;
-  filter: blur(18px);
-  mix-blend-mode: screen;
-}
-
-.cover-orb--cyan {
-  top: -18%;
-  right: -10%;
-  width: 62%;
-  height: 74%;
-  background: rgba(39, 220, 255, 0.56);
-}
-
-.cover-orb--blue {
-  right: -18%;
-  bottom: -16%;
-  width: 68%;
-  height: 58%;
-  background: rgba(111, 116, 255, 0.26);
-}
-
-.cover-glass {
-  position: absolute;
-  right: -20%;
-  bottom: -10%;
-  z-index: 2;
-  width: 82%;
-  height: 82%;
-  color: rgba(83, 139, 255, 0.42);
-  transform: rotate(-8deg);
-}
-
-.cover-glass svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.cover-glass path:first-child {
-  fill: rgba(255, 255, 255, 0.2);
-  stroke: rgba(255, 255, 255, 0.55);
-  stroke-width: 1.5;
-}
-
-.cover-glass path:not(:first-child) {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 4;
-}
-
-.cover-glass circle {
-  fill: #fff;
-  filter: drop-shadow(0 0 8px rgba(45, 174, 255, 0.9));
+  background: transparent;
 }
 
 .cover-phones {
   position: absolute;
-  top: 49%;
-  right: 4%;
-  z-index: 3;
-  width: min(72%, 260px);
-  height: 116%;
-  transform: translateY(-50%) scale(0.88);
-  transform-origin: 72% 50%;
-}
-
-.cover-phones::before {
-  position: absolute;
-  right: -10%;
-  bottom: 12%;
-  width: 86%;
-  height: 42%;
-  content: '';
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 56% 42%, rgba(255, 255, 255, 0.62), transparent 20%),
-    radial-gradient(circle at 54% 48%, rgba(76, 225, 255, 0.34), rgba(111, 116, 255, 0.3) 54%, transparent 74%);
-  filter: blur(2px);
-  opacity: 0.86;
-  transform: rotate(-10deg);
+  top: 44%;
+  left: 50%;
+  z-index: 2;
+  width: 244px;
+  height: 224px;
+  transform: translate(-50%, -50%) scale(0.9);
+  transform-origin: center;
 }
 
 .cover-phone {
   position: absolute;
   width: 92px;
-  filter: drop-shadow(0 14px 15px rgba(21, 62, 126, 0.22));
+  filter: drop-shadow(0 14px 14px rgba(12, 34, 76, 0.18));
   transform-style: preserve-3d;
 }
 
 .cover-phone--left {
-  top: 10px;
-  right: 106px;
+  top: 2px;
+  left: 58px;
   z-index: 2;
   transform: rotate(-20deg);
 }
 
 .cover-phone--right {
-  top: 29px;
-  right: 24px;
+  top: 20px;
+  left: 140px;
   z-index: 3;
   width: 102px;
   transform: rotate(10deg);
@@ -218,18 +153,126 @@
   object-position: top center;
 }
 
+.cover-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: block;
+  height: 60%;
+  padding: 0 16px 14px;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, rgba(40, 100, 255, 0) 0%, #2864ff 100%);
+}
+
+.cover-icon-stack {
+  position: absolute;
+  top: 9px;
+  right: 15px;
+  width: 74px;
+  height: 51px;
+}
+
+.cover-icon {
+  position: absolute;
+  display: block;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border: 1px solid #fff;
+  border-radius: 8px;
+}
+
+.cover-icon--rotated {
+  top: 3px;
+  right: 0;
+  z-index: 1;
+  transform: rotate(44.58deg);
+}
+
+.cover-icon--front {
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.cover-icon img {
+  position: absolute;
+  display: block;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+}
+
+.cover-icon--rotated img {
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+}
+
+.cover-icon--front img {
+  top: -12%;
+  left: -12%;
+}
+
+.cover-title,
+.cover-title-line,
+.cover-title-stitch,
+.cover-title-subtitle {
+  font-family:
+    "PingFang SC", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.cover-title {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  display: block;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+.cover-title-line,
+.cover-title-subtitle {
+  display: block;
+  white-space: nowrap;
+}
+
+.cover-title-stitch {
+  display: inline-block;
+  margin-right: 4px;
+  background: linear-gradient(180deg, #ff5500 0%, #ffc6aa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 20px;
+  line-height: 1;
+}
+
 @media (max-width: 1120px) {
   .cover-phones {
-    right: 2%;
-    transform: translateY(-50%) scale(0.82);
+    transform: translate(-50%, -50%) scale(0.86);
   }
 }
 
 @media (max-width: 640px) {
   .cover-phones {
-    right: 3%;
-    width: 70%;
-    transform: translateY(-50%) scale(0.84);
+    transform: translate(-50%, -50%) scale(0.88);
+  }
+
+  .cover-title {
+    font-size: 16px;
+  }
+
+  .cover-title-stitch {
+    font-size: 18px;
   }
 }
 </style>

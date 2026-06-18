@@ -1,5 +1,5 @@
 <template>
-  <button class="quantity-button" type="button" aria-label="加入购物车" @click="$emit('add')">
+  <button class="quantity-button" type="button" aria-label="加入购物车" @click="$emit('add', $event)">
     <img
       :src="cartAddIcon"
       alt=""
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 const cartAddIcon = '/case-assets/liangxuan-mini-program/demo-home-assets/icons/cart-add.svg'
 
-defineEmits<{ add: [] }>()
+defineEmits<{ add: [event: MouseEvent] }>()
 </script>
 
 <style scoped>

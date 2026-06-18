@@ -7,7 +7,7 @@
       :class="{ active: activeTab === tab.key }"
       @click="$emit('change', tab.key)"
     >
-      <span class="tab-icon-wrap">
+      <span class="tab-icon-wrap" :class="{ 'mini-home-cart-target': tab.key === 'cart' }">
         <i class="tab-icon" :style="{ '--tab-icon': `url(${tab.icon})` }" aria-hidden="true"></i>
         <span v-if="tab.key === 'cart' && cartCount" class="cart-badge">{{ cartCount }}</span>
       </span>

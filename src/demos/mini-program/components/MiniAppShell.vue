@@ -4,15 +4,21 @@
       <MiniHome
         v-if="currentMiniPage === 'home'"
         @add-to-cart="incrementCart"
+        @open-product="openProductDetail"
         @select-category="handleCategorySelect"
         @open-activity="openActivity"
       />
-      <MiniCategory v-else-if="currentMiniPage === 'category'" @add-to-cart="incrementCart" />
+      <MiniCategory
+        v-else-if="currentMiniPage === 'category'"
+        @add-to-cart="incrementCart"
+        @open-product="openProductDetail"
+      />
       <MiniActivity
         v-else-if="currentMiniPage === 'activity'"
         :initial-type="activeActivityType"
         :cart-count="cartCount"
         @add-to-cart="incrementCart"
+        @open-product="openProductDetail"
         @back="backToHome"
       />
       <CartPage
@@ -23,6 +29,32 @@
         @clear="clearCart"
         @add-recommend="addRecommendToCart"
         @go-shopping="setTab('home')"
+        @open-product="openProductDetail"
+        @checkout="openCheckout"
+      />
+      <MiniCheckout
+        v-else-if="currentMiniPage === 'checkout'"
+        :cart-items="cartItems"
+        @back="setTab('cart')"
+      />
+      <MiniProductDetail
+        v-else-if="currentMiniPage === 'detail'"
+        :product="selectedProduct"
+        :cart-count="cartCount"
+        @back="backToPreviousPage"
+        @add-to-cart="incrementCart"
+        @go-home="setTab('home')"
+        @go-cart="setTab('cart')"
+      />
+      <MiniMine
+        v-else-if="currentMiniPage === 'mine'"
+        @add-to-cart="incrementCart"
+        @open-product="openProductDetail"
+        @open-saving-card="openSavingCard"
+      />
+      <MiniSavingCardPage
+        v-else-if="currentMiniPage === 'savingCard'"
+        @back="setTab('mine')"
       />
       <section v-else class="placeholder-page">
         <span>{{ currentLabel }}</span>
@@ -32,7 +64,7 @@
     </div>
 
     <MiniTabBar
-      v-if="currentMiniPage !== 'activity'"
+      v-if="currentMiniPage !== 'activity' && currentMiniPage !== 'detail' && currentMiniPage !== 'checkout' && currentMiniPage !== 'savingCard'"
       :active-tab="activeTab"
       :cart-count="cartCount"
       @change="setTab"
@@ -45,15 +77,22 @@ import { computed, ref } from 'vue'
 import CartPage from './CartPage.vue'
 import MiniActivity from './MiniActivity.vue'
 import MiniCategory from './MiniCategory.vue'
+import MiniCheckout from './MiniCheckout.vue'
 import MiniHome from './MiniHome.vue'
+import MiniMine from './MiniMine.vue'
+import MiniProductDetail from './MiniProductDetail.vue'
+import MiniSavingCardPage from './MiniSavingCardPage.vue'
 import MiniTabBar from './MiniTabBar.vue'
 import type { ActivityType } from '../mock/activity'
 import { initialCartItems, type CartItem, type CartRecommendItem } from '../mock/cart'
+import type { DetailProduct } from '../mock/detail'
 import { miniTabs, type MiniTabKey } from '../mock/home'
 
 const activeTab = ref<MiniTabKey>('home')
-const currentMiniPage = ref<MiniTabKey | 'activity'>('home')
+const currentMiniPage = ref<MiniTabKey | 'activity' | 'detail' | 'checkout' | 'savingCard'>('home')
+const previousMiniPage = ref<MiniTabKey | 'activity' | 'checkout' | 'savingCard'>('home')
 const activeActivityType = ref<ActivityType>('hot')
+const selectedProduct = ref<DetailProduct | null>(null)
 const cartItems = ref<CartItem[]>(initialCartItems.map((item) => ({ ...item })))
 
 const currentLabel = computed(() => miniTabs.find((tab) => tab.key === currentMiniPage.value)?.label ?? '首页')
@@ -117,11 +156,40 @@ function openActivity(type: ActivityType) {
   currentMiniPage.value = 'activity'
 }
 
+function setActivityDemo(type: ActivityType = 'hot') {
+  openActivity(type)
+}
+
 function backToHome() {
   setTab('home')
 }
 
-defineExpose({ setTab })
+function openCheckout() {
+  currentMiniPage.value = 'checkout'
+}
+
+function openSavingCard() {
+  currentMiniPage.value = 'savingCard'
+}
+
+function openProductDetail(product: DetailProduct) {
+  if (currentMiniPage.value !== 'detail') {
+    previousMiniPage.value = currentMiniPage.value
+  }
+
+  selectedProduct.value = product
+  currentMiniPage.value = 'detail'
+}
+
+function backToPreviousPage() {
+  currentMiniPage.value = previousMiniPage.value
+
+  if (previousMiniPage.value !== 'activity' && previousMiniPage.value !== 'checkout' && previousMiniPage.value !== 'savingCard') {
+    activeTab.value = previousMiniPage.value
+  }
+}
+
+defineExpose({ setTab, setActivityDemo })
 </script>
 
 <style scoped>

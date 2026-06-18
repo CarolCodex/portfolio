@@ -48,14 +48,24 @@
             :aria-hidden="activeHeroIndex !== index"
             aria-label="活动精选"
           >
-            <article v-for="product in slide.cards" :key="product.id" class="feature-card">
+            <article
+              v-for="product in slide.cards"
+              :key="product.id"
+              class="feature-card"
+              role="button"
+              tabindex="0"
+              :aria-label="`查看商品详情：${product.name}`"
+              @click="$emit('openProduct', product)"
+              @keydown.enter.prevent="$emit('openProduct', product)"
+              @keydown.space.prevent="$emit('openProduct', product)"
+            >
               <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
               <div>
                 <strong>{{ product.name }}</strong>
                 <span>{{ product.tag }}</span>
                 <em>¥{{ product.price }}</em>
               </div>
-              <button type="button" aria-label="加入购物车" @click="handleAddToCart">
+              <button type="button" aria-label="加入购物车" @click.stop="handleAddToCart">
                 <i aria-hidden="true"></i>
               </button>
             </article>
@@ -72,6 +82,7 @@
           :product="product"
           :type="activeActivityTab"
           @add="handleAddToCart"
+          @open="$emit('openProduct', $event)"
         />
       </section>
     </div>
@@ -97,12 +108,14 @@ import {
   activityProducts,
   type ActivityType,
 } from '../mock/activity'
+import type { DetailProduct } from '../mock/detail'
 
 const props = defineProps<{ initialType: ActivityType; cartCount: number }>()
 
 const emit = defineEmits<{
   back: []
   addToCart: []
+  openProduct: [product: DetailProduct]
 }>()
 
 const activeHeroIndex = ref(0)

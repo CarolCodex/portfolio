@@ -1,5 +1,13 @@
 <template>
-  <article class="product-card">
+  <article
+    class="product-card"
+    role="button"
+    tabindex="0"
+    :aria-label="`查看商品详情：${product.name}`"
+    @click="$emit('open', product)"
+    @keydown.enter.prevent="$emit('open', product)"
+    @keydown.space.prevent="$emit('open', product)"
+  >
     <div class="product-image" :style="{ height: `${product.imageHeight ?? 150}px` }">
       <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
     </div>
@@ -8,7 +16,7 @@
       <p>{{ product.description }}</p>
       <div class="price-row">
         <span>¥<b>{{ product.price }}</b></span>
-        <QuantityButton @add="$emit('add')" />
+        <QuantityButton @click.stop @add="emit('add', $event)" />
       </div>
     </div>
   </article>
@@ -19,7 +27,7 @@ import QuantityButton from './QuantityButton.vue'
 import type { MiniProduct } from '../mock/home'
 
 defineProps<{ product: MiniProduct }>()
-defineEmits<{ add: [] }>()
+const emit = defineEmits<{ add: [event: MouseEvent]; open: [product: MiniProduct] }>()
 </script>
 
 <style scoped>
@@ -28,6 +36,7 @@ defineEmits<{ add: [] }>()
   overflow: hidden;
   border-radius: 16px;
   background: #fff;
+  cursor: pointer;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.1);

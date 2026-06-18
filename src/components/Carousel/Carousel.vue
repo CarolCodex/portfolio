@@ -113,7 +113,7 @@ const slideWidth = computed(() => 100 / safeSlidesPerView.value)
 const maxIndex = computed(() => Math.max(0, pageCount.value - 1))
 
 const trackStyle = computed(() => ({
-  transform: `translateX(-${activeIndex.value * slideWidth.value}%)`,
+  transform: `translate3d(-${activeIndex.value * slideWidth.value}%, 0, 0)`,
 }))
 
 const slideStyle = computed(() => ({
@@ -264,7 +264,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: stretch;
   transition: transform $lx-duration-base $lx-ease-standard;
-  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .lx-carousel__slide {
@@ -320,6 +320,19 @@ onBeforeUnmount(() => {
       width: 16px;
       background: $lx-color-primary;
     }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lx-carousel:hover .lx-carousel__track,
+  .lx-carousel:focus-within .lx-carousel__track {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-carousel__track {
+    transition: none;
   }
 }
 </style>

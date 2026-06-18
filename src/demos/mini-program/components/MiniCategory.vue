@@ -66,7 +66,38 @@
         </nav>
 
         <div class="category-product-list">
-          <article v-for="product in categoryProducts" :key="product.id" class="category-product-card">
+          <article
+            v-for="product in categoryProducts"
+            :key="product.id"
+            class="category-product-card"
+            role="button"
+            tabindex="0"
+            :aria-label="`查看商品详情：${product.name}`"
+            @click="$emit('openProduct', {
+              id: product.id,
+              name: product.name,
+              description: product.spec,
+              price: product.price,
+              image: product.image,
+              tag: '鲜蔬',
+            })"
+            @keydown.enter.prevent="$emit('openProduct', {
+              id: product.id,
+              name: product.name,
+              description: product.spec,
+              price: product.price,
+              image: product.image,
+              tag: '鲜蔬',
+            })"
+            @keydown.space.prevent="$emit('openProduct', {
+              id: product.id,
+              name: product.name,
+              description: product.spec,
+              price: product.price,
+              image: product.image,
+              tag: '鲜蔬',
+            })"
+          >
             <img class="product-image" :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
             <div class="product-info">
               <h3>{{ product.name }}</h3>
@@ -80,7 +111,7 @@
                   <strong>¥{{ product.price }}</strong>
                   <small>/份</small>
                 </div>
-                <button class="category-plus" type="button" aria-label="加入购物车" @click="$emit('addToCart')">
+                <button class="category-plus" type="button" aria-label="加入购物车" @click.stop="handleAddToCart">
                   <img :src="categoryIcons.plus" alt="" aria-hidden="true" decoding="async" />
                 </button>
               </div>
@@ -116,20 +147,33 @@
       </section>
       <button class="category-scrim" type="button" aria-label="关闭全部分类" @click="showCategoryDropdown = false"></button>
     </div>
+
+    <span
+      v-for="dot in flyingDots"
+      :key="dot.id"
+      class="cart-fly-dot"
+      :style="dot.style"
+      aria-hidden="true"
+    ></span>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { categoryIcons, categoryNavItems, categoryProducts, sideCategoryItems } from '../mock/category'
+import type { DetailProduct } from '../mock/detail'
 
-defineEmits<{ addToCart: [] }>()
+const emit = defineEmits<{ addToCart: []; openProduct: [product: DetailProduct] }>()
 
 const topCategories = categoryNavItems.slice(0, 8)
 const selectedTopCategory = ref('fruit')
 const selectedSideCategory = ref('fruit')
 const showCategoryDropdown = ref(false)
 const selectedSort = ref<'city' | 'sales' | 'price' | 'filter'>('city')
+const flyingDots = ref<Array<{ id: number; style: Record<string, string> }>>([])
+let dotId = 0
+const flyTimers: number[] = []
+const flyDuration = 650
 
 function selectTop(id: string) {
   selectedTopCategory.value = id
@@ -145,6 +189,69 @@ function selectFromDropdown(id: string) {
   selectTop(id)
   showCategoryDropdown.value = false
 }
+
+function centerOf(rect: DOMRect) {
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  }
+}
+
+function addTimer(callback: () => void, delay: number) {
+  const timer = window.setTimeout(() => {
+    const index = flyTimers.indexOf(timer)
+
+    if (index >= 0) {
+      flyTimers.splice(index, 1)
+    }
+
+    callback()
+  }, delay)
+
+  flyTimers.push(timer)
+}
+
+function handleAddToCart(event: MouseEvent) {
+  const sourceElement = event.currentTarget instanceof HTMLElement ? event.currentTarget : null
+  const cartTarget = document.querySelector('.mini-home-cart-target')
+
+  if (!sourceElement || !(cartTarget instanceof HTMLElement)) {
+    emit('addToCart')
+    return
+  }
+
+  const source = centerOf(sourceElement.getBoundingClientRect())
+  const target = centerOf(cartTarget.getBoundingClientRect())
+  const id = dotId++
+  const midX = (target.x - source.x) * 0.42
+  const midY = Math.min(-92, (target.y - source.y) * 0.34 - 78)
+
+  flyingDots.value.push({
+    id,
+    style: {
+      left: `${source.x}px`,
+      top: `${source.y}px`,
+      '--fly-x': `${target.x - source.x}px`,
+      '--fly-y': `${target.y - source.y}px`,
+      '--fly-mid-x': `${midX}px`,
+      '--fly-mid-y': `${midY}px`,
+      '--fly-duration': `${flyDuration}ms`,
+    },
+  })
+
+  addTimer(() => {
+    emit('addToCart')
+  }, flyDuration)
+
+  addTimer(() => {
+    flyingDots.value = flyingDots.value.filter((dot) => dot.id !== id)
+  }, flyDuration + 120)
+}
+
+onBeforeUnmount(() => {
+  flyTimers.forEach((timer) => window.clearTimeout(timer))
+  flyTimers.length = 0
+})
 </script>
 
 <style scoped>
@@ -156,6 +263,36 @@ function selectFromDropdown(id: string) {
   overflow: hidden;
   background: #fff;
   color: #101828;
+}
+
+.cart-fly-dot {
+  position: fixed;
+  z-index: 9999;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 999px;
+  background: #f4341b;
+  box-shadow: 0 4px 10px rgba(244, 52, 27, 0.35);
+  pointer-events: none;
+  animation: cart-fly var(--fly-duration) cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+}
+
+@keyframes cart-fly {
+  0% {
+    opacity: 0.95;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  55% {
+    opacity: 0.9;
+    transform: translate3d(var(--fly-mid-x), var(--fly-mid-y), 0) scale(0.82);
+  }
+
+  100% {
+    opacity: 0.2;
+    transform: translate3d(var(--fly-x), var(--fly-y), 0) scale(0.45);
+  }
 }
 
 .category-search {

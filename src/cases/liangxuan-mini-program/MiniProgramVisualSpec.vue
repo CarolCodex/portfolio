@@ -1,15 +1,15 @@
 <template>
   <section class="design-system">
     <header class="system-intro">
-      <span>Design System / UI Kit</span>
-      <h3>从真实生鲜小程序页面沉淀出的组件体系</h3>
+      <span>视觉规范 / 组件库</span>
+      <h3>从真实生鲜小程序沉淀出的组件体系</h3>
       <p>
-        视觉规范不再按文件逐个陈列，而是围绕零售转化链路组织：商品浏览、活动促销、加购反馈、购物车结算和页面复用。
+        视觉规范不再是孤立的样式陈列，而是围绕零售转化链路组织：商品浏览、活动促销、加购反馈、购物车结算和页面复用。
       </p>
     </header>
 
     <section class="system-section tokens-section" aria-labelledby="tokens-title">
-      <SystemTitle id="tokens-title" index="01" title="Design Tokens" />
+      <SystemTitle id="tokens-title" index="01" title="设计令牌" />
       <div class="token-strip">
         <article v-for="token in colorTokens" :key="token.name" class="token-chip">
           <i :style="{ background: token.value }" />
@@ -33,7 +33,7 @@
       <SystemTitle id="retail-title" index="02" title="核心零售组件" />
       <div class="retail-board">
         <div class="retail-group buttons">
-          <h4>Button / Add Button</h4>
+          <h4>按钮 / 加购按钮</h4>
           <div class="control-row">
             <Button text="加入购物车" type="primary" />
             <Button text="查看更多" type="secondary" />
@@ -44,18 +44,18 @@
         </div>
 
         <div class="retail-group prices">
-          <h4>Price</h4>
+          <h4>价格组件</h4>
           <div class="price-row">
             <PriceTag price="29.90" color="#e92b1d" />
             <PriceTag price="19.9-29.9" old-price="39.9" discount-label="拼团价" color="#e92b1d" />
             <PriceTag price="88" old-price="128" discount-label="秒杀" color="#e92b1d" />
             <PriceTag price="248" old-price="299" discount-label="预售价" color="#e92b1d" />
           </div>
-          <p>价格控制在 18-22px，旧价统一灰色删除线，促销标签使用浅红底。</p>
+          <p>价格控制在 18–22px，旧价统一使用删除线，促销标签使用浅红底，保证价格层级清晰。</p>
         </div>
 
         <div class="retail-group tags">
-          <h4>Tag</h4>
+          <h4>标签组件</h4>
           <div class="tag-row">
             <span v-for="tag in retailTags" :key="tag.label" :class="['retail-tag', tag.type]">
               {{ tag.label }}
@@ -64,7 +64,7 @@
         </div>
 
         <div class="retail-group stepper">
-          <h4>Stepper</h4>
+          <h4>数量步进器</h4>
           <div class="stepper-sample" aria-label="数量加减示例">
             <button type="button">-</button>
             <span>1</span>
@@ -73,7 +73,7 @@
         </div>
 
         <div class="retail-group tabs">
-          <h4>Tab</h4>
+          <h4>标签页组件</h4>
           <div class="tab-row">
             <Tab v-model:active-value="activeActivityTab" :tabs="activityTabs" variant="underline" />
             <Tab v-model:active-value="activeFilterTab" :tabs="filterTabs" variant="pill" />
@@ -150,12 +150,12 @@
       <SystemTitle id="cart-title" index="04" title="购物车组件系统" />
       <div class="cart-flow">
         <article class="cart-node group-node">
-          <span>CartGroup</span>
+          <span>购物车分组</span>
           <strong>小时达</strong>
           <small>中海·天府里 · 免配送费</small>
         </article>
         <article class="cart-node item-node">
-          <span>CartItem</span>
+          <span>购物车商品</span>
           <CartItem
             v-model:quantity="cartItem.quantity"
             v-model:is-selected="cartItem.isSelected"
@@ -168,7 +168,7 @@
           <del>原价 ¥12.90</del>
         </article>
         <article class="cart-node settlement-node">
-          <span>SettlementBar</span>
+          <span>结算栏</span>
           <div class="settlement-bar">
             <div>
               <small>合计</small>
@@ -178,7 +178,7 @@
           </div>
         </article>
         <article class="cart-node empty-node">
-          <span>EmptyState</span>
+          <span>空状态</span>
           <div class="empty-state">
             <i></i>
             <strong>购物车空空如也</strong>
@@ -201,7 +201,7 @@
       </div>
       <div class="interaction-strip">
         <div class="mini-carousel">
-          <span>Carousel</span>
+          <span>首页轮播</span>
           <img
             src="/case-assets/liangxuan-mini-program/demo-home-assets/banners/banner-peach.png"
             alt="首页轮播示例"
@@ -210,7 +210,7 @@
           />
         </div>
         <div class="mini-modal">
-          <span>Modal</span>
+          <span>确认弹窗</span>
           <strong>确认清空购物车</strong>
           <p>清空后商品将无法恢复，是否继续？</p>
           <button type="button" @click="showModal = true">打开弹窗</button>
@@ -263,19 +263,19 @@ interface ProductVariant {
 }
 
 const colorTokens = [
-  { name: 'Primary Red', value: '#ff3b30', usage: '主按钮 / 选中态 / 加购入口' },
-  { name: 'Price Red', value: '#e92b1d', usage: '价格 / 折扣 / 促销强提醒' },
-  { name: 'Orange Gradient', value: '#ff7a1a', usage: '团购和运营活动强化' },
-  { name: 'Soft Background', value: '#f6f6f6', usage: '页面浅灰底 / 筛选背景' },
-  { name: 'Surface White', value: '#ffffff', usage: '卡片 / 弹窗 / 商品容器' },
-  { name: 'Text Dark', value: '#10233f', usage: '标题 / 关键说明文字' },
+  { name: '品牌主红', value: '#ff3b30', usage: '主按钮 / 选中态 / 加购入口' },
+  { name: '价格红', value: '#e92b1d', usage: '价格 / 折扣 / 促销提醒' },
+  { name: '活动橙渐变', value: '#ff7a1a', usage: '团购 / 预售 / 活动强化' },
+  { name: '柔和背景', value: '#f6f6f6', usage: '页面浅底 / 筛选背景' },
+  { name: '卡片白', value: '#ffffff', usage: '卡片 / 弹窗 / 商品容器' },
+  { name: '标题深色', value: '#10233f', usage: '标题 / 关键信息文字' },
 ]
 
 const foundationTokens = [
-  { name: 'Radius Card', value: '16-22px', usage: '商品卡、购物车、弹窗容器' },
-  { name: 'Radius Pill', value: '999px', usage: '筛选、标签、胶囊按钮' },
-  { name: 'Shadow Soft', value: '0 2px 12px rgba(0,0,0,.04)', usage: '白色卡片轻阴影' },
-  { name: 'Space', value: '8 / 12 / 16 / 24', usage: '标签、卡片内距、模块间距' },
+  { name: '卡片圆角', value: '16-22px', usage: '商品卡 / 购物车 / 弹窗容器' },
+  { name: '胶囊圆角', value: '999px', usage: '筛选 / 标签 / 胶囊按钮' },
+  { name: '柔和阴影', value: '0 2px 12px rgba(0,0,0,.04)', usage: '白色卡片轻阴影' },
+  { name: '间距体系', value: '8 / 12 / 16 / 24', usage: '标签 / 卡片内距 / 模块间距' },
 ]
 
 const retailTags = [
@@ -283,7 +283,7 @@ const retailTags = [
   { label: '预售', type: 'purple' },
   { label: '次日达', type: 'blue' },
   { label: '冷藏', type: 'soft' },
-  { label: 'TOP 1', type: 'orange' },
+  { label: '榜单第 1', type: 'orange' },
   { label: '热卖', type: 'red' },
 ]
 
@@ -336,7 +336,7 @@ const productVariants: ProductVariant[] = [
     price: 88,
     oldPrice: 128,
     priceLabel: '秒杀',
-    action: '马上抢',
+    action: '立即购买',
     buttonClass: 'pill-action',
     progress: '72%',
   },
@@ -344,7 +344,7 @@ const productVariants: ProductVariant[] = [
     name: '热卖商品卡片',
     type: 'hot',
     image: '/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-shrimp.png',
-    badge: 'TOP 1',
+    badge: '榜单第 1',
     description: '排名角标 + 销量标签 + 圆形加购，适合热榜商品。',
     price: 39.9,
     oldPrice: 49.9,
@@ -355,10 +355,10 @@ const productVariants: ProductVariant[] = [
 ]
 
 const pageReuse = [
-  { name: '活动页', description: '运营活动承载页，强调限时与转化。', components: ['ActivityTab', 'FilterTab', 'ProductCard', 'CartBar'] },
-  { name: '购物车页', description: '从商品确认到结算的闭环。', components: ['AddressBar', 'CartGroup', 'CartItem', 'SettlementBar'] },
-  { name: '分类页', description: '高频找货和筛选路径。', components: ['SearchBar', 'CategoryNav', 'ProductList', 'TabBar'] },
-  { name: '首页', description: '入口、活动曝光和推荐商品流。', components: ['Carousel', 'ProductCard', 'BottomTab'] },
+  { name: '活动页', description: '运营活动承载页，强调限时与转化。', components: ['活动标签页', '筛选标签', '商品卡片', '购物车浮栏'] },
+  { name: '购物车页', description: '从商品确认到结算的闭环。', components: ['地址栏', '购物车分组', '购物车商品', '结算栏'] },
+  { name: '分类页', description: '高频找货和筛选路径。', components: ['搜索栏', '分类导航', '商品列表', '底部导航'] },
+  { name: '首页', description: '入口、活动曝光和推荐商品流。', components: ['轮播图', '商品卡片', '底部导航'] },
 ]
 
 const designRules = [
@@ -407,21 +407,61 @@ const SystemTitle = defineComponent({
   @include lx-font-base;
 
   display: grid;
-  gap: 18px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 22px;
   min-width: 0;
-  padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 24px 64px rgba(43, 112, 198, 0.1);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #10233f;
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
 }
 
 .system-intro {
+  position: relative;
+  grid-column: 1 / -1;
   display: grid;
-  gap: 8px;
-  max-width: 860px;
+  align-content: center;
+  gap: 14px;
+  min-height: 310px;
+  padding: 48px 56px 48px 286px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 59, 48, 0.32);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 92% 18%, rgba(255, 59, 48, 0.12), transparent 28%),
+    linear-gradient(135deg, rgba(255, 59, 48, 0.06), rgba(255, 255, 255, 0.96) 48%),
+    #fff;
+  box-shadow: 0 24px 70px rgba(255, 59, 48, 0.1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 224px;
+    border-right: 1px solid rgba(255, 59, 48, 0.14);
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(180deg, rgba(255, 241, 239, 0.96), rgba(255, 250, 249, 0.96));
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 46px;
+    left: 34px;
+    width: 150px;
+    height: 188px;
+    border-radius: 24px;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0 42px, transparent 42px 100%) 24px 118px / 96px 10px no-repeat,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.7) 0 62px, transparent 62px 100%) 24px 144px / 106px 8px no-repeat,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.7) 0 74px, transparent 74px 100%) 24px 164px / 106px 8px no-repeat,
+      linear-gradient(135deg, #ff3b30, #e92b1d);
+    box-shadow: 0 18px 44px rgba(255, 59, 48, 0.22);
+  }
 
   span {
     color: #1268d6;
@@ -438,29 +478,56 @@ const SystemTitle = defineComponent({
 
   h3 {
     color: #0f2a5f;
-    font-size: 28px;
+    max-width: 780px;
+    font-size: clamp(36px, 4vw, 54px);
+    font-weight: 900;
+    line-height: 1.1;
     letter-spacing: 0;
   }
 
   p {
+    max-width: 760px;
     color: #5d728f;
     font-size: 15px;
-    line-height: 1.8;
+    line-height: 1.9;
   }
 }
 
 .system-section {
+  grid-column: 1 / -1;
   display: grid;
-  gap: 16px;
+  gap: 20px;
   min-width: 0;
-  padding-top: 18px;
-  border-top: 1px solid rgba(203, 218, 238, 0.68);
+  padding: 24px;
+  border: 1px solid rgba(218, 226, 238, 0.9);
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 20px 54px rgba(15, 42, 95, 0.065);
+}
+
+.tokens-section {
+  grid-column: span 7;
+}
+
+.retail-section {
+  grid-column: span 5;
+}
+
+.cart-system {
+  grid-column: span 7;
+}
+
+.reuse-section {
+  grid-column: span 5;
 }
 
 :deep(.system-title) {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(218, 226, 238, 0.74);
 
   span {
     display: grid;
@@ -477,7 +544,9 @@ const SystemTitle = defineComponent({
   h4 {
     margin: 0;
     color: #0f2a5f;
-    font-size: 22px;
+    font-size: 18px;
+    font-weight: 850;
+    line-height: 1.35;
     letter-spacing: 0;
   }
 }
@@ -493,20 +562,30 @@ const SystemTitle = defineComponent({
   align-items: center;
 }
 
+.token-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.foundation-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .token-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: min(100%, 206px);
-  padding: 10px 12px;
-  border-radius: 18px;
-  background: rgba(246, 248, 252, 0.78);
+  display: grid;
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(226, 233, 244, 0.92);
+  border-radius: 20px;
+  background: #fbfdff;
 
   i {
-    flex: 0 0 34px;
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
+    width: 100%;
+    height: 54px;
+    border-radius: 16px;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
   }
 
@@ -518,7 +597,9 @@ const SystemTitle = defineComponent({
 
   strong {
     color: #0f2a5f;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.35;
   }
 
   span,
@@ -536,15 +617,17 @@ const SystemTitle = defineComponent({
 .foundation-strip article {
   display: grid;
   gap: 3px;
-  flex: 1 1 190px;
   min-width: 0;
-  padding: 10px 12px;
-  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(226, 233, 244, 0.92);
+  border-radius: 18px;
   background: #fbfdff;
 
   strong {
     color: #0f2a5f;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.35;
   }
 
   span {
@@ -561,14 +644,18 @@ const SystemTitle = defineComponent({
 
 .retail-board {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 16px 24px;
+  grid-template-columns: 1fr;
+  gap: 18px;
 }
 
 .retail-group {
   display: grid;
   gap: 10px;
   min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(226, 233, 244, 0.92);
+  border-radius: 20px;
+  background: #fbfdff;
 
   h4,
   p {
@@ -577,7 +664,9 @@ const SystemTitle = defineComponent({
 
   h4 {
     color: #0f2a5f;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 850;
+    line-height: 1.45;
   }
 
   p {
@@ -588,7 +677,7 @@ const SystemTitle = defineComponent({
 }
 
 .retail-group.tabs {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .round-add,
@@ -671,8 +760,8 @@ const SystemTitle = defineComponent({
 
 .tab-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .product-system-grid {
@@ -733,6 +822,8 @@ const SystemTitle = defineComponent({
   h4 {
     color: #0f2a5f;
     font-size: 15px;
+    font-weight: 850;
+    line-height: 1.45;
   }
 
   strong {
@@ -855,6 +946,8 @@ const SystemTitle = defineComponent({
   h4 {
     color: #0f2a5f;
     font-size: 14px;
+    font-weight: 850;
+    line-height: 1.45;
   }
 
   p {
@@ -914,7 +1007,7 @@ const SystemTitle = defineComponent({
 
 .cart-flow {
   display: grid;
-  grid-template-columns: 0.72fr 1.35fr 0.92fr 0.92fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
 }
@@ -1143,6 +1236,23 @@ const SystemTitle = defineComponent({
 }
 
 @media (max-width: 1180px) {
+  .design-system {
+    grid-template-columns: 1fr;
+  }
+
+  .system-intro,
+  .system-section,
+  .tokens-section,
+  .retail-section,
+  .cart-system,
+  .reuse-section {
+    grid-column: 1 / -1;
+  }
+
+  .token-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .retail-board,
   .product-system-grid,
   .cart-flow,
@@ -1153,10 +1263,31 @@ const SystemTitle = defineComponent({
 
 @media (max-width: 860px) {
   .design-system {
-    padding: 22px;
-    border-radius: 26px;
+    gap: 18px;
   }
 
+  .system-intro {
+    min-height: auto;
+    padding: 28px;
+    border-radius: 28px;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+
+    h3 {
+      font-size: 30px;
+    }
+  }
+
+  .system-section {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .token-strip,
+  .foundation-strip,
   .retail-board,
   .tab-row,
   .product-system-grid,
