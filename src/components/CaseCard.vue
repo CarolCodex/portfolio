@@ -1,14 +1,9 @@
 <template>
-  <RouterLink
-    class="case-card"
-    :class="{ 'is-preparing': preparing }"
-    :to="item.link ?? `/cases/${item.id}`"
-  >
+  <RouterLink class="case-card" :to="item.link ?? `/cases/${item.id}`">
     <span class="case-index">{{ displayIndex }}</span>
     <span class="case-cover" :class="{ 'case-cover--liangxuan': isLiangxuanCase }" :style="coverStyle">
       <LiangxuanCaseCoverVisual v-if="isLiangxuanCase" />
       <span v-else class="case-category">{{ item.category }}</span>
-      <span v-if="preparing && !isLiangxuanCase" class="case-status-text">项目筹备中</span>
     </span>
     <span class="case-card-body">
       <strong>{{ item.title }}</strong>
@@ -29,7 +24,6 @@ import type { CaseItem } from '@/data/cases'
 const props = defineProps<{
   item: CaseItem
   index?: number
-  preparing?: boolean
 }>()
 
 const displayIndex = computed(() => String((props.index ?? 0) + 1).padStart(2, '0'))
@@ -47,10 +41,6 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   padding-top: 34px;
   border-radius: var(--showcase-radius);
   color: inherit;
-}
-
-.case-card.is-preparing {
-  opacity: 0.66;
 }
 
 .case-index {
@@ -124,26 +114,6 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   font-size: 11px;
   font-weight: 800;
   line-height: 1.45;
-}
-
-.case-status-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(9, 43, 102, 0.82);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 18px 36px rgba(9, 43, 102, 0.18);
 }
 
 .case-card-body {

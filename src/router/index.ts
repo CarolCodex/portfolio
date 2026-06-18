@@ -9,6 +9,11 @@ const getRouteTitle = (to: { path: string; params: Record<string, unknown>; meta
     return `项目案例｜${miniProgramDemoTitle}`
   }
 
+  if (to.path.startsWith('/cases/') && to.path.endsWith('/design-spec') && typeof to.params.id === 'string') {
+    const item = cases.find((caseItem) => caseItem.id === to.params.id)
+    return item ? `设计规范｜${item.title}` : '设计规范不存在'
+  }
+
   if (to.path.startsWith('/cases/') && typeof to.params.id === 'string') {
     const item = cases.find((caseItem) => caseItem.id === to.params.id)
     return item ? `项目案例｜${item.title}` : '案例不存在'
@@ -29,6 +34,13 @@ const router = createRouter({
     { path: '/cases', name: 'cases', component: () => import('@/views/Cases.vue'), meta: { title: '项目案例' } },
     { path: '/cases/liangxuan-mini-program', redirect: '/demos/mini-program' },
     { path: '/cases/mini-program', redirect: '/demos/mini-program' },
+    {
+      path: '/cases/:id/design-spec',
+      name: 'case-design-spec',
+      component: () => import('@/views/CaseDesignSpecPage.vue'),
+      props: true,
+      meta: { title: '设计规范' },
+    },
     {
       path: '/cases/:id',
       name: 'case-detail',

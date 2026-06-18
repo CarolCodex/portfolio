@@ -35,7 +35,6 @@
           :key="item.id"
           :item="item"
           :index="index"
-          :preparing="index > 0"
         />
       </div>
     </section>
@@ -195,30 +194,6 @@ const capabilities = [
   position: relative;
   isolation: isolate;
   margin-top: 86px;
-}
-
-.core-capabilities-section::before {
-  content: '';
-  position: absolute;
-  top: -42px;
-  bottom: -46px;
-  left: 50%;
-  z-index: -1;
-  width: 100vw;
-  transform: translateX(-50%);
-  background:
-    radial-gradient(circle at 82% 16%, rgba(190, 204, 255, 0.22), transparent 34rem),
-    radial-gradient(circle at 18% 38%, rgba(126, 202, 255, 0.2), transparent 32rem),
-    radial-gradient(circle at 52% 58%, rgba(255, 255, 255, 0.74), transparent 42rem),
-    linear-gradient(
-      180deg,
-      rgba(249, 253, 255, 0) 0%,
-      rgba(229, 244, 255, 0.62) 20%,
-      rgba(247, 252, 255, 0.82) 52%,
-      rgba(232, 245, 255, 0.56) 80%,
-      rgba(249, 253, 255, 0) 100%
-    );
-  pointer-events: none;
 }
 
 .capability-grid {

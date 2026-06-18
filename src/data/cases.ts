@@ -19,7 +19,31 @@ export type CaseItem = {
   aiWorkflow: string[]
   frontendWork: string[]
   redesignPlan: string[]
+  designSpec?: CaseDesignSpec
   review: string
+}
+
+export type CaseDesignSpec = {
+  summary: string
+  colorTokens: {
+    name: string
+    value: string
+    usage: string
+  }[]
+  stateTags: {
+    label: string
+    color: string
+    background?: string
+    description: string
+  }[]
+  componentRules: {
+    title: string
+    description: string
+  }[]
+  layoutRules: {
+    title: string
+    detail: string
+  }[]
 }
 
 export type HistoricalProject = {
@@ -80,14 +104,15 @@ export const cases: CaseItem[] = [
     id: 'device-health-management-platform',
     title: '设备健康管理平台',
     subtitle: 'PC 与 APP 协同的设备状态、告警、运维和资产管理系统',
-    category: 'PC + APP / B 端系统 / 设备管理',
+    category: 'PC + APP / B端系统',
     role: 'B 端产品设计 / 信息架构 / 多端设计规范',
     year: '2025',
     platform: 'PC Web / Mobile App',
-    tags: ['B 端系统', '设备管理', '信息架构', '多端一致性'],
+    tags: ['B端系统', '设备管理', '多端体验一致性'],
     priority: 3,
     cover: blueCover('#edf7ff', '#d8ebff', '#edf3ff'),
-    summary: '展示复杂业务系统的信息架构、设备状态可视化、设计规范建设，以及 PC 与移动端多端一致性能力。',
+    summary:
+      '基于旧版系统重新梳理与升级的设计实践。在保留原有业务逻辑的基础上，我结合了 ChatGPT Image、Stitch 和 Gemini 等工具，对整个系统的页面结构进行了重新整理，并统一升级了视觉风格。',
     background:
       '设备运维涉及资产台账、实时状态、健康评分、告警处理和巡检任务，角色多、链路长，需要用清晰架构降低管理成本。',
     challenges: ['设备数据维度多，状态、告警和任务容易混杂', 'PC 管理端与 APP 现场端的角色和任务不同', '设计规范需要支撑后续模块持续扩展'],
@@ -96,6 +121,37 @@ export const cases: CaseItem[] = [
     aiWorkflow: ['AI 辅助梳理设备管理领域对象和状态词典', '生成不同角色的任务路径草案', '辅助输出设计规范文档初稿'],
     frontendWork: ['配合 Vue 页面组件拆分', '定义状态标签、筛选表格和详情面板样式规则', '验证 PC 与移动端响应式信息降级'],
     redesignPlan: ['补充 PC 与 APP 对照页', '强化设备详情页的信息层级展示', '增加告警闭环流程图'],
+    designSpec: {
+      summary:
+        '依据附件 Figma 导出的设备健康管理移动端页面整理规范，重点沉淀 375px APP 页面中的主色、文字层级、状态色、表单按钮、图表和多业务页面复用规则。',
+      colorTokens: [
+        { name: 'Brand Primary', value: '#2864FF', usage: '登录按钮、选中态、首页主视觉、在线曲线和关键入口强调' },
+        { name: 'Page Background', value: '#F1F2F4', usage: 'APP 页面底色、图表网格线、无效状态和模块分隔背景' },
+        { name: 'Text Primary', value: 'rgba(0,0,0,0.85)', usage: '页面标题、表单正文、列表主信息和操作文字' },
+        { name: 'Divider / Input Line', value: 'rgba(0,0,0,0.06)', usage: '输入框描边、列表分割线、卡片内弱边界' },
+      ],
+      stateTags: [
+        { label: '正常', color: '#00C486', background: 'rgba(0,196,134,0.14)', description: '设备状态正常、在线统计和点检完成类数据使用绿色表达。' },
+        { label: '一般', color: '#2864FF', background: 'rgba(40,100,255,0.15)', description: '一般状态与在线趋势共用品牌蓝，作为中性可处理状态。' },
+        { label: '异常', color: '#FFCC00', background: 'rgba(255,204,0,0.2)', description: '异常状态使用黄色，提示关注但不打断主要流程。' },
+        { label: '轻微', color: '#FF9500', background: 'rgba(255,149,0,0.15)', description: '轻微告警使用橙色，用于点检状态分布和告警层级区分。' },
+        { label: '预警 / 危险', color: '#FF453A', background: 'rgba(255,69,58,0.15)', description: '高风险告警、危险状态和红点提醒统一使用红色。' },
+        { label: '断线 / 无效', color: '#C3C3C3', background: '#F1F2F4', description: '断线、无效和空值状态弱化显示，避免抢占正常处理任务。' },
+      ],
+      componentRules: [
+        { title: '字体与字号', description: '统一使用 PingFang SC：登录标题 24px Semibold，导航标题 18px Medium，模块标题 16px Medium，正文和按钮 14px，图表图例 12px，底部 Tab 9px。' },
+        { title: '输入框 / 表单', description: '表单高度 46px、圆角 8px、白底，描边使用 rgba(0,0,0,0.06)；占位文字使用 rgba(0,0,0,0.25)，已填内容使用 rgba(0,0,0,0.85)。' },
+        { title: '按钮体系', description: '主按钮高度 46px、圆角 8px、背景 #2864FF、文字 14px Medium；次要按钮使用 rgba(0,0,0,0.06) 背景承载取消、清空等低优先级操作。' },
+        { title: '卡片与列表', description: '移动端基准宽度 375px，内容左右留 16px，白色卡片宽 343/344px、圆角 8px；详情列表行高 46px，左侧 16px 字段名，右侧 14px 灰色值右对齐。' },
+        { title: '图表与看板', description: '首页图表卡片使用白底 8px 圆角，标题 16px Medium；柱状、折线、环图共用状态色板，网格线和空态使用 #F1F2F4。' },
+      ],
+      layoutRules: [
+        { title: '登录 / 设置 IP', detail: '登录页包含企业选择、用户名、密码、记住密码和企业配置入口；设置 IP 页使用 44px 顶部栏、白色表单卡片和底部完成按钮。' },
+        { title: '首页 Dashboard', detail: '首页以蓝色渐变头图承载“关键设备 一键诊断”，下方依次呈现点检状态分布、在线状态统计、七日报警趋势。' },
+        { title: '工作台 / 消息', detail: '工作台、待办、我的组成底部 Tab；消息中心保留重要标记、系统来源、摘要和时间，支持状态与时间范围筛选。' },
+        { title: '点检 / 缺陷 / 检修', detail: '巡检、缺陷工单、检修工单均采用列表卡片进入详情，再通过固定底部操作区完成提交、下一步、出库等关键动作。' },
+      ],
+    },
     review: '该案例适合展示复杂业务理解、系统化设计和多端体验一致性的能力。',
   },
   {
