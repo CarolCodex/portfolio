@@ -1,5 +1,5 @@
 <template>
-  <div class="device-mobile-demo" :class="{ 'is-login': !isAuthenticated }" :data-page="isAuthenticated ? activeTab : 'login'">
+  <div class="device-mobile-demo" :class="{ 'is-login': !isAuthenticated }" :data-page="currentMobilePage">
     <section v-if="!isAuthenticated" class="login-screen" aria-label="设备健康管理登录">
       <img
         class="login-bg"
@@ -62,23 +62,70 @@
 
     <template v-else>
       <header class="mobile-header">
-        <button class="icon-button menu-button" type="button" aria-label="打开设备菜单" @click="menuOpen = !menuOpen">
-          <span />
-          <span />
-          <span />
+        <button
+          class="icon-button menu-button"
+          :class="{ 'back-button': isAboutPage || isNotificationsPage }"
+          type="button"
+          :aria-label="isAboutPage || isNotificationsPage ? '返回上一页' : '打开设备菜单'"
+          @click="handleHeaderLeadingAction"
+        >
+          <img v-if="isAboutPage" src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
+          <img
+            v-else-if="isNotificationsPage"
+            class="notifications-back-icon"
+            src="/case-assets/device-health-management-platform/notifications/figma/back.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            v-else-if="activeTab === 'tasks'"
+            class="tasks-menu-icon"
+            src="/case-assets/device-health-management-platform/tasks/figma/menu.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <template v-else>
+            <span />
+            <span />
+            <span />
+          </template>
         </button>
         <strong>{{ currentPageTitle }}</strong>
-        <button class="icon-button notify-button" type="button" :aria-label="headerActionLabel" @click="searchOpen = !searchOpen">
+        <button
+          v-if="!isAboutPage"
+          class="icon-button notify-button"
+          type="button"
+          :aria-label="headerActionLabel"
+          @click="handleHeaderTrailingAction"
+        >
           <img :src="headerActionIcon" alt="" />
         </button>
+        <span v-else class="header-placeholder" aria-hidden="true" />
+
+        <section v-if="activeTab === 'tasks'" class="tasks-header-banner" aria-label="待办概览">
+          <img
+            class="tasks-banner-art"
+            src="/case-assets/device-health-management-platform/tasks/figma/banner-card.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <div class="tasks-banner-copy">
+            <span>专注处理，高效执行</span>
+            <strong>您有 <b>14</b> 项待办</strong>
+            <small>
+              <img src="/case-assets/device-health-management-platform/tasks/figma/banner-chip.svg" alt="" aria-hidden="true" />
+              合理安排时间，保障稳定运行
+            </small>
+          </div>
+        </section>
       </header>
 
-    <div v-if="searchOpen" class="search-panel">
+    <div v-if="searchOpen && !isAboutPage" class="search-panel">
       <input v-model="searchQuery" type="search" placeholder="搜索设备、工单或告警" />
       <button type="button" @click="clearSearch">清空</button>
     </div>
 
-    <main class="mobile-main">
+    <main :key="currentMobilePage" class="mobile-main">
       <section v-if="activeTab === 'home'" class="page-stack">
         <article class="welcome-card">
           <div>
@@ -213,8 +260,8 @@
         </section>
       </section>
 
-      <section v-else-if="activeTab === 'tasks'" class="page-stack">
-        <div class="task-filter" aria-label="工单筛选">
+      <section v-else-if="activeTab === 'tasks'" class="tasks-page" aria-label="待办事项">
+        <div class="tasks-tabs" aria-label="待办状态">
           <button
             v-for="filter in taskFilters"
             :key="filter.key"
@@ -226,67 +273,215 @@
           </button>
         </div>
 
-        <article v-for="task in visibleTasks" :key="task.id" class="task-card" :class="{ done: task.done }">
-          <div>
-            <span :class="['priority-pill', task.priority]">{{ task.priorityLabel }}</span>
-            <strong>{{ task.title }}</strong>
-            <p>{{ task.desc }}</p>
-          </div>
-          <button type="button" @click="toggleTask(task.id)">
-            {{ task.done ? '复核' : '处理' }}
+        <div class="tasks-search-filter" aria-label="搜索筛选任务">
+          <label class="tasks-search-field">
+            <img src="/case-assets/device-health-management-platform/tasks/figma/search.svg" alt="" aria-hidden="true" />
+            <input v-model="taskSearchQuery" type="search" placeholder="搜索任务、设备或位置" />
+          </label>
+          <button class="tasks-filter-button" type="button">
+            <img src="/case-assets/device-health-management-platform/tasks/figma/filter.svg" alt="" aria-hidden="true" />
+            筛选
           </button>
+        </div>
+
+        <div class="tasks-list">
+          <article
+            v-for="task in visibleTasks"
+            :key="task.id"
+            class="figma-task-card"
+            :class="`priority-${task.priority}`"
+          >
+            <div class="figma-task-card-main">
+              <div class="figma-task-card-top">
+                <span class="figma-task-device">
+                  <img v-if="task.assetIcon" :src="task.assetIcon" alt="" aria-hidden="true" />
+                  {{ task.asset }}
+                </span>
+                <span class="figma-priority-pill">
+                  <img :src="task.priorityIcon" alt="" aria-hidden="true" />
+                  {{ task.priorityLabel }}
+                </span>
+              </div>
+              <strong>{{ task.title }}</strong>
+              <div class="figma-task-meta">
+                <span>
+                  <img :src="task.timeIcon" alt="" aria-hidden="true" />
+                  {{ task.deadline }}
+                </span>
+                <span>
+                  <img :src="task.locationIcon" alt="" aria-hidden="true" />
+                  {{ task.location }}
+                </span>
+              </div>
+            </div>
+            <div class="figma-task-card-footer">
+              <div class="figma-assignee">
+                <img v-if="task.assigneeAvatar" :src="task.assigneeAvatar" alt="" aria-hidden="true" />
+                <span v-else :style="{ backgroundColor: task.avatarColor }">{{ task.assigneeInitials }}</span>
+                <strong>{{ task.assignee }}</strong>
+              </div>
+              <div class="figma-task-actions">
+                <span class="figma-task-state">
+                  <i aria-hidden="true" />
+                  {{ task.statusLabel }}
+                </span>
+                <button type="button">
+                  {{ task.actionLabel }}
+                  <img :src="task.arrowIcon" alt="" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section v-else-if="isWorkbenchVisiblePage" class="workbench-page">
+        <article class="workbench-hero">
+          <img
+            class="workbench-hero-bg"
+            src="/case-assets/device-health-management-platform/workbench/banner.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <div>
+            <span>欢迎回来，运维工程师</span>
+            <strong>运维工作台</strong>
+            <small>
+              <img src="/case-assets/device-health-management-platform/workbench/banner-chip.svg" alt="" aria-hidden="true" />
+              高效管理设备全生命周期，保障运行稳定
+            </small>
+          </div>
         </article>
 
-        <article v-if="visibleTasks.length === 0" class="empty-card">
-          <strong>没有匹配工单</strong>
-          <span>调整搜索词或筛选条件后再查看。</span>
+        <section v-for="section in workbenchSections" :key="section.title" class="workbench-section">
+          <header>
+            <span>
+              <img
+                :src="section.icon"
+                :style="{ width: `${section.iconWidth}px`, height: `${section.iconHeight}px` }"
+                alt=""
+                aria-hidden="true"
+              />
+              {{ section.title }}
+            </span>
+            <small>{{ section.caption }}</small>
+          </header>
+
+          <div class="workbench-entry-grid">
+            <button
+              v-for="entry in section.entries"
+              :key="entry.label"
+              type="button"
+              :class="{ active: entry.key !== undefined && activeWorkbenchEntryKey === entry.key }"
+              @click="handleWorkbenchEntryClick(entry.key)"
+            >
+              <span class="workbench-entry-icon">
+                <img
+                  :src="entry.icon"
+                  :style="{ width: `${entry.iconWidth}px`, height: `${entry.iconHeight}px` }"
+                  alt=""
+                  aria-hidden="true"
+                />
+              </span>
+              <strong>{{ entry.label }}</strong>
+              <small>{{ entry.desc }}</small>
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <section v-else-if="isPlaceholderPage" class="preview-placeholder-page" aria-label="页面占位">
+        <article>
+          <span>{{ activePlaceholderContent.label }}</span>
+          <h2>{{ activePlaceholderContent.title }}</h2>
+          <p>{{ activePlaceholderContent.description }}</p>
+          <small>页面结构已预留，后续按设计稿继续补齐。</small>
         </article>
       </section>
 
-      <section v-else-if="activeTab === 'workbench'" class="page-stack">
-        <section class="action-grid">
-          <button
-            v-for="action in workbenchActions"
-            :key="action.key"
-            type="button"
-            :class="{ active: selectedAction === action.key }"
-            @click="selectedAction = action.key"
-          >
-            <i :class="action.key" aria-hidden="true" />
-            <span>{{ action.label }}</span>
-          </button>
-        </section>
-
-        <article class="workbench-panel">
-          <span>{{ selectedActionContent.label }}</span>
-          <strong>{{ selectedActionContent.title }}</strong>
-          <p>{{ selectedActionContent.desc }}</p>
-        </article>
-
-        <section class="site-list">
-          <article v-for="site in sites" :key="site.name">
-            <div>
-              <strong>{{ site.name }}</strong>
-              <span>{{ site.desc }}</span>
+      <section v-else-if="isNotificationsPage" class="notifications-page" aria-label="消息中心">
+        <div class="notifications-list">
+          <article v-for="message in notificationMessages" :key="message.id" class="notification-card">
+            <span class="notification-icon">
+              <img :src="message.icon" alt="" aria-hidden="true" />
+            </span>
+            <div class="notification-copy">
+              <div class="notification-row">
+                <div class="notification-title-line">
+                  <strong>{{ message.title }}</strong>
+                  <i v-if="message.unread" class="notification-dot" aria-hidden="true" />
+                  <span v-if="message.important" class="notification-important">
+                    <img src="/case-assets/device-health-management-platform/notifications/figma/important.svg" alt="" aria-hidden="true" />
+                    重要
+                  </span>
+                </div>
+                <time>{{ message.date }}</time>
+              </div>
+              <p>{{ message.description }}</p>
             </div>
-            <em :class="site.tone">{{ site.state }}</em>
           </article>
-        </section>
+        </div>
+
+        <div class="notifications-bottom-action">
+          <button type="button" @click="returnFromNotifications">完成</button>
+        </div>
+      </section>
+
+      <section v-else-if="isAboutPage" class="about-system-page" aria-label="关于系统">
+        <div class="about-system-body">
+          <section class="about-logo-section">
+            <div class="about-app-icon">
+              <span>
+                <img src="/case-assets/device-health-management-platform/about-app-symbol.svg" alt="" aria-hidden="true" />
+              </span>
+            </div>
+          </section>
+
+          <h2>设备健康管理</h2>
+          <p>Version 1.0.0</p>
+
+          <section class="about-menu-card" aria-label="系统菜单">
+            <button type="button" class="about-menu-row">
+              <strong>检查新版本</strong>
+              <span>
+                已是最新版本
+                <img src="/case-assets/device-health-management-platform/about-chevron-wide.svg" alt="" aria-hidden="true" />
+              </span>
+            </button>
+            <button type="button" class="about-menu-row">
+              <strong>用户服务协议</strong>
+              <img src="/case-assets/device-health-management-platform/about-chevron.svg" alt="" aria-hidden="true" />
+            </button>
+            <button type="button" class="about-menu-row">
+              <strong>隐私保护政策</strong>
+              <img src="/case-assets/device-health-management-platform/about-chevron.svg" alt="" aria-hidden="true" />
+            </button>
+          </section>
+        </div>
+
+        <footer class="about-footer">Copyright © 2026-2026 ****. All Rights Reserved.</footer>
       </section>
 
       <section v-else class="profile-page">
         <article class="profile-hero-card">
-          <span class="profile-card-glow" aria-hidden="true" />
+          <img
+            class="profile-card-decoration"
+            src="/case-assets/device-health-management-platform/profile-card-decoration.svg"
+            alt=""
+            aria-hidden="true"
+          />
           <div class="profile-user-row">
-            <img
-              class="profile-avatar"
-              src="/case-assets/device-health-management-platform/profile-avatar-160.jpg"
-              alt=""
-              width="160"
-              height="160"
-              loading="lazy"
-              decoding="async"
-            />
+            <span class="profile-avatar-wrap">
+              <img
+                class="profile-avatar"
+                src="/case-assets/device-health-management-platform/profile-avatar-160.jpg"
+                alt=""
+                width="160"
+                height="160"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
             <div class="profile-user-copy">
               <div class="profile-name-row">
                 <strong>曹兰</strong>
@@ -317,7 +512,17 @@
         </article>
 
         <section class="profile-settings-card" aria-label="个人中心设置">
-          <div v-for="row in profileSettings" :key="row.key" class="profile-setting-row">
+          <div
+            v-for="row in profileSettings"
+            :key="row.key"
+            class="profile-setting-row"
+            :data-setting-key="row.key"
+            :class="{ 'is-clickable': row.key !== 'compatible' }"
+            :role="row.key !== 'compatible' ? 'button' : undefined"
+            :tabindex="row.key !== 'compatible' ? 0 : undefined"
+            @click="handleProfileSetting(row.key)"
+            @keydown.enter.prevent="handleProfileSetting(row.key)"
+          >
             <span class="profile-setting-icon">
               <i v-if="row.hasDot" aria-hidden="true" />
               <img :src="row.icon" alt="" aria-hidden="true" />
@@ -348,15 +553,15 @@
       </section>
     </main>
 
-    <nav class="mobile-tabbar" aria-label="设备健康 APP 导航">
+    <nav v-if="!isAboutPage && !isNotificationsPage" class="mobile-tabbar" aria-label="设备健康 APP 导航">
       <button
         v-for="tab in tabs"
         :key="tab.key"
         type="button"
-        :class="{ active: activeTab === tab.key }"
+        :class="{ active: isMobileTabActive(tab.key) }"
         @click="setActiveTab(tab.key)"
       >
-        <img :src="activeTab === tab.key ? tab.activeIcon : tab.icon" alt="" aria-hidden="true" />
+        <img :src="isMobileTabActive(tab.key) ? tab.activeIcon : tab.icon" alt="" aria-hidden="true" />
         <span>{{ tab.label }}</span>
       </button>
     </nav>
@@ -376,16 +581,73 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 type TabKey = 'home' | 'tasks' | 'workbench' | 'profile'
+type PlaceholderPageKey = 'inspection' | 'defect' | 'repair'
+type AuxiliaryPageKey = 'notifications'
+type MobileContentKey = TabKey | PlaceholderPageKey | AuxiliaryPageKey
+type PreviewPageKey = MobileContentKey | 'login'
 type HealthModeKey = 'stable' | 'observe' | 'risk'
-type TaskFilterKey = 'all' | 'urgent' | 'pending' | 'done'
+type TaskFilterKey = 'pending' | 'inProgress' | 'done'
+type TaskPriorityKey = 'urgent' | 'normal' | 'low'
 type StatusKey = 'running' | 'warning' | 'offline'
-type ActionKey = 'scan' | 'inspect' | 'report' | 'asset'
+type ProfileSubpageKey = 'main' | 'about'
+type WorkbenchEntryKey = PlaceholderPageKey | 'equipment'
+
+type NotificationMessage = {
+  id: string
+  title: string
+  date: string
+  description: string
+  icon: string
+  unread?: boolean
+  important?: boolean
+}
+
+type TaskItem = {
+  id: string
+  asset: string
+  assetIcon?: string
+  priority: TaskPriorityKey
+  priorityLabel: string
+  priorityIcon: string
+  title: string
+  deadline: string
+  timeIcon: string
+  location: string
+  locationIcon: string
+  assignee: string
+  assigneeInitials?: string
+  assigneeAvatar?: string
+  avatarColor: string
+  status: TaskFilterKey
+  statusLabel: string
+  actionLabel: string
+  arrowIcon: string
+}
+
+type WorkbenchEntry = {
+  key?: WorkbenchEntryKey
+  label: string
+  desc: string
+  icon: string
+  iconWidth: number
+  iconHeight: number
+}
+
+type WorkbenchSection = {
+  title: string
+  caption: string
+  icon: string
+  iconWidth: number
+  iconHeight: number
+  entries: WorkbenchEntry[]
+}
 
 const tabKeys: TabKey[] = ['home', 'tasks', 'workbench', 'profile']
 const initialTab = getInitialTab()
+const props = defineProps<{ previewPage?: PreviewPageKey }>()
 
 const statIcons: Record<string, string> = {
   total: '/case-assets/device-health-management-platform/stat-total.svg',
@@ -405,13 +667,13 @@ const tabs: Array<{ key: TabKey; label: string; icon: string; activeIcon: string
     key: 'tasks',
     label: '待办',
     icon: '/case-assets/device-health-management-platform/tab-task.svg',
-    activeIcon: '/case-assets/device-health-management-platform/tab-task.svg',
+    activeIcon: '/case-assets/device-health-management-platform/tasks/figma/tab-task-active.svg',
   },
   {
     key: 'workbench',
     label: '工作台',
     icon: '/case-assets/device-health-management-platform/tab-workbench.svg',
-    activeIcon: '/case-assets/device-health-management-platform/tab-workbench.svg',
+    activeIcon: '/case-assets/device-health-management-platform/tab-workbench-active.svg',
   },
   {
     key: 'profile',
@@ -421,7 +683,9 @@ const tabs: Array<{ key: TabKey; label: string; icon: string; activeIcon: string
   },
 ]
 
-const activeTab = ref<TabKey>(initialTab)
+const activeTab = ref<MobileContentKey>(initialTab)
+const previousNotificationPage = ref<MobileContentKey>(initialTab)
+const profileSubpage = ref<ProfileSubpageKey>('main')
 const isAuthenticated = ref(initialTab !== 'home')
 const menuOpen = ref(false)
 const searchOpen = ref(false)
@@ -435,8 +699,8 @@ const activeHealthMode = ref<HealthModeKey>('stable')
 const selectedTrendDay = ref('周四')
 const selectedStatus = ref<StatusKey>('running')
 const selectedAlertId = ref('a1')
-const activeTaskFilter = ref<TaskFilterKey>('all')
-const selectedAction = ref<ActionKey>('scan')
+const activeTaskFilter = ref<TaskFilterKey>('pending')
+const taskSearchQuery = ref('')
 const compatibilityMode = ref(true)
 
 const healthModes = [
@@ -544,74 +808,254 @@ const alerts = [
   },
 ]
 
+const notificationMessages: NotificationMessage[] = [
+  {
+    id: 'transfer-1009',
+    title: '调拨单系统消息',
+    date: '2022-10-09',
+    description: '您有一条调拨单待审批，请及时前往处理！',
+    icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
+    unread: true,
+  },
+  {
+    id: 'transfer-1002',
+    title: '调拨单系统消息',
+    date: '2022-10-02',
+    description: '您有一条调拨单待审批，请及时前往处理！',
+    icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
+    unread: true,
+  },
+  {
+    id: 'inbound-0902',
+    title: '入库单系统消息',
+    date: '2022-09-02',
+    description: '您有一条入库单待审批，请及时前往处理！',
+    icon: '/case-assets/device-health-management-platform/notifications/figma/inbound.svg',
+    unread: true,
+    important: true,
+  },
+  {
+    id: 'inbound-0901',
+    title: '入库单系统消息',
+    date: '2022-09-01',
+    description: '您有一条入库单待审批，请及时前往处理！',
+    icon: '/case-assets/device-health-management-platform/notifications/figma/inbound.svg',
+    important: true,
+  },
+  {
+    id: 'transfer-0802',
+    title: '调拨单系统消息',
+    date: '2022-08-02',
+    description: '您有一条调拨单待审批，请及时前往处理！',
+    icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
+    unread: true,
+  },
+]
+
 const taskFilters: Array<{ key: TaskFilterKey; label: string }> = [
-  { key: 'all', label: '全部' },
-  { key: 'urgent', label: '紧急' },
   { key: 'pending', label: '待处理' },
+  { key: 'inProgress', label: '进行中' },
   { key: 'done', label: '已处理' },
 ]
 
-const tasks = reactive([
+const tasks = reactive<TaskItem[]>([
   {
-    id: 't1',
-    title: '复核压缩机 C-102',
-    desc: '高温预警已持续 18 分钟',
+    id: 'bearing-replacement',
+    asset: '空调机组 A-12',
+    assetIcon: '/case-assets/device-health-management-platform/tasks/figma/card1-device.svg',
     priority: 'urgent',
     priorityLabel: '紧急',
-    done: false,
+    priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card1-priority.svg',
+    title: '轴承更换',
+    deadline: '今日截止, 14:00',
+    timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card1-time.svg',
+    location: 'Alpha 设备 - 7 区',
+    locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card1-location.svg',
+    assignee: '张师傅',
+    assigneeInitials: 'JS',
+    avatarColor: '#0057ff',
+    status: 'pending',
+    statusLabel: '待处理',
+    actionLabel: '去处理',
+    arrowIcon: '/case-assets/device-health-management-platform/tasks/figma/card-arrow.svg',
   },
   {
-    id: 't2',
-    title: '确认华南线巡检记录',
-    desc: '3 台设备缺少振动采样',
+    id: 'belt-lubrication',
+    asset: '输送带 B',
     priority: 'normal',
-    priorityLabel: '待处理',
-    done: false,
+    priorityLabel: '普通',
+    priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card2-priority.svg',
+    title: '常规润滑',
+    deadline: '明天, 09:00',
+    timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card2-time.svg',
+    location: 'Beta 生产线 - 2 区',
+    locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card2-location.svg',
+    assignee: '李师傅',
+    assigneeAvatar: '/case-assets/device-health-management-platform/tasks/figma/card2-avatar.svg',
+    avatarColor: '#2563eb',
+    status: 'pending',
+    statusLabel: '待处理',
+    actionLabel: '去处理',
+    arrowIcon: '/case-assets/device-health-management-platform/tasks/figma/card2-arrow.svg',
   },
   {
-    id: 't3',
-    title: '同步冷却泵维护结果',
-    desc: '维修人员已提交现场照片',
-    priority: 'done',
-    priorityLabel: '已处理',
-    done: true,
+    id: 'power-quarterly-check',
+    asset: '主配电盘',
+    assetIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-device.svg',
+    priority: 'low',
+    priorityLabel: '低级',
+    priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-priority.svg',
+    title: '季度检查',
+    deadline: '2023年10月15日',
+    timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-time.svg',
+    location: '配电室 - 主楼',
+    locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-location.svg',
+    assignee: '王师傅',
+    assigneeInitials: 'MR',
+    avatarColor: '#2563eb',
+    status: 'pending',
+    statusLabel: '待处理',
+    actionLabel: '去处理',
+    arrowIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-arrow.svg',
+  },
+  {
+    id: 'cooling-tower-level',
+    asset: '冷却塔 T-05',
+    assetIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-device.svg',
+    priority: 'normal',
+    priorityLabel: '普通',
+    priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-priority.svg',
+    title: '水位过低',
+    deadline: '2023年10月16日',
+    timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-time.svg',
+    location: '屋顶平台 - 冷却塔区',
+    locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-location.svg',
+    assignee: '徐师傅',
+    assigneeInitials: 'XC',
+    avatarColor: '#3b82f6',
+    status: 'pending',
+    statusLabel: '待处理',
+    actionLabel: '去处理',
+    arrowIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-arrow.svg',
   },
 ])
 
-const workbenchActions = [
-  { key: 'scan', label: '扫码建档' },
-  { key: 'inspect', label: '巡检填报' },
-  { key: 'report', label: '告警上报' },
-  { key: 'asset', label: '资产模板' },
-] as const
-
-const actionContent: Record<ActionKey, { label: string; title: string; desc: string }> = {
-  scan: {
-    label: '快速入口',
-    title: '扫描设备铭牌并补全档案',
-    desc: '支持现场快速绑定设备、产线、负责人和状态标签。',
+const workbenchSections: WorkbenchSection[] = [
+  {
+    title: '设备管理',
+    caption: '设备全生命周期管理',
+    icon: '/case-assets/device-health-management-platform/workbench/figma/section-equipment.svg',
+    iconWidth: 16,
+    iconHeight: 14,
+    entries: [
+      {
+        key: 'equipment',
+        label: '设备管理',
+        desc: '设备台账总览',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/equipment-ledger.svg',
+        iconWidth: 20,
+        iconHeight: 17.5,
+      },
+      {
+        key: 'inspection',
+        label: '点检管理',
+        desc: '点检计划与执行',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/inspection-manage.svg',
+        iconWidth: 15,
+        iconHeight: 20,
+      },
+      {
+        key: 'defect',
+        label: '缺陷管理',
+        desc: '缺陷上报与跟踪',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/defect-manage.svg',
+        iconWidth: 20,
+        iconHeight: 17.5,
+      },
+      {
+        key: 'repair',
+        label: '检修管理',
+        desc: '检修计划与记录',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/repair-manage.svg',
+        iconWidth: 20,
+        iconHeight: 20,
+      },
+    ],
   },
-  inspect: {
-    label: '巡检任务',
-    title: '按线路批量提交巡检结果',
-    desc: '将温度、振动、照片和备注统一收束到任务链路。',
+  {
+    title: '点检作业',
+    caption: '现场点检与工单处理',
+    icon: '/case-assets/device-health-management-platform/workbench/figma/section-inspection.svg',
+    iconWidth: 10,
+    iconHeight: 16,
+    entries: [
+      {
+        label: '日常巡检',
+        desc: '巡检任务执行',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/daily-inspection.svg',
+        iconWidth: 14.75,
+        iconHeight: 20,
+      },
+      {
+        label: '临时测量',
+        desc: '现场数据采集',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/temporary-measure.svg',
+        iconWidth: 20,
+        iconHeight: 20,
+      },
+      {
+        label: '工单处理',
+        desc: '工单受理与处理',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/work-order.svg',
+        iconWidth: 15,
+        iconHeight: 20,
+      },
+      {
+        label: '任务分派',
+        desc: '任务分配与跟踪',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/task-dispatch.svg',
+        iconWidth: 20,
+        iconHeight: 20,
+      },
+    ],
   },
-  report: {
-    label: '异常闭环',
-    title: '告警升级与处理进度同步',
-    desc: '严重告警会同步到管理端，并生成待处理工单。',
+  {
+    title: '数据记录',
+    caption: '数据分析与记录追溯',
+    icon: '/case-assets/device-health-management-platform/workbench/figma/section-data.svg',
+    iconWidth: 16,
+    iconHeight: 14,
+    entries: [
+      {
+        label: '历史数据',
+        desc: '历史数据查询',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/history-data.svg',
+        iconWidth: 20,
+        iconHeight: 20,
+      },
+      {
+        label: '本地数据',
+        desc: '本地文件管理',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/local-data.svg',
+        iconWidth: 22.5,
+        iconHeight: 17.5,
+      },
+      {
+        label: '趋势报表',
+        desc: '数据趋势分析',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/trend-report.svg',
+        iconWidth: 20,
+        iconHeight: 17.5,
+      },
+      {
+        label: '告警记录',
+        desc: '告警事件记录',
+        icon: '/case-assets/device-health-management-platform/workbench/figma/alarm-record.svg',
+        iconWidth: 17.5,
+        iconHeight: 20,
+      },
+    ],
   },
-  asset: {
-    label: '规范沉淀',
-    title: '复用资产详情信息模板',
-    desc: '让 PC 与 APP 使用一致的字段、状态和组件语言。',
-  },
-}
-
-const sites = [
-  { name: '华东一厂', desc: '328 台设备 · 4 条产线', state: '稳定', tone: 'good' },
-  { name: '华南冷链仓', desc: '186 台设备 · 2 条产线', state: '关注', tone: 'watch' },
-  { name: '西南物流线', desc: '242 台设备 · 5 条产线', state: '预警', tone: 'risk' },
 ]
 
 const profileSettings = [
@@ -645,6 +1089,24 @@ const profileSettings = [
   },
 ]
 
+const placeholderPages: Record<PlaceholderPageKey, { label: string; title: string; description: string }> = {
+  inspection: {
+    label: '点检管理',
+    title: '点检计划与现场执行',
+    description: '用于承载点检计划、扫码巡检、异常记录和现场照片上传流程。',
+  },
+  defect: {
+    label: '缺陷管理',
+    title: '缺陷上报与跟踪闭环',
+    description: '用于承载缺陷登记、风险等级、责任人流转和处理进度。',
+  },
+  repair: {
+    label: '检修管理',
+    title: '检修计划与记录沉淀',
+    description: '用于承载检修计划、工单执行、备件记录和历史追溯。',
+  },
+}
+
 const drawerGroups = [
   { name: '全部设备', count: '1,204' },
   { name: '重点关注', count: '43' },
@@ -667,23 +1129,81 @@ const trendPoints = [
   { day: '周二', date: '05/14', x: 306, y: 56 },
 ]
 
+const isAboutPage = computed(() => activeTab.value === 'profile' && profileSubpage.value === 'about')
+const isNotificationsPage = computed(() => activeTab.value === 'notifications')
+const isWorkbenchSubpage = computed(
+  () => activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair',
+)
+const isWorkbenchVisiblePage = computed(() => activeTab.value === 'workbench' || isWorkbenchSubpage.value)
+const activeWorkbenchEntryKey = computed<WorkbenchEntryKey | undefined>(() =>
+  isWorkbenchSubpage.value ? (activeTab.value as PlaceholderPageKey) : undefined,
+)
 const currentPageTitle = computed(() => {
+  if (isAboutPage.value) {
+    return '关于系统'
+  }
+
+  if (isNotificationsPage.value) {
+    return '消息中心'
+  }
+
   if (activeTab.value === 'home') {
     return '设备健康管理'
   }
 
   if (activeTab.value === 'profile') {
-    return '设备健康'
+    return '我的'
   }
 
-  return tabs.find((tab) => tab.key === activeTab.value)?.label ?? '设备健康'
+  if (activeTab.value === 'tasks') {
+    return '待办事项'
+  }
+
+  if (isWorkbenchVisiblePage.value) {
+    return '工作台'
+  }
+
+  return tabs.find((tab) => tab.key === activeTab.value)?.label ?? activePlaceholderContent.value.label
+})
+const isPlaceholderPage = computed(() => activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair')
+const activePlaceholderContent = computed(() => {
+  if (activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair') {
+    return placeholderPages[activeTab.value]
+  }
+
+  return {
+    label: '设备健康',
+    title: '页面占位',
+    description: '该页面结构已预留。',
+  }
+})
+const currentMobilePage = computed(() => {
+  if (!isAuthenticated.value) {
+    return 'login'
+  }
+
+  if (isAboutPage.value) {
+    return 'about'
+  }
+
+  if (isNotificationsPage.value) {
+    return 'notifications'
+  }
+
+  return isWorkbenchSubpage.value ? 'workbench' : activeTab.value
 })
 const headerActionIcon = computed(() =>
-  activeTab.value === 'profile'
-    ? '/case-assets/device-health-management-platform/profile-search.svg'
-    : '/case-assets/device-health-management-platform/notification-bell.svg',
+  isNotificationsPage.value
+    ? '/case-assets/device-health-management-platform/notifications/figma/header-action.svg'
+    : activeTab.value === 'tasks'
+    ? '/case-assets/device-health-management-platform/tasks/figma/bell.svg'
+    : activeTab.value === 'profile'
+      ? '/case-assets/device-health-management-platform/profile-search.svg'
+      : '/case-assets/device-health-management-platform/notification-bell.svg',
 )
-const headerActionLabel = computed(() => (activeTab.value === 'profile' ? '搜索' : '查看通知'))
+const headerActionLabel = computed(() =>
+  isNotificationsPage.value ? '消息设置' : activeTab.value === 'profile' ? '搜索' : '查看通知',
+)
 const activeHealthState = computed(() => healthModes.find((mode) => mode.key === activeHealthMode.value) ?? healthModes[0])
 const scoreRingStyle = computed(() => {
   const score = Math.max(0, Math.min(100, activeHealthState.value.score))
@@ -696,7 +1216,6 @@ const scoreRingStyle = computed(() => {
 })
 const currentStats = computed(() => activeHealthState.value.stats)
 const selectedStatusItem = computed(() => statusItems.find((item) => item.key === selectedStatus.value) ?? statusItems[0])
-const selectedActionContent = computed(() => actionContent[selectedAction.value])
 const nextStatus = computed<StatusKey>(() => {
   const currentIndex = statusItems.findIndex((item) => item.key === selectedStatus.value)
   return statusItems[(currentIndex + 1) % statusItems.length].key
@@ -713,28 +1232,52 @@ const filteredAlerts = computed(() => {
 })
 
 const visibleTasks = computed(() => {
-  const keyword = searchQuery.value.trim()
+  const keyword = taskSearchQuery.value.trim()
 
   return tasks.filter((task) => {
-    const matchesFilter =
-      activeTaskFilter.value === 'all' ||
-      (activeTaskFilter.value === 'urgent' && task.priority === 'urgent' && !task.done) ||
-      (activeTaskFilter.value === 'pending' && !task.done) ||
-      (activeTaskFilter.value === 'done' && task.done)
-    const matchesSearch = !keyword || `${task.title}${task.desc}${task.priorityLabel}`.includes(keyword)
+    const matchesFilter = task.status === activeTaskFilter.value
+    const matchesSearch =
+      !keyword ||
+      `${task.asset}${task.priorityLabel}${task.title}${task.deadline}${task.location}${task.assignee}`.includes(keyword)
 
     return matchesFilter && matchesSearch
   })
 })
 
+watch(
+  () => props.previewPage,
+  (page) => {
+    applyPreviewPage(page)
+  },
+  { immediate: true },
+)
+
 function setActiveTab(tab: TabKey) {
   activeTab.value = tab
+  profileSubpage.value = 'main'
   menuOpen.value = false
+  searchOpen.value = false
+}
+
+function isMobileTabActive(tab: TabKey) {
+  return activeTab.value === tab || (tab === 'workbench' && isWorkbenchSubpage.value)
+}
+
+function handleWorkbenchEntryClick(entryKey?: WorkbenchEntryKey) {
+  if (!entryKey) {
+    return
+  }
+
+  activeTab.value = entryKey === 'equipment' ? 'workbench' : entryKey
+  profileSubpage.value = 'main'
+  menuOpen.value = false
+  searchOpen.value = false
 }
 
 function handleLogin() {
   isAuthenticated.value = true
   activeTab.value = 'home'
+  profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
 }
@@ -742,8 +1285,80 @@ function handleLogin() {
 function handleLogout() {
   isAuthenticated.value = false
   activeTab.value = 'home'
+  profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+}
+
+function handleHeaderLeadingAction() {
+  if (isNotificationsPage.value) {
+    returnFromNotifications()
+    return
+  }
+
+  if (isAboutPage.value) {
+    profileSubpage.value = 'main'
+    searchOpen.value = false
+    return
+  }
+
+  menuOpen.value = !menuOpen.value
+}
+
+function handleHeaderTrailingAction() {
+  if (isNotificationsPage.value) {
+    return
+  }
+
+  if (activeTab.value === 'profile') {
+    searchOpen.value = !searchOpen.value
+    return
+  }
+
+  openNotifications()
+}
+
+function openNotifications() {
+  previousNotificationPage.value = activeTab.value
+  activeTab.value = 'notifications'
+  profileSubpage.value = 'main'
+  menuOpen.value = false
+  searchOpen.value = false
+}
+
+function returnFromNotifications() {
+  activeTab.value = previousNotificationPage.value === 'notifications' ? 'home' : previousNotificationPage.value
+  profileSubpage.value = 'main'
+  menuOpen.value = false
+  searchOpen.value = false
+}
+
+function handleProfileSetting(key: string) {
+  if (key !== 'about') {
+    return
+  }
+
+  profileSubpage.value = 'about'
+  searchOpen.value = false
+}
+
+function applyPreviewPage(page?: PreviewPageKey) {
+  if (!page) {
+    return
+  }
+
+  profileSubpage.value = 'main'
+  menuOpen.value = false
+  searchOpen.value = false
+
+  if (page === 'login') {
+    isAuthenticated.value = false
+    activeTab.value = 'home'
+    return
+  }
+
+  isAuthenticated.value = true
+  activeTab.value = page
 }
 
 function cycleHealthMode() {
@@ -754,14 +1369,6 @@ function cycleHealthMode() {
 function clearSearch() {
   searchQuery.value = ''
   searchOpen.value = false
-}
-
-function toggleTask(taskId: string) {
-  const task = tasks.find((taskItem) => taskItem.id === taskId)
-
-  if (task) {
-    task.done = !task.done
-  }
 }
 
 function selectDrawerGroup(groupName: string) {
@@ -781,12 +1388,21 @@ function getInitialTab(): TabKey {
 .device-mobile-demo {
   position: relative;
   display: grid;
-  grid-template-rows: 88px minmax(0, 1fr) 66px;
+  grid-template-rows: 96px minmax(0, 1fr) 64px;
+  --mobile-header-bg: transparent;
+  --mobile-header-backdrop: none;
+  --mobile-header-title-color: #191919;
+  --mobile-header-title-size: 20px;
+  --mobile-header-title-weight: 650;
+  --mobile-header-title-line-height: 28px;
+  --mobile-header-action-width: 17.5px;
+  --mobile-header-action-height: 20px;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f4f7fb;
-  color: #1d2939;
+  background:
+    linear-gradient(180deg, #d4e5ff 0%, rgba(244, 249, 255, 0.96) 31%, rgba(255, 255, 255, 0.92) 100%);
+  color: #191919;
   font-family:
     "PingFang SC", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -1028,42 +1644,68 @@ function getInitialTab(): TabKey {
 
 .mobile-header {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
   gap: 10px;
-  padding: 32px 18px 16px;
-  background: #eaf6ff;
+  padding: 48px 16px 16px;
+  background: var(--mobile-header-bg);
+  backdrop-filter: var(--mobile-header-backdrop);
 }
 
 .mobile-header strong {
-  color: #111827;
-  font-size: 16px;
-  font-weight: 850;
+  color: var(--mobile-header-title-color);
+  font-size: var(--mobile-header-title-size);
+  font-weight: var(--mobile-header-title-weight);
+  line-height: var(--mobile-header-title-line-height);
   text-align: center;
 }
 
 .icon-button {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
-  color: #344054;
+  color: #1f2937;
   cursor: pointer;
 }
 
 .menu-button {
+  justify-self: start;
   align-content: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .menu-button span {
-  width: 15px;
+  width: 17px;
   height: 2px;
   border-radius: 999px;
-  background: currentColor;
+  background: #1f2937;
+}
+
+.back-button img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.notify-button {
+  position: relative;
+  justify-self: end;
+}
+
+.header-placeholder {
+  justify-self: end;
+  width: 32px;
+  height: 32px;
+}
+
+.notify-button img {
+  display: block;
+  width: var(--mobile-header-action-width);
+  height: var(--mobile-header-action-height);
 }
 
 .search-button span {
@@ -1149,8 +1791,6 @@ function getInitialTab(): TabKey {
 .alert-card,
 .task-card,
 .empty-card,
-.workbench-panel,
-.site-list article,
 .profile-card,
 .profile-stats article,
 .settings-list {
@@ -1175,7 +1815,6 @@ function getInitialTab(): TabKey {
 .welcome-card span,
 .score-card span,
 .stat-grid span,
-.site-list span,
 .settings-list span,
 .profile-card span,
 .profile-stats span {
@@ -1604,8 +2243,6 @@ function getInitialTab(): TabKey {
 }
 
 .task-card strong,
-.workbench-panel strong,
-.site-list strong,
 .profile-card strong {
   display: block;
   color: #1d2939;
@@ -1614,7 +2251,7 @@ function getInitialTab(): TabKey {
 }
 
 .task-card p,
-.workbench-panel p {
+.workbench-section small {
   margin: 6px 0 0;
   color: #697586;
   font-size: 12px;
@@ -1657,104 +2294,855 @@ function getInitialTab(): TabKey {
   color: #697586;
 }
 
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.device-mobile-demo[data-page='tasks'] {
+  --mobile-header-bg: linear-gradient(180deg, #e5edff 0%, #f4f7fb 100%);
+  --mobile-header-backdrop: none;
+  --mobile-header-title-color: #111827;
+  --mobile-header-title-size: 20px;
+  --mobile-header-title-weight: 500;
+  --mobile-header-title-line-height: 30px;
+  --mobile-header-action-width: 20px;
+  --mobile-header-action-height: 20px;
+  grid-template-rows: 215px minmax(0, 1fr) 64px;
+  background: #f4f7fb;
 }
 
-.action-grid button {
+.device-mobile-demo[data-page='tasks'] .mobile-header {
+  grid-template-rows: 30px 113px;
+  align-items: start;
+  row-gap: 24px;
+  padding: 24px 16px 0;
+}
+
+.device-mobile-demo[data-page='tasks'] .mobile-header strong {
+  align-self: start;
+}
+
+.device-mobile-demo[data-page='tasks'] .icon-button {
+  width: 40px;
+  height: 30px;
+  border-radius: 0;
+}
+
+.tasks-menu-icon {
+  display: block;
+  width: 17.5px;
+  height: 15px;
+}
+
+.tasks-header-banner {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 113px;
+  overflow: hidden;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  background: #f9fafd;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-banner-art {
+  position: absolute;
+  top: -16.39%;
+  left: 44.34%;
+  width: 55.59%;
+  height: 133.26%;
+  object-fit: cover;
+}
+
+.tasks-banner-copy {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  align-content: center;
+  justify-items: start;
+  height: 100%;
+  padding: 17px;
+}
+
+.tasks-banner-copy > span {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.tasks-banner-copy > span::after {
+  content: '👋';
+  margin-left: 6px;
+}
+
+.tasks-banner-copy > strong {
+  margin-top: 4px;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+}
+
+.tasks-banner-copy b {
+  color: #0057ff;
+  font-weight: 900;
+}
+
+.tasks-banner-copy small {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 66px;
-  border: 1px solid rgba(52, 120, 246, 0.12);
+  gap: 4px;
+  width: 162px;
+  min-height: 23px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 15px;
+}
+
+.tasks-banner-copy small img {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+
+.device-mobile-demo[data-page='tasks'] .mobile-main {
+  padding: 0;
+  background: #f4f7fb;
+}
+
+.tasks-page {
+  min-height: 905px;
+  padding: 0 16px 32px;
+  background: #f4f7fb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  height: 46px;
+  overflow: hidden;
+  border-bottom: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
-  color: #344054;
-  font-size: 13px;
-  font-weight: 850;
-  text-align: left;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-tabs button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
   cursor: pointer;
 }
 
-.action-grid button.active {
-  border-color: rgba(52, 120, 246, 0.3);
-  box-shadow: 0 12px 26px rgba(52, 120, 246, 0.12);
+.tasks-tabs button.active {
+  color: #0057ff;
 }
 
-.action-grid i {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-left: 12px;
-  border-radius: 8px;
-  background: rgba(52, 120, 246, 0.1);
-}
-
-.action-grid i::before {
+.tasks-tabs button.active::after {
   content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 32px;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: #0057ff;
+  transform: translateX(-50%);
+}
+
+.tasks-search-filter {
+  display: flex;
+  gap: 12px;
+  height: 46px;
+  margin-top: 16px;
+}
+
+.tasks-search-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 46px;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-search-field > img {
+  position: absolute;
+  top: 50%;
+  left: 12px;
   width: 14px;
   height: 14px;
-  border-radius: 4px;
-  background: #3478f6;
+  transform: translateY(-50%);
 }
 
-.workbench-panel {
+.tasks-search-field input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  padding: 0 14px 0 37px;
+  background: transparent;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.tasks-search-field input::placeholder {
+  color: #9ca3af;
+}
+
+.tasks-filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 78px;
+  height: 42px;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.tasks-filter-button img {
+  width: 12px;
+  height: 10.5px;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  padding-bottom: 32px;
+}
+
+.figma-task-card {
   display: grid;
-  gap: 6px;
-  min-height: 124px;
-  padding: 16px;
+  grid-template-rows: minmax(102px, 1fr) 46px;
+  min-height: 181px;
+  overflow: hidden;
+  border: 1px solid #f3f4f6;
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.workbench-panel > span {
-  justify-self: start;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(52, 120, 246, 0.1);
-  color: #3478f6;
-  font-size: 11px;
-  font-weight: 900;
+.figma-task-card.priority-urgent {
+  border-left-color: #ff4d4f;
 }
 
-.site-list {
+.figma-task-card.priority-normal {
+  border-left-color: #faad14;
+}
+
+.figma-task-card.priority-low {
+  border-left-color: #52c41a;
+}
+
+.figma-task-card-main {
   display: grid;
-  gap: 10px;
+  align-content: start;
+  gap: 8px;
+  padding: 16px 16px 11px;
 }
 
-.site-list article {
+.figma-task-card-top,
+.figma-task-card-footer,
+.figma-task-actions,
+.figma-assignee,
+.figma-task-meta,
+.figma-task-device,
+.figma-priority-pill,
+.figma-task-state {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 72px;
-  padding: 14px;
 }
 
-.site-list em {
+.figma-task-card-top {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.figma-task-device {
+  min-width: 0;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.figma-task-device img {
+  width: 12px;
+  height: 12px;
   flex: 0 0 auto;
+}
+
+.figma-priority-pill {
+  flex: 0 0 auto;
+  gap: 4px;
+  min-width: 48px;
+  height: 26px;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.priority-urgent .figma-priority-pill {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+}
+
+.priority-normal .figma-priority-pill {
+  background: rgba(250, 173, 20, 0.1);
+  color: #faad14;
+}
+
+.priority-low .figma-priority-pill {
+  background: rgba(82, 196, 26, 0.1);
+  color: #52c41a;
+}
+
+.figma-priority-pill img {
+  width: 10px;
+  height: 10px;
+  object-fit: contain;
+}
+
+.figma-task-card-main > strong {
+  color: #111827;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+}
+
+.figma-task-meta {
+  gap: 16px;
+}
+
+.figma-task-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.figma-task-meta img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.figma-task-card-footer {
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px 0;
+  border-top: 1px solid #f3f4f6;
+}
+
+.figma-assignee {
+  gap: 8px;
+  min-width: 0;
+}
+
+.figma-assignee > span,
+.figma-assignee > img {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 15px;
+  object-fit: cover;
+}
+
+.figma-assignee strong {
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.figma-task-actions {
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.figma-task-state {
+  gap: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.figma-task-state i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #93c5fd;
+}
+
+.figma-task-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 74px;
+  height: 33px;
+  border: 0;
+  border-radius: 8px;
+  background: #0057ff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.figma-task-actions button img {
+  width: 10.5px;
+  height: 9px;
+}
+
+.device-mobile-demo[data-page='notifications'] {
+  --mobile-header-bg: transparent;
+  --mobile-header-backdrop: none;
+  --mobile-header-title-color: #000;
+  --mobile-header-title-size: 20px;
+  --mobile-header-title-weight: 500;
+  --mobile-header-title-line-height: 30px;
+  --mobile-header-action-width: 20px;
+  --mobile-header-action-height: 17.514px;
+  grid-template-rows: 96px minmax(0, 1fr);
+  background:
+    linear-gradient(180deg, #d4e5ff 0%, rgba(255, 255, 255, 0.5) 100%),
+    #f4f7fb;
+}
+
+.device-mobile-demo[data-page='notifications'] .mobile-header {
+  padding: 48px 16px 16px;
+  background: transparent;
+}
+
+.device-mobile-demo[data-page='notifications'] .mobile-header strong {
+  line-height: 30px;
+}
+
+.device-mobile-demo[data-page='notifications'] .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+}
+
+.device-mobile-demo[data-page='notifications'] .icon-button:focus {
+  outline: 0;
+}
+
+.notifications-back-icon {
+  display: block;
+  width: 10px;
+  height: 17.5px;
+}
+
+.back-button .notifications-back-icon {
+  width: 10px;
+  height: 17.5px;
+}
+
+.device-mobile-demo[data-page='notifications'] .mobile-main {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.notifications-page {
+  position: relative;
+  min-height: 100%;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  overflow: auto;
+  padding: 0 16px 96px;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 358px;
+  min-height: 81px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.notification-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 12px;
+  background: #ebf1ff;
+}
+
+.notification-icon img {
+  display: block;
+  width: 20px;
+  height: 20.026px;
+  object-fit: contain;
+}
+
+.notification-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 24px;
+}
+
+.notification-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.notification-title-line strong {
+  flex: 0 0 auto;
+  overflow: hidden;
+  color: #000;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 9999px;
+  background: #ff4d4f;
+}
+
+.notification-important {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 19px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #faad14;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  white-space: nowrap;
+}
+
+.notification-important img {
+  width: 8.254px;
+  height: 8.004px;
+  flex: 0 0 auto;
+}
+
+.notification-row time {
+  flex: 0 0 auto;
+  padding-left: 8px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.notification-copy p {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notifications-bottom-action {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  padding: 16px 16px 32px;
+  background: rgba(247, 248, 250, 0.9);
+  backdrop-filter: blur(2px);
+}
+
+.notifications-bottom-action button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: #0057ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.device-mobile-demo[data-page='workbench'] {
+  background:
+    linear-gradient(180deg, #d3e5f5 0%, #f4f7fb 20%),
+    #fff;
+}
+
+.device-mobile-demo[data-page='workbench'] .mobile-main {
+  padding: 16px;
+  background: transparent;
+}
+
+.workbench-page {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.workbench-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 149px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #eef5ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.workbench-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.workbench-hero > div {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 4px;
+  width: 212px;
+}
+
+.workbench-hero span {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.workbench-hero strong {
+  color: #1e3a8a;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.workbench-hero small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  margin-top: 2px;
   padding: 4px 8px;
   border-radius: 999px;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 900;
+  background: rgba(255, 255, 255, 0.5);
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+  white-space: nowrap;
 }
 
-.site-list em.good {
-  background: rgba(0, 196, 134, 0.12);
-  color: #12a866;
+.workbench-hero small img {
+  width: 10px;
+  height: 10px;
 }
 
-.site-list em.watch {
-  background: rgba(255, 149, 0, 0.14);
-  color: #d47a00;
+.workbench-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
 }
 
-.site-list em.risk {
-  background: rgba(255, 69, 58, 0.12);
-  color: #ff453a;
+.workbench-section header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.workbench-section header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.workbench-section header span img {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.workbench-section header small {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+  white-space: nowrap;
+}
+
+.workbench-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.workbench-entry-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.workbench-entry-grid button.active {
+  border-color: rgba(0, 87, 255, 0.35);
+  background: rgba(239, 246, 255, 0.72);
+}
+
+.workbench-entry-grid button:focus-visible {
+  outline: 2px solid rgba(40, 100, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.workbench-entry-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: rgba(239, 246, 255, 0.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.workbench-entry-icon img {
+  display: block;
+  object-fit: contain;
+}
+
+.workbench-entry-grid strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #1f2937;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbench-entry-grid small {
+  display: block;
+  max-width: 100%;
+  height: 14px;
+  overflow: hidden;
+  margin: 0;
+  color: #9ca3af;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 13.5px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile-card {
@@ -1940,55 +3328,6 @@ function getInitialTab(): TabKey {
 .device-drawer em {
   color: #3478f6;
   font-style: normal;
-}
-
-.device-mobile-demo {
-  grid-template-rows: 96px minmax(0, 1fr) 64px;
-  background:
-    linear-gradient(180deg, #d4e5ff 0%, rgba(244, 249, 255, 0.96) 31%, rgba(255, 255, 255, 0.92) 100%);
-  color: #191919;
-}
-
-.mobile-header {
-  grid-template-columns: 40px minmax(0, 1fr) 40px;
-  padding: 48px 16px 16px;
-  background: transparent;
-}
-
-.mobile-header strong {
-  color: #191919;
-  font-size: 20px;
-  font-weight: 650;
-  line-height: 28px;
-}
-
-.icon-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  color: #1f2937;
-}
-
-.menu-button {
-  justify-self: start;
-  gap: 3px;
-}
-
-.menu-button span {
-  width: 17px;
-  height: 2px;
-  background: #1f2937;
-}
-
-.notify-button {
-  position: relative;
-  justify-self: end;
-}
-
-.notify-button img {
-  display: block;
-  width: 17.5px;
-  height: 20px;
 }
 
 .mobile-main {
@@ -2560,8 +3899,8 @@ function getInitialTab(): TabKey {
 }
 
 .mobile-tabbar button:nth-child(3) img {
-  width: 18.5px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
 }
 
 .mobile-tabbar button:nth-child(4) img {
@@ -2658,29 +3997,28 @@ function getInitialTab(): TabKey {
 }
 
 .device-mobile-demo[data-page='profile'] {
-  grid-template-rows: 88px minmax(0, 1fr) 66px;
+  grid-template-rows: 88px minmax(0, 1fr) 64px;
+  --mobile-header-bg: linear-gradient(180deg, #e1eaff 0%, #f4f7fd 100%);
+  --mobile-header-backdrop: blur(2px);
+  --mobile-header-title-color: #1a1f36;
+  --mobile-header-title-size: 18px;
+  --mobile-header-title-weight: 500;
+  --mobile-header-title-line-height: 28px;
+  --mobile-header-action-width: 24px;
+  --mobile-header-action-height: 24px;
   background: #f4f7fd;
 }
 
 .device-mobile-demo[data-page='profile'] .mobile-header {
-  padding: 32px 24px 16px;
-  background: linear-gradient(180deg, #e1eaff 0%, #f4f7fd 100%);
+  padding: 48px 24px 16px;
 }
 
 .device-mobile-demo[data-page='profile'] .mobile-header strong {
-  color: #1a1f36;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 25px;
-}
-
-.device-mobile-demo[data-page='profile'] .notify-button img {
-  width: 20px;
-  height: 20px;
+  letter-spacing: 0.45px;
 }
 
 .device-mobile-demo[data-page='profile'] .mobile-main {
-  padding: 16px 20px 16px;
+  padding: 0 20px;
   background: #f4f7fd;
 }
 
@@ -2693,61 +4031,72 @@ function getInitialTab(): TabKey {
 .profile-hero-card {
   position: relative;
   display: grid;
-  gap: 18px;
+  gap: 24px;
   overflow: hidden;
-  min-height: 198px;
+  width: 100%;
+  min-height: 200px;
   padding: 20px;
   border: 0;
   border-radius: 24px;
-  background: linear-gradient(135deg, #f8faff 0%, #eef3ff 100%);
-  box-shadow: 0 8px 24px rgba(34, 54, 88, 0.06);
+  background: linear-gradient(90deg, #f8faff 0%, #eef3ff 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.profile-card-glow {
+.profile-card-decoration {
   position: absolute;
-  top: -32px;
-  right: -18px;
-  width: 148px;
-  height: 92px;
-  border-radius: 999px;
-  background: rgba(34, 96, 255, 0.12);
-  filter: blur(10px);
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .profile-user-row {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
 }
 
-.profile-avatar {
+.profile-avatar-wrap {
+  display: grid;
+  place-items: center;
   width: 80px;
   height: 80px;
-  border: 3px solid rgba(255, 255, 255, 0.9);
+  flex: 0 0 80px;
+  border: 2px solid #fff;
   border-radius: 999px;
-  box-shadow: 0 10px 20px rgba(34, 96, 255, 0.16);
+  background: #dbeafe;
+  box-shadow: 0 4px 12px rgba(34, 96, 255, 0.16);
+}
+
+.profile-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
   object-fit: cover;
 }
 
 .profile-user-copy {
   display: grid;
   justify-items: start;
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
+  padding-top: 8px;
 }
 
 .profile-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .profile-name-row strong {
   color: #1a1f36;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 28px;
 }
 
@@ -2758,12 +4107,12 @@ function getInitialTab(): TabKey {
 
 .profile-user-copy > span {
   min-height: 24px;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 4px 12px;
+  border-radius: 6px;
   background: rgba(0, 87, 255, 0.2);
   color: #2260ff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 16px;
 }
 
@@ -2771,15 +4120,15 @@ function getInitialTab(): TabKey {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 10px;
+  gap: 16px;
 }
 
 .profile-info-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 16px;
+  display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 34px;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
   border: 0;
   background: transparent;
   color: #64748b;
@@ -2791,7 +4140,7 @@ function getInitialTab(): TabKey {
 .profile-info-row > span {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
   color: #64748b;
   font-size: 14px;
@@ -2806,9 +4155,10 @@ function getInitialTab(): TabKey {
 .profile-info-row strong {
   color: #1a1f36;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
+  margin-left: auto;
 }
 
 .profile-info-row > img {
@@ -2822,21 +4172,18 @@ function getInitialTab(): TabKey {
   padding: 8px 8px 32px;
   border-radius: 24px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(34, 54, 88, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .profile-setting-row {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  min-height: 64px;
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
-}
-
-.profile-setting-row:last-child {
-  border-bottom: 0;
+  gap: 16px;
+  min-height: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 16px;
 }
 
 .profile-setting-icon {
@@ -2845,7 +4192,7 @@ function getInitialTab(): TabKey {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #eef3ff;
 }
 
@@ -2860,9 +4207,8 @@ function getInitialTab(): TabKey {
   right: 8px;
   width: 8px;
   height: 8px;
-  border: 2px solid #fff;
   border-radius: 999px;
-  background: #ff4d4f;
+  background: #e53e3e;
 }
 
 .profile-setting-copy {
@@ -2873,16 +4219,16 @@ function getInitialTab(): TabKey {
 
 .profile-setting-copy strong {
   color: #1a1f36;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 21px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
 }
 
 .profile-setting-copy small {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 12px;
   font-weight: 500;
-  line-height: 17px;
+  line-height: 16px;
 }
 
 .profile-setting-row > img {
@@ -2892,24 +4238,30 @@ function getInitialTab(): TabKey {
 
 .profile-toggle {
   position: relative;
+  box-sizing: border-box;
+  flex: 0 0 48px;
   width: 48px;
   height: 28px;
-  border: 0;
+  border: 2px solid transparent;
   border-radius: 999px;
   background: #cbd5e1;
   cursor: pointer;
+  overflow: hidden;
   padding: 0;
 }
 
 .profile-toggle i {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 22px;
-  height: 22px;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
   transition: transform 180ms ease;
 }
 
@@ -2921,42 +4273,248 @@ function getInitialTab(): TabKey {
   transform: translateX(20px);
 }
 
+.device-mobile-demo[data-page='about'] {
+  grid-template-rows: 88px minmax(0, 1fr);
+  --mobile-header-title-color: #1f2937;
+  --mobile-header-title-size: 17px;
+  --mobile-header-title-weight: 500;
+  --mobile-header-title-line-height: 25.5px;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(239, 246, 255, 1) 0, rgba(239, 246, 255, 0) 40%),
+    radial-gradient(circle at 85% 20%, rgba(238, 242, 255, 1) 0, rgba(238, 242, 255, 0) 45%),
+    radial-gradient(circle at 50% 80%, rgba(239, 246, 255, 1) 0, rgba(239, 246, 255, 0) 50%),
+    #f8fbff;
+}
+
+.device-mobile-demo[data-page='about'] .mobile-header {
+  padding: 44px 16px 12px;
+}
+
+.device-mobile-demo[data-page='about'] .mobile-header strong {
+  letter-spacing: 0.425px;
+}
+
+.device-mobile-demo[data-page='about'] .mobile-main {
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+.about-system-page {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100%;
+}
+
+.about-system-body {
+  position: relative;
+  min-height: 0;
+}
+
+.about-logo-section {
+  position: absolute;
+  top: 49px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 120px;
+  padding-bottom: 24px;
+  transform: translateX(-50%);
+}
+
+.about-app-icon {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  padding: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 22px;
+  background: linear-gradient(135deg, #60a5fa 0%, #0057ff 100%);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+.about-app-icon span {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.06)) drop-shadow(0 4px 1.5px rgba(0, 0, 0, 0.07));
+}
+
+.about-app-icon img {
+  display: block;
+  width: 42px;
+  height: 50px;
+}
+
+.about-system-page h2 {
+  position: absolute;
+  top: 169px;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align: center;
+}
+
+.about-system-page p {
+  position: absolute;
+  top: 211px;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19.5px;
+  text-align: center;
+}
+
+.about-menu-card {
+  position: absolute;
+  top: 262.5px;
+  right: 16px;
+  left: 16px;
+  display: grid;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.about-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-top: 1px solid #f3f4f6;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  cursor: pointer;
+}
+
+.about-menu-row:first-child {
+  border-top: 0;
+}
+
+.about-menu-row strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22.5px;
+}
+
+.about-menu-row > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19.5px;
+}
+
+.about-menu-row > img {
+  width: 6.167px;
+  height: 10px;
+}
+
+.about-menu-row > span img {
+  width: 14.167px;
+  height: 10px;
+}
+
+.about-footer {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 32px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.55px;
+  line-height: 16.5px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.preview-placeholder-page {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 24px 16px;
+  background: linear-gradient(180deg, rgba(212, 229, 255, 0.9) 0%, rgba(248, 250, 255, 0.96) 100%);
+}
+
+.preview-placeholder-page article {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  width: 100%;
+  padding: 22px;
+  border: 1px solid rgba(34, 96, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 42px rgba(43, 112, 198, 0.12);
+}
+
+.preview-placeholder-page span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(34, 96, 255, 0.1);
+  color: #2260ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preview-placeholder-page h2 {
+  margin: 0;
+  color: #1a1f36;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.preview-placeholder-page p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.preview-placeholder-page small {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .profile-logout-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 56px;
-  border: 1.5px solid #ff4d4f;
+  min-height: 58px;
+  border: 1px solid #e53e3e;
   border-radius: 16px;
-  background: #fff;
-  color: #ff4d4f;
+  background: transparent;
+  color: #e53e3e;
   font-size: 16px;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 24px;
   cursor: pointer;
 }
 
 .profile-logout-button img {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
-.device-mobile-demo[data-page='profile'] .mobile-tabbar {
-  height: 66px;
-  overflow: hidden;
-  border-top: 0;
-  border-radius: 24px 24px 0 0;
-  background: #fff;
-  box-shadow: 0 -8px 24px rgba(34, 54, 88, 0.04);
-  padding: 8px 24px 0;
-}
-
-.device-mobile-demo[data-page='profile'] .mobile-tabbar button {
-  color: #64748b;
-}
-
-.device-mobile-demo[data-page='profile'] .mobile-tabbar button.active {
-  color: #2260ff;
-}
 </style>

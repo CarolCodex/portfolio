@@ -1,9 +1,27 @@
 <template>
-  <RouterLink class="case-card" :to="item.link ?? `/cases/${item.id}`">
+  <component
+    :is="cardComponent"
+    class="case-card"
+    :class="{ 'case-card--coming-soon': isComingSoon }"
+    v-bind="cardAttrs"
+  >
     <span class="case-index">{{ displayIndex }}</span>
-    <span class="case-cover" :class="{ 'case-cover--liangxuan': isLiangxuanCase }" :style="coverStyle">
-      <LiangxuanCaseCoverVisual v-if="isLiangxuanCase" />
+    <span
+      class="case-cover"
+      :class="{ 'case-cover--liangxuan': isLiangxuanCase, 'case-cover--image': hasCoverImage }"
+      :style="coverStyle"
+    >
+      <DeviceHealthCaseCoverVisual v-if="isDeviceHealthCase" />
+      <img
+        v-else-if="hasCoverImage"
+        class="case-cover-image"
+        :src="item.coverImage"
+        :alt="`${item.title}封面`"
+        loading="lazy"
+      />
+      <LiangxuanCaseCoverVisual v-else-if="isLiangxuanCase" />
       <span v-else class="case-category">{{ item.category }}</span>
+      <span v-if="isComingSoon" class="case-coming-soon-label">项目筹备中</span>
     </span>
     <span class="case-card-body">
       <strong>{{ item.title }}</strong>
@@ -12,12 +30,13 @@
         <small v-for="tag in item.tags.slice(0, 4)" :key="tag">{{ tag }}</small>
       </span>
     </span>
-  </RouterLink>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import DeviceHealthCaseCoverVisual from '@/cases/device-health-management-platform/DeviceHealthCaseCoverVisual.vue'
 import LiangxuanCaseCoverVisual from '@/cases/liangxuan-mini-program/LiangxuanCaseCoverVisual.vue'
 import type { CaseItem } from '@/data/cases'
 
@@ -27,8 +46,22 @@ const props = defineProps<{
 }>()
 
 const displayIndex = computed(() => String((props.index ?? 0) + 1).padStart(2, '0'))
+const isComingSoon = computed(() => props.item.comingSoon || props.item.status === 'coming-soon')
 const isLiangxuanCase = computed(() => props.item.id === 'liangxuan-mini-program' || props.item.id === 'mini-program')
-const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { background: props.item.cover }))
+const isDeviceHealthCase = computed(() => props.item.id === 'device-health-management-platform')
+const hasCoverImage = computed(() => Boolean(props.item.coverImage))
+const coverStyle = computed(() => (isLiangxuanCase.value || hasCoverImage.value ? undefined : { background: props.item.cover }))
+const cardComponent = computed(() => (isComingSoon.value ? 'article' : RouterLink))
+const cardAttrs = computed(() =>
+  isComingSoon.value
+    ? {
+        'aria-disabled': 'true',
+        tabindex: '-1',
+      }
+    : {
+        to: props.item.link ?? `/cases/${props.item.id}`,
+      },
+)
 </script>
 
 <style scoped>
@@ -41,6 +74,10 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   padding-top: 34px;
   border-radius: var(--showcase-radius);
   color: inherit;
+}
+
+.case-card--coming-soon {
+  cursor: default;
 }
 
 .case-index {
@@ -68,6 +105,27 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   background-blend-mode: screen;
   box-shadow: 0 18px 44px rgba(15, 42, 95, 0.08);
   transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.case-card--coming-soon .case-cover {
+  border-color: rgba(55, 118, 186, 0.1);
+  background-blend-mode: luminosity, screen;
+  box-shadow: 0 16px 38px rgba(15, 42, 95, 0.06);
+}
+
+.case-card--coming-soon .case-cover::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(237, 247, 255, 0.48)),
+    radial-gradient(circle at 76% 34%, rgba(255, 255, 255, 0.66), transparent 30%);
+}
+
+.case-card--coming-soon .case-cover::after {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.case-card--coming-soon .case-cover > :not(.case-coming-soon-label) {
+  filter: saturate(0.38) brightness(1.06);
+  opacity: 0.62;
 }
 
 .case-cover::before {
@@ -98,9 +156,24 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   background: transparent;
 }
 
+.case-cover--image {
+  background: #f7fbff;
+}
+
 .case-cover--liangxuan::before,
-.case-cover--liangxuan::after {
+.case-cover--liangxuan::after,
+.case-cover--image::before,
+.case-cover--image::after {
   display: none;
+}
+
+.case-cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
 }
 
 .case-category {
@@ -114,6 +187,35 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
   font-size: 11px;
   font-weight: 800;
   line-height: 1.45;
+}
+
+.case-coming-soon-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  display: inline-flex;
+  min-width: 118px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 16px;
+  border: 1px solid rgba(44, 132, 219, 0.22);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(230, 244, 255, 0.82)),
+    rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 10px 24px rgba(25, 97, 170, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  color: #256497;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(12px);
 }
 
 .case-card-body {
@@ -162,6 +264,11 @@ const coverStyle = computed(() => (isLiangxuanCase.value ? undefined : { backgro
 .case-card:hover .case-cover {
   box-shadow: 0 24px 58px rgba(15, 42, 95, 0.12);
   transform: translateY(-4px);
+}
+
+.case-card--coming-soon:hover .case-cover {
+  box-shadow: 0 16px 38px rgba(15, 42, 95, 0.06);
+  transform: none;
 }
 
 @media (max-width: 640px) {
