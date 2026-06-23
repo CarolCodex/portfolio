@@ -116,8 +116,9 @@
                 v-for="item in dashboardChildren"
                 :key="item"
                 class="pc-nav-child"
-                :class="{ 'is-active': item === activeDashboard }"
+                :class="{ 'is-active': activePcPage === 'dashboard' && item === activeDashboard }"
                 type="button"
+                @click="showDashboard(item)"
               >
                 <img
                   :src="dashboardChildIcon(item)"
@@ -140,15 +141,26 @@
           </button>
 
           <section class="pc-nav-group is-lube">
-            <button class="pc-nav-item" type="button">
-              <img :src="modeAsset('icon-lubrication.svg', 'dark-icon-lubrication.svg')" alt="" />
+            <button class="pc-nav-item" :class="{ 'is-expanded': activePcPage === 'lubrication-items' }" type="button">
+              <img :src="lubricationParentIcon" alt="" />
               <span>润滑管理</span>
-              <img class="pc-nav-chevron" :src="modeAsset('icon-chevron-right.svg', 'dark-icon-chevron-right.svg')" alt="" />
+              <img
+                class="pc-nav-chevron"
+                :src="modeAsset(activePcPage === 'lubrication-items' ? 'icon-chevron-down.svg' : 'icon-chevron-right.svg', activePcPage === 'lubrication-items' ? 'dark-icon-chevron-down.svg' : 'dark-icon-chevron-right.svg')"
+                alt=""
+              />
             </button>
 
             <div class="pc-nav-children is-compact">
-              <button v-for="item in lubricationChildren" :key="item" class="pc-nav-child" type="button">
-                <img :src="modeAsset('icon-board-muted.svg', 'dark-icon-lube-child.svg')" alt="" />
+              <button
+                v-for="item in lubricationChildren"
+                :key="item"
+                class="pc-nav-child"
+                :class="{ 'is-active': activePcPage === 'lubrication-items' && item === activeLubricationChild }"
+                type="button"
+                @click="showLubricationChild(item)"
+              >
+                <img :src="lubricationChildIcon(item)" alt="" />
                 <span>{{ item }}</span>
               </button>
             </div>
@@ -161,9 +173,9 @@
           <nav class="pc-crumbs" aria-label="面包屑">
             <span>首页</span>
             <i>/</i>
-            <span>数据驾驶舱</span>
+            <span>{{ currentCrumbs.section }}</span>
             <i>/</i>
-            <strong>全生命周期看板</strong>
+            <strong>{{ currentCrumbs.page }}</strong>
           </nav>
 
           <div class="pc-header-actions">
@@ -200,7 +212,7 @@
         </header>
 
         <main class="pc-main">
-          <div class="pc-content">
+          <div v-if="activePcPage === 'dashboard'" class="pc-content">
             <section class="pc-page-head">
               <h1>全生命周期看板</h1>
               <button class="pc-date-filter" type="button">
@@ -329,6 +341,101 @@
               </article>
             </section>
           </div>
+
+          <div v-else class="pc-content pc-lube-content">
+            <section class="pc-page-head pc-lube-page-head">
+              <div>
+                <h1>润滑项管理</h1>
+                <p>管理设备关键部位的润滑标准与执行周期</p>
+              </div>
+
+              <button class="pc-primary-action" type="button">
+                <img :src="`${pcAssetBase}/icon-plus-white.svg`" alt="" />
+                <span>新增润滑项</span>
+              </button>
+            </section>
+
+            <section class="pc-card pc-lube-table-card" aria-label="润滑项列表">
+              <header class="pc-lube-toolbar">
+                <div class="pc-lube-search">
+                  <img :src="`${pcAssetBase}/icon-search-lube.svg`" alt="" />
+                  <input v-model="lubricationSearch" placeholder="搜索润滑项名称或编号" />
+                </div>
+
+                <button class="pc-lube-filter" type="button">
+                  <img :src="`${pcAssetBase}/icon-filter-lube.svg`" alt="" />
+                  <span>筛选</span>
+                </button>
+
+                <span class="pc-lube-count">统计：共 {{ filteredLubricationRows.length }} 个润滑项</span>
+              </header>
+
+              <div class="pc-lube-table-wrap">
+                <table class="pc-lube-table">
+                  <colgroup>
+                    <col style="width: 48px" />
+                    <col style="width: 102px" />
+                    <col style="width: 189px" />
+                    <col style="width: 173px" />
+                    <col style="width: 95px" />
+                    <col style="width: 151px" />
+                    <col style="width: 118px" />
+                    <col style="width: 99px" />
+                    <col style="width: 52px" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>润滑项编号</th>
+                      <th>润滑项名称</th>
+                      <th>安装位置</th>
+                      <th>润滑周期</th>
+                      <th>润滑油品</th>
+                      <th>下步计划</th>
+                      <th>当前状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in filteredLubricationRows" :key="row.code">
+                      <td>{{ row.index }}</td>
+                      <td>{{ row.code }}</td>
+                      <td>{{ row.name }}</td>
+                      <td>{{ row.position }}</td>
+                      <td><span class="pc-lube-cycle">{{ row.cycle }}</span></td>
+                      <td>{{ row.oil }}</td>
+                      <td>{{ row.nextPlan }}</td>
+                      <td>
+                        <span class="pc-lube-status" :class="`is-${row.tone}`">{{ row.status }}</span>
+                      </td>
+                      <td>
+                        <button class="pc-lube-more" type="button" aria-label="更多操作">
+                          <img :src="`${pcAssetBase}/icon-more-lube.svg`" alt="" />
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="pc-lube-metrics" aria-label="润滑项统计">
+              <article
+                v-for="metric in lubricationMetrics"
+                :key="metric.label"
+                class="pc-card pc-lube-metric-card"
+                :style="{ '--metric-bg': metric.bg }"
+              >
+                <span class="pc-lube-metric-icon">
+                  <img :src="`${pcAssetBase}/${metric.icon}`" alt="" />
+                </span>
+                <div>
+                  <span>{{ metric.label }}</span>
+                  <strong>{{ metric.value }}</strong>
+                </div>
+              </article>
+            </section>
+          </div>
         </main>
       </section>
     </div>
@@ -336,18 +443,21 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const pcAssetBase = '/case-assets/device-health-management-platform/pc'
 const appLogoMark = '/case-assets/device-health-management-platform/login-logo-mark.svg'
 const activeDashboard = '全生命周期看板'
+const activeLubricationChild = '润滑项管理'
 const previewScale = ref(1)
 const isLoggedIn = ref(true)
 const isDarkMode = ref(false)
+const activePcPage = ref<'dashboard' | 'lubrication-items'>('dashboard')
 const passwordVisible = ref(false)
 const rememberAccount = ref(true)
 const loginAccount = ref('ops.engineer')
 const loginPassword = ref('secure-demo')
+const lubricationSearch = ref('')
 
 function updatePreviewScale() {
   previewScale.value = Math.min(1, window.innerWidth / 1339)
@@ -392,6 +502,18 @@ function toggleTheme() {
   isDarkMode.value = !isDarkMode.value
 }
 
+function showDashboard(item: string) {
+  if (item === activeDashboard) {
+    activePcPage.value = 'dashboard'
+  }
+}
+
+function showLubricationChild(item: string) {
+  if (item === activeLubricationChild) {
+    activePcPage.value = 'lubrication-items'
+  }
+}
+
 function assetPath(icon: string) {
   return `${pcAssetBase}/${icon}`
 }
@@ -402,12 +524,39 @@ function modeAsset(lightIcon: string, darkIcon: string) {
 
 function dashboardChildIcon(item: string) {
   if (isDarkMode.value) {
-    return assetPath(item === activeDashboard ? 'dark-icon-board-active.svg' : 'dark-icon-board-muted.svg')
+    return assetPath(activePcPage.value === 'dashboard' && item === activeDashboard ? 'dark-icon-board-active.svg' : 'dark-icon-board-muted.svg')
   }
 
-  return assetPath(item === activeDashboard ? 'icon-board-active.svg' : 'icon-board-muted.svg')
+  return assetPath(activePcPage.value === 'dashboard' && item === activeDashboard ? 'icon-board-active.svg' : 'icon-board-muted.svg')
 }
 
+const lubricationParentIcon = computed(() => (
+  isDarkMode.value ? assetPath('dark-icon-lubrication.svg') : assetPath('icon-lube-parent-light.svg')
+))
+
+function lubricationChildIcon(item: string) {
+  const isActive = activePcPage.value === 'lubrication-items' && item === activeLubricationChild
+
+  if (isDarkMode.value) {
+    return assetPath(isActive ? 'dark-icon-lube-child-2.svg' : 'dark-icon-lube-child.svg')
+  }
+
+  return assetPath(isActive ? 'icon-lube-child-active-light.svg' : 'icon-board-muted.svg')
+}
+
+const currentCrumbs = computed(() => {
+  if (activePcPage.value === 'lubrication-items') {
+    return {
+      section: '润滑管理',
+      page: '润滑项管理',
+    }
+  }
+
+  return {
+    section: '数据驾驶舱',
+    page: '全生命周期看板',
+  }
+})
 
 const dashboardChildren = ['全生命周期看板', '可视化数据面板', '1#点检数据面板', '1#综合分析面板', '1#在线数据面板']
 
@@ -417,6 +566,100 @@ const navItems = [
 ]
 
 const lubricationChildren = ['润滑项管理', '润滑计划', '润滑工单']
+
+const lubricationRows = [
+  {
+    index: 1,
+    code: 'LUB-001',
+    name: '1号电机驱动端轴承润滑',
+    position: '1#液压泵站-M1电机',
+    cycle: '30天',
+    oil: 'Mobilux EP 2',
+    nextPlan: '2024-05-15',
+    status: '正常',
+    tone: 'normal',
+  },
+  {
+    index: 2,
+    code: 'LUB-002',
+    name: '2号电机驱动端轴承润滑',
+    position: '2#液压泵站-M2电机',
+    cycle: '30天',
+    oil: 'Mobilux EP 2',
+    nextPlan: '2024-05-18',
+    status: '临期',
+    tone: 'warning',
+  },
+  {
+    index: 3,
+    code: 'LUB-003',
+    name: '液压站滤芯更换',
+    position: '1#液压泵站-过滤器',
+    cycle: '90天',
+    oil: 'Hydraulic Oil 46#',
+    nextPlan: '2024-06-01',
+    status: '正常',
+    tone: 'normal',
+  },
+  {
+    index: 4,
+    code: 'LUB-004',
+    name: '联轴器润滑',
+    position: '1#液压泵站-C1联轴器',
+    cycle: '180天',
+    oil: 'Grease X-1',
+    nextPlan: '2024-07-10',
+    status: '正常',
+    tone: 'normal',
+  },
+  {
+    index: 5,
+    code: 'LUB-005',
+    name: '主轴轴承润滑',
+    position: '主传动部-A1主轴',
+    cycle: '7天',
+    oil: 'Shell Gadus S2',
+    nextPlan: '2024-05-08',
+    status: '逾期',
+    tone: 'danger',
+  },
+]
+
+const filteredLubricationRows = computed(() => {
+  const keyword = lubricationSearch.value.trim().toLowerCase()
+
+  if (!keyword) {
+    return lubricationRows
+  }
+
+  return lubricationRows.filter((row) => (
+    row.code.toLowerCase().includes(keyword)
+    || row.name.toLowerCase().includes(keyword)
+    || row.position.toLowerCase().includes(keyword)
+    || row.oil.toLowerCase().includes(keyword)
+  ))
+})
+
+const lubricationMetrics = [
+  {
+    label: '逾期未处理',
+    value: '3',
+    icon: 'icon-lube-metric-overdue.svg',
+    bg: '#fef2f2',
+  },
+  {
+    label: '临期提醒',
+    value: '12',
+    icon: 'icon-lube-metric-warning.svg',
+    bg: '#fffbeb',
+  },
+  {
+    label: '本周新增',
+    value: '5',
+    icon: 'icon-lube-metric-add.svg',
+    bg: '#eaf3ff',
+  },
+]
 
 const deviceFacts = [
   { label: '设备编码', value: 'PUMP-01-AC12' },
@@ -1277,6 +1520,270 @@ button {
     width: 14px;
     height: 14px;
     margin-left: auto;
+  }
+}
+
+.pc-lube-content {
+  gap: 24px;
+}
+
+.pc-lube-page-head {
+  align-items: flex-start;
+  height: 53px;
+
+  > div {
+    min-width: 0;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: $pc-muted;
+    font-size: 14px;
+    line-height: 21px;
+  }
+}
+
+.pc-primary-action {
+  display: inline-flex;
+  width: 126px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 9px;
+  border-radius: 8px;
+  background: $pc-blue;
+  box-shadow: 0 4px 12px rgba(22, 113, 238, 0.25);
+  color: #fff;
+  font-size: 14px;
+  line-height: 21px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.pc-lube-table-card {
+  height: 401px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.pc-lube-toolbar {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  gap: 12px;
+}
+
+.pc-lube-search {
+  display: flex;
+  width: 280px;
+  height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #e4eaf3;
+  border-radius: 8px;
+  background: #fff;
+
+  img {
+    width: 15px;
+    height: 16px;
+    flex: 0 0 auto;
+  }
+
+  input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: $pc-text;
+    font: inherit;
+    font-size: 12px;
+    line-height: 17px;
+
+    &::placeholder {
+      color: #aab2bf;
+    }
+  }
+}
+
+.pc-lube-filter {
+  display: inline-flex;
+  width: 78px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #e4eaf3;
+  border-radius: 8px;
+  background: #fff;
+  color: $pc-subtle;
+  font-size: 14px;
+  line-height: 21px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.pc-lube-count {
+  margin-left: auto;
+  color: $pc-muted;
+  font-size: 14px;
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.pc-lube-table-wrap {
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.pc-lube-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    height: 52px;
+    padding: 0 12px;
+    border-bottom: 1px solid #f2f4f8;
+    overflow: hidden;
+    color: $pc-text;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    text-align: left;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  th {
+    height: 44px;
+    background: #f7f9fc;
+    color: #7a8597;
+    font-weight: 400;
+  }
+
+  td:first-child {
+    color: $pc-muted;
+  }
+
+  td:nth-child(4),
+  td:nth-child(5) {
+    color: $pc-subtle;
+  }
+}
+
+.pc-lube-cycle,
+.pc-lube-status {
+  display: inline-flex;
+  min-width: 46px;
+  height: 29px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.pc-lube-cycle {
+  padding: 0 12px;
+  background: #f5f7fa;
+  color: $pc-subtle;
+}
+
+.pc-lube-status {
+  width: 52px;
+  background: rgba(0, 188, 125, 0.15);
+  color: #009966;
+
+  &.is-warning {
+    background: rgba(255, 185, 0, 0.15);
+    color: #e17100;
+  }
+
+  &.is-danger {
+    background: rgba(251, 44, 54, 0.15);
+    color: #e7000b;
+  }
+}
+
+.pc-lube-more {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 6px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #f5f7fa;
+  }
+}
+
+.pc-lube-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.pc-lube-metric-card {
+  display: flex;
+  height: 93px;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+
+  > div {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  span {
+    color: $pc-muted;
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  strong {
+    color: $pc-text;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 40px;
+  }
+}
+
+.pc-lube-metric-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--metric-bg, #eaf3ff);
+  flex: 0 0 auto;
+
+  img {
+    width: 20px;
+    height: 20px;
   }
 }
 

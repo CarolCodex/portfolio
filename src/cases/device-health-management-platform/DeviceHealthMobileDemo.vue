@@ -2120,8 +2120,8 @@ function getInitialTab(): MobileContentKey {
   top: 453px;
   right: 16px;
   left: 16px;
-  height: 250px;
-  padding: 16px;
+  height: 272px;
+  padding: 16px 16px 18px;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
@@ -2186,8 +2186,8 @@ function getInitialTab(): MobileContentKey {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 24px;
-  padding-top: 8px;
+  margin-top: 18px;
+  padding: 0 0 18px;
 }
 
 .login-options label {

@@ -68,13 +68,11 @@
             </aside>
 
             <div class="device-platform-stage" :data-main-view="activeMainView" :data-panel="activeDevicePanel">
-              <Transition name="device-demo-swap" mode="out-in">
-                <div :key="activeDevicePanel" class="device-app-demo">
-                  <div class="device-app-viewport">
-                    <DeviceHealthMobileDemo :preview-page="activeDevicePanel" />
-                  </div>
+              <div class="device-app-demo">
+                <div class="device-app-viewport">
+                  <DeviceHealthMobileDemo :preview-page="activeDevicePanel" />
                 </div>
-              </Transition>
+              </div>
             </div>
 
             <aside class="device-case-copy device-app-copy device-insights-panel" aria-label="设计洞察">
@@ -681,8 +679,9 @@ const activeMainViewContent = computed(() => {
   if (activeMainView.value === 'pc') {
     return {
       label: 'PC后台 Demo',
-      title: 'PC后台运维管理视图',
-      description: '按浅色后台设计稿还原数据驾驶舱，覆盖设备详情、指标卡、趋势图和缺陷工单。',
+      title: '设备健康管理 PC 后台',
+      description:
+        '基于 Vue / TypeScript 构建的设备运维管理后台，支持浅色与深色模式，覆盖设备台账、运行监测、点检任务、缺陷工单与数据看板，形成与 APP 端一致的运维闭环。',
       mediaLabel: 'PC Console',
       mediaTitle: 'PC后台运维管理视图',
       mediaDescription: '展示设备台账、告警处置、检修计划和数据报表等管理端页面。',
@@ -714,16 +713,19 @@ const activeMainViewHighlights = computed(() => {
   if (activeMainView.value === 'pc') {
     return [
       {
-        title: '后台信息架构',
-        description: '左侧导航承载数据驾驶舱、点检管理、在线管理和润滑管理入口。',
+        title: '业务架构清晰',
+        description:
+          '围绕设备台账、点检管理、在线监测、润滑管理和缺陷工单组织导航结构，让管理端可以快速查看设备状态、任务进度和异常处理情况。',
       },
       {
-        title: '数据密度控制',
-        description: '设备详情、核心指标、趋势图和缺陷表格集中呈现，保持管理端扫描效率。',
+        title: '双主题视觉体系',
+        description:
+          '浅色模式保证日常办公场景下的清晰阅读，深色模式适配监控大屏与长时间值守场景，统一卡片、表格、状态标签和图表视觉规范。',
       },
       {
-        title: '与 APP 任务闭环',
-        description: 'PC 端负责管理配置与数据复核，APP 端负责现场执行，状态链路保持一致。',
+        title: '组件化工程实现',
+        description:
+          '页面按 Sidebar、MetricCard、DataTable、ChartPanel、StatusTag 等模块拆分，便于后续扩展更多设备类型、统计指标和工单流程。',
       },
     ]
   }
@@ -764,7 +766,7 @@ const activeMainViewHighlights = computed(() => {
 
 <style scoped>
 .device-case-page {
-  width: min(100% - 96px, 1320px);
+  width: min(100% - 72px, 1500px);
   padding-top: 64px;
 }
 
@@ -813,6 +815,8 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-case-intro {
+  position: relative;
+  z-index: 30;
   display: grid;
   width: min(100%, 1040px);
   justify-items: center;
@@ -841,6 +845,7 @@ const activeMainViewHighlights = computed(() => {
 
 .device-main-nav {
   position: relative;
+  z-index: 40;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -892,7 +897,7 @@ const activeMainViewHighlights = computed(() => {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  z-index: 12;
+  z-index: 80;
   display: grid;
   gap: 8px;
   width: 246px;
@@ -957,6 +962,8 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-showcase-row {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(620px, 1fr) minmax(380px, 490px);
   align-items: center;
@@ -966,8 +973,8 @@ const activeMainViewHighlights = computed(() => {
 
 .device-showcase-row[data-main-view='app'] {
   position: relative;
-  grid-template-columns: minmax(180px, 0.38fr) minmax(620px, 2.34fr) minmax(260px, 0.68fr);
-  gap: clamp(18px, 2.8vw, 38px);
+  grid-template-columns: minmax(320px, 0.24fr) minmax(560px, 0.52fr) minmax(320px, 0.24fr);
+  gap: clamp(28px, 3.2vw, 56px);
   align-items: center;
   padding: 4px 0 26px;
   isolation: isolate;
@@ -1002,10 +1009,14 @@ const activeMainViewHighlights = computed(() => {
   position: relative;
   z-index: 3;
   display: grid;
-  gap: 18px;
-  width: min(100%, 220px);
+  gap: 22px;
+  width: min(100%, 360px);
   justify-self: end;
   align-self: center;
+}
+
+.device-showcase-row[data-main-view='app'] .device-stage-header {
+  transform: translateY(clamp(-172px, -9vw, -132px));
 }
 
 .device-app-nav-panel > span {
@@ -1020,7 +1031,7 @@ const activeMainViewHighlights = computed(() => {
 .device-story-steps {
   position: relative;
   display: grid;
-  gap: 20px;
+  gap: 22px;
 }
 
 .device-story-steps::before {
@@ -1107,7 +1118,7 @@ const activeMainViewHighlights = computed(() => {
   color: currentcolor;
   font-size: 12px;
   font-weight: 650;
-  line-height: 17px;
+  line-height: 19px;
   opacity: 0.58;
 }
 
@@ -1167,11 +1178,11 @@ const activeMainViewHighlights = computed(() => {
 .device-app-copy {
   position: relative;
   z-index: 3;
-  width: min(100%, 320px);
-  max-width: 320px;
+  width: min(100%, 360px);
+  max-width: 360px;
   justify-self: start;
   align-self: center;
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .device-current-card {
@@ -1229,6 +1240,46 @@ const activeMainViewHighlights = computed(() => {
   margin: 0;
 }
 
+.device-showcase-row[data-main-view='pc'] .device-current-card {
+  position: relative;
+  gap: 15px;
+  margin-top: 0;
+  padding: 32px 36px 34px;
+  border-color: rgba(179, 194, 214, 0.4);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(40, 183, 255, 0.1), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(246, 251, 255, 0.78));
+  box-shadow:
+    0 24px 58px rgba(43, 112, 198, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-current-card > span {
+  min-height: 27px;
+  padding: 5px 13px;
+  border: 1px solid rgba(40, 137, 239, 0.12);
+  background: rgba(40, 137, 239, 0.1);
+  color: #0f6ce8;
+  font-size: 13px;
+  line-height: 17px;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-current-card h2 {
+  color: #0b2556;
+  font-size: clamp(28px, 2.4vw, 36px);
+  line-height: 1.18;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-current-card p {
+  max-width: 1120px;
+  color: #526985;
+  font-size: 16px;
+  line-height: 1.78;
+}
+
 .device-highlights {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1248,6 +1299,12 @@ const activeMainViewHighlights = computed(() => {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.device-showcase-row[data-main-view='pc'] .device-highlights.is-main-view-highlights {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 24px);
+  margin-top: 20px;
+}
+
 .device-highlights article {
   display: grid;
   gap: 6px;
@@ -1257,6 +1314,47 @@ const activeMainViewHighlights = computed(() => {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.62);
   box-shadow: 0 18px 42px rgba(43, 112, 198, 0.08);
+}
+
+.device-showcase-row[data-main-view='pc'] .device-highlights article {
+  position: relative;
+  align-content: start;
+  gap: 11px;
+  min-height: 176px;
+  padding: 24px;
+  border-color: rgba(179, 194, 214, 0.42);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 251, 255, 0.72)),
+    rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 18px 42px rgba(43, 112, 198, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(14px);
+}
+
+.device-showcase-row[data-main-view='pc'] .device-highlights article::before {
+  content: '业务架构';
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid rgba(40, 137, 239, 0.13);
+  border-radius: 999px;
+  background: rgba(40, 137, 239, 0.08);
+  color: #0f6ce8;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 16px;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-highlights article:nth-child(2)::before {
+  content: '双主题';
+}
+
+.device-showcase-row[data-main-view='pc'] .device-highlights article:nth-child(3)::before {
+  content: '组件化';
 }
 
 .device-app-copy .device-highlights article {
@@ -1274,10 +1372,22 @@ const activeMainViewHighlights = computed(() => {
   font-size: 15px;
 }
 
+.device-showcase-row[data-main-view='pc'] .device-highlights strong {
+  color: #0b2556;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
 .device-highlights span {
   color: #5d728f;
   font-size: 14px;
   line-height: 1.6;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-highlights span {
+  color: #526985;
+  font-size: 15px;
+  line-height: 1.72;
 }
 
 .device-app-copy .device-highlights span {
@@ -1290,7 +1400,7 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-insights-panel {
-  gap: 12px;
+  gap: 14px;
 }
 
 .device-insights-eyebrow {
@@ -1304,13 +1414,13 @@ const activeMainViewHighlights = computed(() => {
 
 .device-insight-stack {
   display: grid;
-  gap: 11px;
+  gap: 13px;
 }
 
 .device-insight-card {
   display: grid;
-  gap: 6px;
-  padding: 15px 16px;
+  gap: 7px;
+  padding: 17px 18px;
   border: 1px solid rgba(255, 255, 255, 0.58);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.46);
@@ -1322,7 +1432,7 @@ const activeMainViewHighlights = computed(() => {
 
 .device-insight-card.is-primary {
   min-height: 206px;
-  padding: 22px;
+  padding: 24px;
   border-radius: 22px;
   background:
     radial-gradient(circle at 90% 0%, rgba(40, 183, 255, 0.18), transparent 42%),
@@ -1351,7 +1461,7 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-insight-card h2 {
-  max-width: 260px;
+  max-width: 310px;
   font-size: 23px;
   line-height: 1.28;
 }
@@ -1365,7 +1475,7 @@ const activeMainViewHighlights = computed(() => {
   margin: 0;
   color: #5d728f;
   font-size: 13px;
-  line-height: 1.62;
+  line-height: 1.68;
 }
 
 .device-insight-card.is-primary p {
@@ -1394,7 +1504,6 @@ const activeMainViewHighlights = computed(() => {
   z-index: 1;
   min-height: var(--device-frame-height);
   justify-self: center;
-  transform: translateX(1.5%);
 }
 
 .device-platform-stage[data-main-view='app']::before,
@@ -1451,11 +1560,11 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-stage-header p {
-  max-width: 220px;
+  max-width: 330px;
   margin: 0;
   color: rgba(93, 114, 143, 0.82);
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.7;
 }
 
 .device-platform-stage[data-main-view='pc'],
@@ -1502,26 +1611,6 @@ const activeMainViewHighlights = computed(() => {
   overflow: hidden;
   border-radius: 36px;
   background: #f4f8ff;
-}
-
-.device-demo-swap-enter-active,
-.device-demo-swap-leave-active {
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease,
-    filter 220ms ease;
-}
-
-.device-demo-swap-enter-from {
-  opacity: 0;
-  filter: blur(6px);
-  transform: translateY(18px) scale(0.985);
-}
-
-.device-demo-swap-leave-to {
-  opacity: 0;
-  filter: blur(5px);
-  transform: translateY(-12px) scale(0.99);
 }
 
 .device-view-placeholder {
@@ -1639,6 +1728,10 @@ const activeMainViewHighlights = computed(() => {
     gap: 40px;
   }
 
+  .device-showcase-row[data-main-view='pc'] .device-highlights.is-main-view-highlights {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
   .device-showcase-row[data-main-view='app'] {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -1663,6 +1756,7 @@ const activeMainViewHighlights = computed(() => {
   .device-app-nav-panel .device-stage-header {
     justify-items: center;
     text-align: center;
+    transform: none;
   }
 
   .device-app-nav-panel .device-stage-header p {
@@ -1824,6 +1918,11 @@ const activeMainViewHighlights = computed(() => {
 
   .device-current-card {
     padding: 20px;
+  }
+
+  .device-showcase-row[data-main-view='pc'] .device-current-card,
+  .device-showcase-row[data-main-view='pc'] .device-highlights article {
+    padding: 22px;
   }
 
   .device-platform-stage {
