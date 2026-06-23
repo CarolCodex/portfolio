@@ -253,6 +253,7 @@ h1 strong {
   align-items: center;
   justify-content: center;
   min-width: 0;
+  contain: layout paint;
 }
 
 .hero-cover-visual::before {
@@ -265,6 +266,7 @@ h1 strong {
   background: radial-gradient(circle, rgba(255, 255, 255, 0.38), transparent 62%);
   filter: blur(10px);
   animation: glow-breathe 6200ms ease-in-out infinite;
+  will-change: opacity, transform;
 }
 
 .hero-cover-visual::after {
@@ -286,6 +288,7 @@ h1 strong {
   filter: drop-shadow(0 42px 80px rgba(0, 57, 150, 0.28));
   transform: translateX(30px);
   animation: folder-float 5200ms ease-in-out infinite;
+  will-change: transform;
 }
 
 .hero-folder-picture img {
@@ -491,6 +494,13 @@ h1 strong {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+@media (prefers-reduced-data: reduce) {
+  .hero-folder-picture,
+  .hero-cover-visual::before {
+    animation: none;
   }
 }
 </style>

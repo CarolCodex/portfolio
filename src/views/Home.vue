@@ -71,6 +71,7 @@ import CaseCard from '@/components/CaseCard.vue'
 import ProfileIntroCard from '@/components/ProfileIntroCard.vue'
 import { featuredCases } from '@/data/cases'
 import SectionTitle from '@/components/SectionTitle.vue'
+import { rafThrottle } from '@/utils/performance'
 
 const contactPhone = '13683407964'
 const showContactPopover = ref(false)
@@ -124,6 +125,8 @@ function updateContactPopoverPosition() {
   }
 }
 
+const scheduleContactPopoverPosition = rafThrottle(updateContactPopoverPosition)
+
 function closeContactPopover() {
   showContactPopover.value = false
   contactCopied.value = false
@@ -142,7 +145,7 @@ function handleContactClick(event: MouseEvent) {
   contactButtonEl.value = button
   showContactPopover.value = true
   contactCopied.value = false
-  void nextTick(updateContactPopoverPosition)
+  void nextTick(scheduleContactPopoverPosition)
 }
 
 function handleDocumentPointerDown(event: PointerEvent) {
@@ -185,15 +188,16 @@ async function copyContactPhone() {
 onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   document.addEventListener('keydown', handleKeydown)
-  window.addEventListener('resize', updateContactPopoverPosition, { passive: true })
-  window.addEventListener('scroll', updateContactPopoverPosition, { capture: true, passive: true })
+  window.addEventListener('resize', scheduleContactPopoverPosition, { passive: true })
+  window.addEventListener('scroll', scheduleContactPopoverPosition, { capture: true, passive: true })
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown)
   document.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('resize', updateContactPopoverPosition)
-  window.removeEventListener('scroll', updateContactPopoverPosition, true)
+  window.removeEventListener('resize', scheduleContactPopoverPosition)
+  window.removeEventListener('scroll', scheduleContactPopoverPosition, true)
+  scheduleContactPopoverPosition.cancel()
 
   if (copyResetTimer) {
     window.clearTimeout(copyResetTimer)

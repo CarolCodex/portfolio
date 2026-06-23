@@ -18,6 +18,25 @@ function rewritePublicAssetBase(source: string, basePath: string) {
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/')) {
+            return 'vendor'
+          }
+
+          if (id.includes('/src/demos/mini-program/') || id.includes('/src/cases/liangxuan-mini-program/')) {
+            return 'mini-program-demo'
+          }
+
+          if (id.includes('/src/cases/device-health-management-platform/') || id.includes('/src/views/DeviceHealthPcPreview.vue')) {
+            return 'device-health-demo'
+          }
+        },
+      },
+    },
+  },
   plugins: [
     vue(),
     {

@@ -18,6 +18,7 @@
         :src="item.coverImage"
         :alt="`${item.title}封面`"
         loading="lazy"
+        decoding="async"
       />
       <LiangxuanCaseCoverVisual v-else-if="isLiangxuanCase" />
       <span v-else class="case-category">{{ item.category }}</span>

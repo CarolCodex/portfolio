@@ -30,10 +30,10 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
+import { rafThrottle } from '@/utils/performance'
 
 const route = useRoute()
 const isHomeBanner = ref(false)
-let headerFrame = 0
 let isHomeHeaderListening = false
 
 const headerBackLink = computed(() => {
@@ -70,20 +70,15 @@ const updateHomeHeaderState = () => {
   isHomeBanner.value = firstContentSection.getBoundingClientRect().top > 150
 }
 
-const scheduleHomeHeaderStateUpdate = () => {
+const scheduleHomeHeaderStateUpdate = rafThrottle(() => {
   if (route.path !== '/') return
-  if (headerFrame) return
-
-  headerFrame = window.requestAnimationFrame(() => {
-    headerFrame = 0
-    updateHomeHeaderState()
-  })
-}
+  updateHomeHeaderState()
+})
 
 const addHomeHeaderListeners = () => {
   if (isHomeHeaderListening) return
   window.addEventListener('scroll', scheduleHomeHeaderStateUpdate, { passive: true })
-  window.addEventListener('resize', scheduleHomeHeaderStateUpdate)
+  window.addEventListener('resize', scheduleHomeHeaderStateUpdate, { passive: true })
   isHomeHeaderListening = true
 }
 
@@ -110,11 +105,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (headerFrame) {
-    window.cancelAnimationFrame(headerFrame)
-    headerFrame = 0
-  }
-
+  scheduleHomeHeaderStateUpdate.cancel()
   removeHomeHeaderListeners()
 })
 
