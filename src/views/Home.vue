@@ -1,6 +1,6 @@
 <template>
   <div class="home-page">
-    <HeroSection @contact="showContactModal = true" />
+    <HeroSection @contact="handleContactClick" />
 
     <section class="container section">
       <ProfileIntroCard />
@@ -39,29 +39,31 @@
       </div>
     </section>
 
-    <div
-      v-if="showContactModal"
-      class="contact-modal-mask"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="contact-modal-title"
-      @click="showContactModal = false"
-    >
-      <div class="contact-modal" @click.stop>
-        <button class="contact-modal-close" type="button" @click="showContactModal = false">
-          ×
+    <Transition name="contact-popover">
+      <aside
+        v-if="showContactPopover"
+        ref="contactPopoverRef"
+        class="contact-popover"
+        :class="`is-${contactPlacement}`"
+        :style="contactPopoverStyle"
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="contact-popover-title"
+        @click.stop
+      >
+        <h3 id="contact-popover-title">联系方式</h3>
+        <button class="contact-phone" type="button" aria-label="复制电话号码 13683407964" @click="copyContactPhone">
+          <span>{{ contactPhone }}</span>
+          <small>{{ contactCopied ? '已复制' : '复制' }}</small>
         </button>
-
-        <h3 id="contact-modal-title">联系方式</h3>
-        <p class="contact-phone">电话：13683407964</p>
-        <p class="contact-note">仅限成都求职，非招聘不要打扰，谢谢～</p>
-      </div>
-    </div>
+        <p class="contact-note">仅限成都求职，非招聘暂不打扰，谢谢～</p>
+      </aside>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import HeroSection from '@/components/HeroSection.vue'
 import CapabilityCard from '@/components/CapabilityCard.vue'
@@ -70,7 +72,133 @@ import ProfileIntroCard from '@/components/ProfileIntroCard.vue'
 import { featuredCases } from '@/data/cases'
 import SectionTitle from '@/components/SectionTitle.vue'
 
-const showContactModal = ref(false)
+const contactPhone = '13683407964'
+const showContactPopover = ref(false)
+const contactButtonEl = ref<HTMLElement | null>(null)
+const contactPopoverRef = ref<HTMLElement | null>(null)
+const contactPlacement = ref<'left' | 'right'>('right')
+const contactPopoverStyle = ref<Record<string, string>>({
+  left: '0px',
+  top: '0px',
+  transformOrigin: 'left center',
+  '--contact-arrow-y': '50%',
+})
+const contactCopied = ref(false)
+
+let copyResetTimer: number | undefined
+
+function updateContactPopoverPosition() {
+  const button = contactButtonEl.value
+
+  if (!button || !showContactPopover.value) {
+    return
+  }
+
+  const buttonRect = button.getBoundingClientRect()
+  const popoverWidth = contactPopoverRef.value?.offsetWidth ?? 436
+  const popoverHeight = contactPopoverRef.value?.offsetHeight ?? 170
+  const viewportPadding = 18
+  const anchorGap = 26
+  const rightSpace = window.innerWidth - buttonRect.right - anchorGap - viewportPadding
+  const leftSpace = buttonRect.left - anchorGap - viewportPadding
+  const placeLeft = rightSpace < popoverWidth && leftSpace > rightSpace
+  const rawLeft = placeLeft
+    ? buttonRect.left - anchorGap - popoverWidth
+    : buttonRect.right + anchorGap
+  const maxLeft = window.innerWidth - popoverWidth - viewportPadding
+  const left = Math.min(Math.max(rawLeft, viewportPadding), Math.max(viewportPadding, maxLeft))
+  const rawTop = buttonRect.top + buttonRect.height / 2 - popoverHeight / 2 + 10
+  const maxTop = window.innerHeight - popoverHeight - viewportPadding
+  const top = Math.min(Math.max(rawTop, viewportPadding), Math.max(viewportPadding, maxTop))
+  const arrowY = Math.min(
+    Math.max(buttonRect.top + buttonRect.height / 2 - top, 30),
+    Math.max(30, popoverHeight - 30),
+  )
+
+  contactPlacement.value = placeLeft ? 'left' : 'right'
+  contactPopoverStyle.value = {
+    left: `${Math.round(left)}px`,
+    top: `${Math.round(top)}px`,
+    transformOrigin: `${placeLeft ? 'right' : 'left'} ${Math.round(arrowY)}px`,
+    '--contact-arrow-y': `${Math.round(arrowY)}px`,
+  }
+}
+
+function closeContactPopover() {
+  showContactPopover.value = false
+  contactCopied.value = false
+}
+
+function handleContactClick(event: MouseEvent) {
+  event.stopPropagation()
+
+  const button = event.currentTarget as HTMLElement | null
+
+  if (showContactPopover.value && contactButtonEl.value === button) {
+    closeContactPopover()
+    return
+  }
+
+  contactButtonEl.value = button
+  showContactPopover.value = true
+  contactCopied.value = false
+  void nextTick(updateContactPopoverPosition)
+}
+
+function handleDocumentPointerDown(event: PointerEvent) {
+  const target = event.target as Node | null
+
+  if (!showContactPopover.value || !target) {
+    return
+  }
+
+  if (contactPopoverRef.value?.contains(target) || contactButtonEl.value?.contains(target)) {
+    return
+  }
+
+  closeContactPopover()
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    closeContactPopover()
+  }
+}
+
+async function copyContactPhone() {
+  try {
+    await navigator.clipboard.writeText(contactPhone)
+    contactCopied.value = true
+
+    if (copyResetTimer) {
+      window.clearTimeout(copyResetTimer)
+    }
+
+    copyResetTimer = window.setTimeout(() => {
+      contactCopied.value = false
+    }, 1500)
+  } catch {
+    contactCopied.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', handleDocumentPointerDown)
+  document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('resize', updateContactPopoverPosition, { passive: true })
+  window.addEventListener('scroll', updateContactPopoverPosition, { capture: true, passive: true })
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', handleDocumentPointerDown)
+  document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('resize', updateContactPopoverPosition)
+  window.removeEventListener('scroll', updateContactPopoverPosition, true)
+
+  if (copyResetTimer) {
+    window.clearTimeout(copyResetTimer)
+  }
+})
 
 const capabilities = [
   {
@@ -127,67 +255,155 @@ const capabilities = [
   }
 }
 
-.contact-modal-mask {
+.contact-popover {
   position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(8px);
+  z-index: 40;
+  box-sizing: border-box;
+  width: min(436px, calc(100vw - 36px));
+  min-height: 170px;
+  padding: 21px 22px;
+  border: 1px solid rgba(205, 228, 255, 0.56);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow:
+    0 16px 38px rgba(30, 100, 220, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  color: #1e3a5f;
+  isolation: isolate;
+  text-align: left;
 }
 
-.contact-modal {
-  position: relative;
-  width: min(100%, 360px);
-  padding: 28px 28px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+.contact-popover::before {
+  content: '';
+  position: absolute;
+  top: var(--contact-arrow-y, 50%);
+  z-index: -1;
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(205, 228, 255, 0.5);
+  background: #fff;
+  backdrop-filter: blur(16px);
 }
 
-.contact-modal h3 {
-  margin: 0 0 16px;
-  color: #0f2b5c;
-  font-size: 20px;
+.contact-popover.is-right::before {
+  left: -5px;
+  border-top: 0;
+  border-right: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.contact-popover.is-left::before {
+  right: -5px;
+  border-bottom: 0;
+  border-left: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.contact-popover h3 {
+  margin: 0 0 11px;
+  color: #1e3a5f;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.22;
 }
 
 .contact-phone {
-  margin: 0 0 8px;
-  color: #0f2b5c;
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 12px 8px 16px;
+  border: 1px solid rgba(80, 150, 255, 0.16);
+  border-radius: 16px;
+  background: rgba(221, 239, 255, 0.32);
+  color: #0b63e5;
+  font: inherit;
+  cursor: copy;
+  appearance: none;
+  transition:
+    border-color 190ms ease,
+    background 190ms ease,
+    transform 190ms ease;
+}
+
+.contact-phone span {
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.contact-note {
-  margin: 0;
-  color: #5d6f8f;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.contact-modal-close {
-  position: absolute;
-  top: 14px;
-  right: 16px;
+.contact-phone small {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
+  flex: 0 0 auto;
+  min-width: 50px;
+  min-height: 30px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(15, 43, 92, 0.06);
-  color: #5d6f8f;
-  cursor: pointer;
+  background: rgba(30, 90, 200, 0.08);
+  color: #1e6bea;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background 190ms ease,
+    color 190ms ease;
 }
 
-.contact-modal-close:hover {
-  background: rgba(15, 43, 92, 0.1);
-  color: #0f2b5c;
+.contact-phone:hover {
+  border-color: rgba(80, 150, 255, 0.22);
+  background: rgba(216, 236, 255, 0.46);
+}
+
+.contact-phone:hover small {
+  background: rgba(30, 90, 200, 0.14);
+}
+
+.contact-phone:active {
+  transform: scale(0.992);
+}
+
+.contact-phone:focus-visible {
+  outline: 3px solid rgba(57, 132, 255, 0.22);
+  outline-offset: 3px;
+}
+
+.contact-note {
+  margin: 11px 0 0;
+  color: rgba(22, 52, 95, 0.45);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.72;
+}
+
+.contact-popover-enter-active,
+.contact-popover-leave-active {
+  transition:
+    opacity 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.contact-popover-enter-to,
+.contact-popover-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.contact-popover-enter-from,
+.contact-popover-leave-to {
+  opacity: 0;
+  transform: translateX(-8px) scale(0.96);
+}
+
+.contact-popover.is-left.contact-popover-enter-from,
+.contact-popover.is-left.contact-popover-leave-to {
+  transform: translateX(8px) scale(0.96);
 }
 
 .core-capabilities-section {

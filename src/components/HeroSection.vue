@@ -21,7 +21,7 @@
         <div class="hero-actions">
           <RouterLink class="hero-button hero-button-primary" to="/cases">查看作品案例</RouterLink>
           <RouterLink class="hero-button hero-button-secondary" to="/resume">查看在线简历</RouterLink>
-          <button class="hero-button hero-button-secondary hero-contact-button" type="button" @click="$emit('contact')">
+          <button class="hero-button hero-button-secondary hero-contact-button" type="button" @click="$emit('contact', $event)">
             联系我
           </button>
         </div>
@@ -58,7 +58,7 @@
 import { RouterLink } from 'vue-router'
 
 defineEmits<{
-  contact: []
+  contact: [event: MouseEvent]
 }>()
 
 const entries = [
