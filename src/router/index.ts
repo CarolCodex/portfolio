@@ -35,6 +35,12 @@ const router = createRouter({
     { path: '/cases/liangxuan-mini-program', redirect: '/demos/mini-program' },
     { path: '/cases/mini-program', redirect: '/demos/mini-program' },
     {
+      path: '/cases/device-health-management-platform/pc-preview',
+      name: 'device-health-pc-preview',
+      component: () => import('@/views/DeviceHealthPcPreview.vue'),
+      meta: { title: '设备健康 PC 后台预览', hideHeader: true },
+    },
+    {
       path: '/cases/:id/design-spec',
       name: 'case-design-spec',
       component: () => import('@/views/CaseDesignSpecPage.vue'),

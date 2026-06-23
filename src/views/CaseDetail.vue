@@ -39,38 +39,64 @@
           </div>
         </div>
 
-        <div class="device-showcase-row">
-          <aside class="device-case-copy">
-            <template v-if="activeMainView === 'app'">
-              <div class="device-switcher" aria-label="案例模块切换">
+        <div class="device-showcase-row" :data-main-view="activeMainView">
+          <template v-if="activeMainView === 'app'">
+            <aside class="device-app-nav-panel" aria-label="产品使用路径">
+              <header class="device-stage-header" aria-live="polite">
+                <h2>{{ activeDeviceStage.title }}</h2>
+                <p>{{ activeDeviceStage.caption }}</p>
+              </header>
+
+              <span>核心页面</span>
+              <div class="device-story-steps" aria-label="产品使用路径">
                 <button
-                  v-for="tab in devicePanelTabs"
-                  :key="tab.key"
-                  class="device-switch-button"
-                  :class="{ active: activeDevicePanel === tab.key }"
-                  :aria-pressed="activeDevicePanel === tab.key"
+                  v-for="(step, index) in deviceStorySteps"
+                  :key="step.key"
+                  class="device-story-step"
+                  :class="{ active: activeStoryStep === step.key }"
+                  :aria-current="activeStoryStep === step.key ? 'step' : undefined"
                   type="button"
-                  @click="setActiveDevicePanel(tab.key)"
+                  @click="setActiveDevicePanel(step.panel)"
                 >
-                  {{ tab.label }}
+                  <i>{{ String(index + 1).padStart(2, '0') }}</i>
+                  <span>
+                    <strong>{{ step.label }}</strong>
+                    <small>{{ step.caption }}</small>
+                  </span>
                 </button>
               </div>
+            </aside>
 
-              <article class="device-current-card" aria-live="polite">
-                <span>{{ activeDevicePanelContent.label }}</span>
-                <h2>{{ activeDevicePanelContent.title }}</h2>
-                <p>{{ activeDevicePanelContent.description }}</p>
-              </article>
+            <div class="device-platform-stage" :data-main-view="activeMainView" :data-panel="activeDevicePanel">
+              <Transition name="device-demo-swap" mode="out-in">
+                <div :key="activeDevicePanel" class="device-app-demo">
+                  <div class="device-app-viewport">
+                    <DeviceHealthMobileDemo :preview-page="activeDevicePanel" />
+                  </div>
+                </div>
+              </Transition>
+            </div>
 
-              <div class="device-highlights" :class="{ 'is-login-highlights': activeDevicePanel === 'login' }" aria-label="案例亮点">
-                <article v-for="highlight in activeDeviceHighlights" :key="highlight.title">
-                  <strong>{{ highlight.title }}</strong>
-                  <span>{{ highlight.description }}</span>
+            <aside class="device-case-copy device-app-copy device-insights-panel" aria-label="设计洞察">
+              <span class="device-insights-eyebrow">设计说明</span>
+              <div class="device-insight-stack" aria-live="polite">
+                <article class="device-insight-card is-primary">
+                  <span>{{ activeDeviceInsights.primary.kicker }}</span>
+                  <h2>{{ activeDeviceInsights.primary.title }}</h2>
+                  <p>{{ activeDeviceInsights.primary.description }}</p>
+                </article>
+
+                <article v-for="insight in activeDeviceInsights.supporting" :key="insight.title" class="device-insight-card">
+                  <span>{{ insight.kicker }}</span>
+                  <strong>{{ insight.title }}</strong>
+                  <p>{{ insight.description }}</p>
                 </article>
               </div>
-            </template>
+            </aside>
+          </template>
 
-            <template v-else>
+          <template v-else>
+            <aside class="device-case-copy">
               <article class="device-current-card" aria-live="polite">
                 <span>{{ activeMainViewContent.label }}</span>
                 <h2>{{ activeMainViewContent.title }}</h2>
@@ -83,25 +109,26 @@
                   <span>{{ highlight.description }}</span>
                 </article>
               </div>
-            </template>
-          </aside>
+            </aside>
 
-          <div class="device-platform-stage" :data-main-view="activeMainView" :data-panel="activeDevicePanel">
-            <div v-if="activeMainView === 'app'" class="device-app-demo">
-              <div class="device-app-viewport">
-                <DeviceHealthMobileDemo :preview-page="activeDevicePanel" />
-              </div>
+            <div class="device-platform-stage" :data-main-view="activeMainView" :data-panel="activeDevicePanel">
+              <LaptopMockup
+                v-if="activeMainView === 'pc'"
+                class="device-pc-laptop"
+                :src="deviceHealthPcPreviewSrc"
+                title="设备健康管理平台 PC 后台预览"
+              />
+
+              <article v-else class="device-view-placeholder" :class="`is-${activeMainView}`">
+                <span>{{ activeMainViewContent.mediaLabel }}</span>
+                <h3>{{ activeMainViewContent.mediaTitle }}</h3>
+                <p>{{ activeMainViewContent.mediaDescription }}</p>
+                <div class="device-placeholder-grid" aria-hidden="true">
+                  <i v-for="index in 4" :key="index" />
+                </div>
+              </article>
             </div>
-
-            <article v-else class="device-view-placeholder" :class="`is-${activeMainView}`">
-              <span>{{ activeMainViewContent.mediaLabel }}</span>
-              <h3>{{ activeMainViewContent.mediaTitle }}</h3>
-              <p>{{ activeMainViewContent.mediaDescription }}</p>
-              <div class="device-placeholder-grid" aria-hidden="true">
-                <i v-for="index in 4" :key="index" />
-              </div>
-            </article>
-          </div>
+          </template>
         </div>
       </section>
 
@@ -201,6 +228,7 @@
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import BeforeAfter from '@/components/BeforeAfter.vue'
+import LaptopMockup from '@/components/LaptopMockup.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
 import SkillTag from '@/components/SkillTag.vue'
 import { cases } from '@/data/cases'
@@ -214,12 +242,24 @@ const DeviceHealthMobileDemo = defineAsyncComponent(() =>
 type DevicePanelKey = 'login' | 'home' | 'workbench' | 'tasks' | 'inspection' | 'defect' | 'repair' | 'profile'
 type MainViewKey = 'app' | 'pc' | 'spec'
 type SpecSubViewKey = 'mobile' | 'pc'
+type DeviceStoryStepKey = 'login' | 'operate' | 'tasks' | 'profile'
+type DeviceInsightCard = {
+  kicker: string
+  title: string
+  description: string
+}
 
-const activeDevicePanel = ref<DevicePanelKey>('login')
+const activeDevicePanel = ref<DevicePanelKey>(getInitialDevicePanel())
 const activeMainView = ref<MainViewKey>('app')
 const activeSpecSubView = ref<SpecSubViewKey>('mobile')
 const specMenuOpen = ref(false)
 const isDeviceHealthCase = computed(() => item.value?.id === 'device-health-management-platform')
+const deviceHealthPcPreviewSrc = computed(() => {
+  const previewPath = 'cases/device-health-management-platform/pc-preview'
+  const basePath = import.meta.env.BASE_URL || '/'
+
+  return import.meta.env.PROD ? `${basePath}#/${previewPath}` : `${basePath}${previewPath}`
+})
 const mainViewTabs: Array<{ key: MainViewKey; label: string }> = [
   { key: 'app', label: 'APP' },
   { key: 'pc', label: 'PC后台' },
@@ -229,16 +269,82 @@ const specSubViewTabs: Array<{ key: SpecSubViewKey; label: string; description: 
   { key: 'mobile', label: '移动端设计规范', description: 'APP 组件、状态与页面规则' },
   { key: 'pc', label: 'PC后台设计规范', description: '后台布局、表格与业务组件规则' },
 ]
-const devicePanelTabs: Array<{ key: DevicePanelKey; label: string }> = [
-  { key: 'login', label: '查看登录页' },
-  { key: 'home', label: '查看首页' },
-  { key: 'workbench', label: '查看工作台' },
-  { key: 'tasks', label: '查看待办' },
-  { key: 'inspection', label: '查看点检管理' },
-  { key: 'defect', label: '查看缺陷管理' },
-  { key: 'repair', label: '查看检修管理' },
-  { key: 'profile', label: '查看我的' },
+const deviceStorySteps: Array<{ key: DeviceStoryStepKey; panel: DevicePanelKey; label: string; caption: string }> = [
+  { key: 'login', panel: 'login', label: '登录', caption: '身份与企业配置入场' },
+  { key: 'operate', panel: 'workbench', label: '工作台', caption: '设备任务与作业汇聚' },
+  { key: 'tasks', panel: 'tasks', label: '待办', caption: '告警与工单优先处理' },
+  { key: 'profile', panel: 'profile', label: '我的', caption: '组织、站点与系统设置' },
 ]
+
+const activeStoryStep = computed<DeviceStoryStepKey>(() => {
+  if (activeDevicePanel.value === 'login') {
+    return 'login'
+  }
+
+  if (activeDevicePanel.value === 'tasks') {
+    return 'tasks'
+  }
+
+  if (activeDevicePanel.value === 'profile') {
+    return 'profile'
+  }
+
+  return 'operate'
+})
+
+const activeDeviceStage = computed(() => {
+  const stageMap: Record<DevicePanelKey, { label: string; title: string; caption: string }> = {
+    login: {
+      label: 'System Entry',
+      title: '安全登录',
+      caption: '从身份、企业配置开始建立可信作业上下文。',
+    },
+    home: {
+      label: 'System Overview',
+      title: '首页总览',
+      caption: '将健康度、趋势和风险聚合为管理者的一眼判断。',
+    },
+    workbench: {
+      label: 'Operation Hub',
+      title: '工作台',
+      caption: '把设备、点检、缺陷和检修收束为现场作业入口。',
+    },
+    tasks: {
+      label: 'Priority Queue',
+      title: '待办中心',
+      caption: '按风险与时效组织任务，让处理顺序更清晰。',
+    },
+    inspection: {
+      label: 'Field Execution',
+      title: '点检管理',
+      caption: '将计划、核对和现场执行压缩到同一条作业链路。',
+    },
+    defect: {
+      label: 'Risk Loop',
+      title: '缺陷管理',
+      caption: '异常从上报到跟踪闭环，状态始终可追溯。',
+    },
+    repair: {
+      label: 'Maintenance Loop',
+      title: '检修管理',
+      caption: '检修任务从指派、处理到归档形成完整记录。',
+    },
+    profile: {
+      label: 'System Profile',
+      title: '我的',
+      caption: '把个人身份、组织站点和系统配置集中管理。',
+    },
+  }
+
+  return stageMap[activeDevicePanel.value]
+})
+
+function getInitialDevicePanel(): DevicePanelKey {
+  const panel = new URLSearchParams(window.location.search).get('mobileTab') as DevicePanelKey | null
+  const validPanels: DevicePanelKey[] = ['login', 'home', 'workbench', 'tasks', 'inspection', 'defect', 'repair', 'profile']
+
+  return panel && validPanels.includes(panel) ? panel : 'login'
+}
 
 function setActiveDevicePanel(panel: DevicePanelKey) {
   activeDevicePanel.value = panel
@@ -270,7 +376,7 @@ const highlightDescriptions: Record<string, string> = {
 const loginHighlights = [
   {
     title: '视觉重构',
-    description: '从旧稿的简陋输入框升级为大厂标准的极简卡片，顶部融入科技感工业风力发电机 3D 浮雕，增强工业软件辨识度。',
+    description: '顶部引入3D场景建模相关元素，直击“设备健康”业务主题。表单区采用卡片悬浮设计，提升界面通透感与质感。',
   },
   {
     title: '交互细节',
@@ -278,7 +384,41 @@ const loginHighlights = [
   },
   {
     title: '一致性规范',
-    description: '登录主按钮采用系统高饱和度标准蓝，规范字体层级，首屏视觉聚焦于核心操作流。',
+    description: '严格收敛首屏视觉焦点，引导用户视线自然垂直下落至核心输入区，保障基础转化率。',
+  },
+]
+
+const homeHighlights = [
+  {
+    title: '结构化卡片设计',
+    description: '工业现场高强度作业下的视觉疲劳。整体采用大圆角卡片对各类图表、列表、指标进行归纳隔离，信息密度高却不拥挤，有效缓解',
+  },
+  {
+    title: '扁平化信息架构',
+    description: '将健康度评分、核心数据、趋势、分布以及实时告警收拢在单个长滚页内，通过垂直滑动即可完成对整个厂区运行状态的快速巡检。',
+  },
+  {
+    title: '轻量化组件设计',
+    description: '界面内的 ECharts及进度环均作了轻量化抽离，确保在低配工业手持PDA或弱网户外环境下，页面依然能保持流畅的渲染和滚动体验。',
+  },
+]
+
+const workbenchHighlights = [
+  {
+    title: '设备管理',
+    description: '全盘设备台账动态总览',
+  },
+  {
+    title: '点检管理：',
+    description: '点检计划现场高效执行与核对。',
+  },
+  {
+    title: '缺陷管理',
+    description: '异常缺陷即时上报与全流程跟踪。',
+  },
+  {
+    title: '检修管理',
+    description: '检修任务指派与全生命周期记录。',
   },
 ]
 
@@ -287,6 +427,14 @@ const activeDeviceHighlights = computed(() => {
 
   if (activeDevicePanel.value === 'login') {
     return loginHighlights
+  }
+
+  if (activeDevicePanel.value === 'home') {
+    return homeHighlights
+  }
+
+  if (activeDevicePanel.value === 'workbench') {
+    return workbenchHighlights
   }
 
   return (currentItem?.highlights ?? []).map((highlight) => ({
@@ -316,23 +464,23 @@ const activeDevicePanelContent = computed(() => {
     login: {
       label: '安全门户 Demo',
       title: '多租户安全登录与企业底衬',
-      description: '围绕一线设备运维人员的入口场景，重构登录页的视觉识别、输入效率和安全感知。',
+      description: '',
       points: [
-        '视觉重构：从旧稿的简陋输入框升级为大厂标准的极简卡片，顶部融入科技感工业风力发电机 3D 浮雕，增强工业软件辨识度。',
+        '视觉重构：顶部引入3D场景建模相关元素，直击“设备健康”业务主题。表单区采用卡片悬浮设计，提升界面通透感与质感。',
         '交互细节：增加一键明暗码切换、企业配置下钻入口以及“记住密码”状态拦截，降低一线人员误操作率。',
-        '一致性规范：登录主按钮采用系统高饱和度标准蓝，规范字体层级，首屏视觉聚焦于核心操作流。',
+        '一致性规范：严格收敛首屏视觉焦点，引导用户视线自然垂直下落至核心输入区，保障基础转化率。',
       ],
     },
     home: {
-      label: '设备总览 Demo',
-      title: '首页状态总览与风险判断',
-      description: currentItem.background,
-      points: ['资产、状态、告警、巡检任务需要在同一系统内协同', '信息架构需要降低管理端和现场端的理解成本'],
+      label: '首页 Demo',
+      title: '健康度看板与核心运维指标',
+      description: '',
+      points: homeHighlights.map((highlight) => `${highlight.title}：${highlight.description}`),
     },
     workbench: {
       label: '工作台 Demo',
-      title: '按任务链路重构设备管理入口',
-      description: currentItem.summary,
+      title: '全生命周期的运维工作台',
+      description: '围绕设备“看、检、报、修”完整链路，构建一站式现场作业入口。',
       points: currentItem.solutions,
     },
     tasks: {
@@ -370,15 +518,174 @@ const activeDevicePanelContent = computed(() => {
   return contentMap[activeDevicePanel.value]
 })
 
+const activeDeviceInsights = computed<{ primary: DeviceInsightCard; supporting: DeviceInsightCard[] }>(() => {
+  const insightMap: Record<DevicePanelKey, { primary: DeviceInsightCard; supporting: DeviceInsightCard[] }> = {
+    login: {
+      primary: {
+        kicker: '设计原则',
+        title: '先建立可信入口，再进入复杂业务',
+        description: '登录页不再只是表单容器，而是通过企业配置、记住密码和安全视觉底衬建立工业系统的可信起点。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '降低一线误操作',
+          description: '把企业选择、账号输入和密码状态收束到同一视线流，减少现场登录成本。',
+        },
+        {
+          kicker: '系统能力',
+          title: '多租户可配置',
+          description: '为不同企业、站点和人员身份预留统一入口。',
+        },
+      ],
+    },
+    home: {
+      primary: {
+        kicker: '设计原则',
+        title: '把风险判断前置到首屏',
+        description: '首页以健康度和核心指标承接管理者的第一眼判断，从单点状态查看转为持续风险洞察。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '缩短巡检决策链',
+          description: '设备数量、异常、告警趋势集中呈现，快速识别重点区域。',
+        },
+        {
+          kicker: '系统能力',
+          title: '状态聚合',
+          description: '支持图表、原子指标和实时告警在同一信息层级内协同。',
+        },
+      ],
+    },
+    workbench: {
+      primary: {
+        kicker: '设计原则',
+        title: '围绕真实作业路径组织入口',
+        description: '工作台从“功能集合”重构为“看、检、报、修”的现场路径，让用户按工作流进入系统。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '入口更少，路径更短',
+          description: '设备、点检、缺陷和检修入口按业务阶段排列，减少现场查找成本。',
+        },
+        {
+          kicker: '系统能力',
+          title: '模块状态联动',
+          description: '工作台入口可承接二级页面状态，保持 APP 与后台任务闭环一致。',
+        },
+      ],
+    },
+    tasks: {
+      primary: {
+        kicker: '设计原则',
+        title: '任务先按风险排序，再进入处理',
+        description: '待办中心将告警、复核和工单压成一条优先级队列，帮助现场人员先处理最重要的事。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '减少漏办',
+          description: '以紧急度和状态筛选任务，避免高风险事项被普通工单淹没。',
+        },
+        {
+          kicker: '系统能力',
+          title: '闭环追踪',
+          description: '待处理、处理中、已完成的状态可承接后台复核。',
+        },
+      ],
+    },
+    inspection: {
+      primary: {
+        kicker: '设计原则',
+        title: '点检执行要贴近现场节奏',
+        description: '点检页强调计划、核对和跳转设置，让巡检人员少判断、多执行。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '执行更连续',
+          description: '自动跳转设备和巡检项，减少重复选择。',
+        },
+        {
+          kicker: '系统能力',
+          title: '离线作业准备',
+          description: '上传、下载和本机信息入口为现场弱网环境预留操作空间。',
+        },
+      ],
+    },
+    defect: {
+      primary: {
+        kicker: '设计原则',
+        title: '异常上报需要一眼进入闭环',
+        description: '缺陷页把数量、状态和工单列表放在同一叙事区域，强调从发现到跟踪的完整链路。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '风险更快暴露',
+          description: '缺陷工单状态直接呈现，帮助管理者快速判断处理优先级。',
+        },
+        {
+          kicker: '系统能力',
+          title: '状态可追踪',
+          description: '待处理、新建等标签为后续派发、处理和复核提供基础。',
+        },
+      ],
+    },
+    repair: {
+      primary: {
+        kicker: '设计原则',
+        title: '检修不是一次操作，而是一段生命周期',
+        description: '检修页围绕派发、处理、记录和归档组织信息，强化任务在系统内的持续流转。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '职责更清楚',
+          description: '检修状态标签帮助现场与管理端同步任务所处阶段。',
+        },
+        {
+          kicker: '系统能力',
+          title: '记录沉淀',
+          description: '每条检修工单保留时间、状态和描述，为后续追溯提供依据。',
+        },
+      ],
+    },
+    profile: {
+      primary: {
+        kicker: '设计原则',
+        title: '把系统配置放到工作流之后',
+        description: '“我的”作为低频但必要的收束区，承载身份、组织、站点和系统信息，避免打断主作业链路。',
+      },
+      supporting: [
+        {
+          kicker: '业务价值',
+          title: '减少主流程干扰',
+          description: '配置入口后置，让一线人员优先完成任务。',
+        },
+        {
+          kicker: '系统能力',
+          title: '组织与版本管理',
+          description: '个人中心可沉淀组织切换、系统说明和版本检查。',
+        },
+      ],
+    },
+  }
+
+  return insightMap[activeDevicePanel.value]
+})
+
 const activeMainViewContent = computed(() => {
   if (activeMainView.value === 'pc') {
     return {
-      label: 'PC后台占位',
+      label: 'PC后台 Demo',
       title: 'PC后台运维管理视图',
-      description: '后台端内容已预留位置，后续用于展示设备台账、告警处置、检修计划和数据报表等管理端页面。',
+      description: '按浅色后台设计稿还原数据驾驶舱，覆盖设备详情、指标卡、趋势图和缺陷工单。',
       mediaLabel: 'PC Console',
-      mediaTitle: '后台页面占位',
-      mediaDescription: '先保留 PC 后台展示区，后续按设计稿补齐仪表盘、列表、详情和配置页面。',
+      mediaTitle: 'PC后台运维管理视图',
+      mediaDescription: '展示设备台账、告警处置、检修计划和数据报表等管理端页面。',
     }
   }
 
@@ -408,11 +715,11 @@ const activeMainViewHighlights = computed(() => {
     return [
       {
         title: '后台信息架构',
-        description: '预留设备台账、告警中心、检修计划和报表分析入口，承接管理端高频操作。',
+        description: '左侧导航承载数据驾驶舱、点检管理、在线管理和润滑管理入口。',
       },
       {
         title: '数据密度控制',
-        description: '后续以表格、筛选、批量操作和详情抽屉为核心，保证大屏信息可扫描。',
+        description: '设备详情、核心指标、趋势图和缺陷表格集中呈现，保持管理端扫描效率。',
       },
       {
         title: '与 APP 任务闭环',
@@ -550,7 +857,7 @@ const activeMainViewHighlights = computed(() => {
   min-width: 116px;
   min-height: 40px;
   padding: 0 22px;
-  border: 1px solid rgba(23, 82, 143, 0.08);
+  border: 1px solid transparent;
   border-radius: 999px;
   background: rgba(248, 251, 255, 0.82);
   color: #17528f;
@@ -569,7 +876,7 @@ const activeMainViewHighlights = computed(() => {
 
 .device-main-nav-button:hover {
   transform: translateY(-1px) scale(1.02);
-  border-color: rgba(27, 124, 238, 0.24);
+  border-color: transparent;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 10px 22px rgba(43, 112, 198, 0.12);
 }
@@ -657,6 +964,21 @@ const activeMainViewHighlights = computed(() => {
   width: 100%;
 }
 
+.device-showcase-row[data-main-view='app'] {
+  position: relative;
+  grid-template-columns: minmax(180px, 0.38fr) minmax(620px, 2.34fr) minmax(260px, 0.68fr);
+  gap: clamp(18px, 2.8vw, 38px);
+  align-items: center;
+  padding: 4px 0 26px;
+  isolation: isolate;
+}
+
+.device-showcase-row[data-main-view='pc'] {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: 28px;
+}
+
 .device-case-copy {
   display: grid;
   min-width: 0;
@@ -666,28 +988,164 @@ const activeMainViewHighlights = computed(() => {
   text-align: left;
 }
 
-.device-switcher {
+.device-showcase-row[data-main-view='pc'] .device-case-copy {
+  order: 2;
+  max-width: none;
+  justify-self: stretch;
+}
+
+.device-showcase-row[data-main-view='pc'] .device-platform-stage {
+  order: 1;
+}
+
+.device-app-nav-panel {
+  position: relative;
+  z-index: 3;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 18px;
+  width: min(100%, 220px);
+  justify-self: end;
+  align-self: center;
+}
+
+.device-app-nav-panel > span {
+  color: rgba(15, 82, 143, 0.48);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.device-story-steps {
+  position: relative;
+  display: grid;
+  gap: 20px;
+}
+
+.device-story-steps::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 14px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(15, 108, 232, 0.22), transparent);
+}
+
+.device-story-step {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: rgba(15, 42, 95, 0.48);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.device-story-step:hover {
+  color: rgba(15, 82, 143, 0.78);
+  transform: translateX(2px);
+}
+
+.device-story-step:focus-visible i {
+  box-shadow:
+    0 0 0 7px rgba(15, 108, 232, 0.08),
+    0 0 0 1px rgba(15, 108, 232, 0.24),
+    0 12px 24px rgba(33, 136, 239, 0.16);
+}
+
+.device-story-step i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  border: 1px solid rgba(15, 108, 232, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  color: rgba(23, 82, 143, 0.55);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(43, 112, 198, 0.06);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.device-story-step > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.device-story-step strong {
+  color: currentcolor;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 20px;
+}
+
+.device-story-step small {
+  color: currentcolor;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 17px;
+  opacity: 0.58;
+}
+
+.device-story-step.active {
+  color: #0f2a5f;
+  transform: translateX(5px);
+}
+
+.device-story-step.active i {
+  border-color: rgba(15, 108, 232, 0.4);
+  background: linear-gradient(135deg, #0f6ce8, #28b7ff);
+  box-shadow:
+    0 12px 24px rgba(33, 136, 239, 0.22),
+    0 0 0 7px rgba(15, 108, 232, 0.08);
+  color: #fff;
+}
+
+.device-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .device-switch-button {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.54);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 12px 28px rgba(43, 112, 198, 0.08);
+  background: rgba(255, 255, 255, 0.38);
   color: #17528f;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
-  line-height: 22px;
+  line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
   transition:
     background 180ms ease,
+    border-color 180ms ease,
     box-shadow 180ms ease,
     color 180ms ease,
     transform 180ms ease;
@@ -695,14 +1153,25 @@ const activeMainViewHighlights = computed(() => {
 
 .device-switch-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(43, 112, 198, 0.12);
+  border-color: rgba(27, 124, 238, 0.16);
+  background: rgba(255, 255, 255, 0.66);
 }
 
 .device-switch-button.active {
-  border-color: rgba(27, 124, 238, 0.45);
+  border-color: rgba(27, 124, 238, 0.34);
   background: linear-gradient(135deg, #0f6ce8 0%, #28b7ff 100%);
-  box-shadow: 0 18px 34px rgba(33, 136, 239, 0.28);
+  box-shadow: 0 12px 26px rgba(33, 136, 239, 0.22);
   color: #fff;
+}
+
+.device-app-copy {
+  position: relative;
+  z-index: 3;
+  width: min(100%, 320px);
+  max-width: 320px;
+  justify-self: start;
+  align-self: center;
+  margin-top: 24px;
 }
 
 .device-current-card {
@@ -715,6 +1184,19 @@ const activeMainViewHighlights = computed(() => {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 20px 46px rgba(43, 112, 198, 0.1);
+}
+
+.device-app-copy .device-current-card {
+  min-height: 156px;
+  margin-top: 0;
+  padding: 20px;
+  border-color: rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 14px 34px rgba(43, 112, 198, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
 }
 
 .device-current-card > span {
@@ -736,6 +1218,10 @@ const activeMainViewHighlights = computed(() => {
   line-height: 1.28;
 }
 
+.device-app-copy .device-current-card h2 {
+  font-size: 22px;
+}
+
 .device-current-card p {
   color: #5d728f;
   font-size: 14px;
@@ -751,8 +1237,11 @@ const activeMainViewHighlights = computed(() => {
   margin-top: 16px;
 }
 
-.device-highlights.is-login-highlights {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.device-app-copy .device-highlights,
+.device-app-copy .device-highlights.is-login-highlights {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .device-highlights.is-main-view-highlights {
@@ -770,6 +1259,16 @@ const activeMainViewHighlights = computed(() => {
   box-shadow: 0 18px 42px rgba(43, 112, 198, 0.08);
 }
 
+.device-app-copy .device-highlights article {
+  min-height: 0;
+  padding: 14px 16px;
+  border-color: rgba(255, 255, 255, 0.56);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.46);
+  box-shadow: 0 10px 26px rgba(43, 112, 198, 0.06);
+  backdrop-filter: blur(14px);
+}
+
 .device-highlights strong {
   color: #0f2a5f;
   font-size: 15px;
@@ -781,6 +1280,99 @@ const activeMainViewHighlights = computed(() => {
   line-height: 1.6;
 }
 
+.device-app-copy .device-highlights span {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.device-insights-panel {
+  gap: 12px;
+}
+
+.device-insights-eyebrow {
+  color: rgba(15, 82, 143, 0.48);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.device-insight-stack {
+  display: grid;
+  gap: 11px;
+}
+
+.device-insight-card {
+  display: grid;
+  gap: 6px;
+  padding: 15px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.46);
+  box-shadow:
+    0 14px 30px rgba(43, 112, 198, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+}
+
+.device-insight-card.is-primary {
+  min-height: 206px;
+  padding: 22px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(40, 183, 255, 0.18), transparent 42%),
+    rgba(255, 255, 255, 0.66);
+  box-shadow:
+    0 24px 56px rgba(43, 112, 198, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.device-insight-card > span {
+  width: fit-content;
+  min-height: 22px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(15, 108, 232, 0.08);
+  color: #0f6ce8;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 16px;
+}
+
+.device-insight-card h2,
+.device-insight-card strong {
+  margin: 0;
+  color: #0f2a5f;
+}
+
+.device-insight-card h2 {
+  max-width: 260px;
+  font-size: 23px;
+  line-height: 1.28;
+}
+
+.device-insight-card strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.device-insight-card p {
+  margin: 0;
+  color: #5d728f;
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.device-insight-card.is-primary p {
+  font-size: 14px;
+  line-height: 1.72;
+}
+
 .device-actions {
   margin-top: 22px;
 }
@@ -788,6 +1380,7 @@ const activeMainViewHighlights = computed(() => {
 .device-platform-stage {
   position: relative;
   display: flex;
+  flex-direction: column;
   container-type: inline-size;
   align-items: center;
   justify-content: center;
@@ -796,34 +1389,139 @@ const activeMainViewHighlights = computed(() => {
   overflow: visible;
 }
 
+.device-platform-stage[data-main-view='app'] {
+  --device-frame-height: 820px;
+  z-index: 1;
+  min-height: var(--device-frame-height);
+  justify-self: center;
+  transform: translateX(1.5%);
+}
+
+.device-platform-stage[data-main-view='app']::before,
+.device-platform-stage[data-main-view='app']::after {
+  content: '';
+  position: absolute;
+  inset: 8% 2% 4%;
+  z-index: 0;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.device-platform-stage[data-main-view='app']::before {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(54, 146, 255, 0.3), transparent 45%),
+    radial-gradient(circle at 54% 68%, rgba(100, 203, 255, 0.22), transparent 48%),
+    radial-gradient(circle at 50% 88%, rgba(15, 108, 232, 0.14), transparent 44%);
+  filter: blur(34px);
+}
+
+.device-platform-stage[data-main-view='app']::after {
+  inset: 16% 7% 8%;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.42), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(198, 229, 255, 0.1));
+  filter: blur(1px);
+}
+
+.device-stage-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+}
+
+.device-stage-header span {
+  color: #0f6ce8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.device-stage-header h2 {
+  margin: 0;
+  color: #0f2a5f;
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1.12;
+}
+
+.device-stage-header p {
+  max-width: 220px;
+  margin: 0;
+  color: rgba(93, 114, 143, 0.82);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .device-platform-stage[data-main-view='pc'],
 .device-platform-stage[data-main-view='spec'] {
   min-height: 560px;
 }
 
+.device-platform-stage[data-main-view='pc'] {
+  min-height: clamp(430px, 42vw, 650px);
+  padding: 8px 0 28px;
+}
+
+.device-pc-laptop {
+  width: min(100%, 1180px);
+}
+
 .device-app-demo {
   position: relative;
   z-index: 1;
+  display: flex;
   box-sizing: border-box;
-  width: min(100%, 412px);
-  aspect-ratio: 412 / 866;
+  width: min(100%, calc(var(--device-frame-height) * 0.47575));
+  height: var(--device-frame-height);
   padding: 10px;
   border: 1px solid rgba(15, 42, 95, 0.12);
   border-radius: 42px;
-  background: rgba(255, 255, 255, 0.86);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 250, 255, 0.82)),
+    rgba(255, 255, 255, 0.86);
   box-shadow:
-    0 30px 70px rgba(43, 112, 198, 0.2),
+    0 46px 104px rgba(43, 112, 198, 0.26),
+    0 18px 42px rgba(15, 108, 232, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(18px);
+  transform: translateY(0);
 }
 
 .device-app-viewport {
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   border-radius: 36px;
   background: #f4f8ff;
+}
+
+.device-demo-swap-enter-active,
+.device-demo-swap-leave-active {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    filter 220ms ease;
+}
+
+.device-demo-swap-enter-from {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(18px) scale(0.985);
+}
+
+.device-demo-swap-leave-to {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translateY(-12px) scale(0.99);
 }
 
 .device-view-placeholder {
@@ -841,6 +1539,11 @@ const activeMainViewHighlights = computed(() => {
     linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(235, 246, 255, 0.76));
   box-shadow: 0 30px 70px rgba(43, 112, 198, 0.16);
   backdrop-filter: blur(18px);
+}
+
+.device-view-placeholder.is-pc {
+  width: 100%;
+  min-height: 420px;
 }
 
 .device-view-placeholder > span {
@@ -936,6 +1639,66 @@ const activeMainViewHighlights = computed(() => {
     gap: 40px;
   }
 
+  .device-showcase-row[data-main-view='app'] {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-top: 0;
+  }
+
+  .device-showcase-row[data-main-view='app'] .device-platform-stage {
+    order: 1;
+    min-height: var(--device-frame-height);
+    transform: none;
+  }
+
+  .device-app-nav-panel {
+    order: 2;
+    width: min(100%, 560px);
+    margin-top: 0;
+    justify-self: center;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .device-app-nav-panel .device-stage-header {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .device-app-nav-panel .device-stage-header p {
+    max-width: 360px;
+  }
+
+  .device-story-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+
+  .device-story-steps::before {
+    display: none;
+  }
+
+  .device-story-step {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .device-story-step.active,
+  .device-story-step:hover {
+    transform: translateY(-2px);
+  }
+
+  .device-app-copy {
+    order: 3;
+    width: min(100%, 520px);
+    max-width: 520px;
+    margin-top: 0;
+    justify-self: center;
+  }
+
   .device-case-copy {
     max-width: none;
     justify-self: stretch;
@@ -992,7 +1755,7 @@ const activeMainViewHighlights = computed(() => {
   }
 
   .device-switcher {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: flex-start;
   }
 
   .device-platform-stage {
@@ -1000,8 +1763,27 @@ const activeMainViewHighlights = computed(() => {
     padding: 12px 0;
   }
 
+  .device-platform-stage[data-main-view='app'] {
+    --device-frame-height: 760px;
+    min-height: 0;
+    gap: 16px;
+  }
+
   .device-app-demo {
-    width: min(100%, 412px);
+    transform: none;
+  }
+
+  .device-stage-header {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .device-stage-header h2 {
+    font-size: 30px;
+  }
+
+  .device-story-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1009,6 +1791,20 @@ const activeMainViewHighlights = computed(() => {
   .device-switch-button {
     flex: 1 1 calc(50% - 5px);
     padding: 0 14px;
+  }
+
+  .device-showcase-row[data-main-view='app'] {
+    gap: 20px;
+  }
+
+  .device-app-nav-panel {
+    justify-items: stretch;
+    text-align: left;
+  }
+
+  .device-story-step {
+    justify-items: start;
+    text-align: left;
   }
 
   .device-main-nav {
@@ -1035,6 +1831,7 @@ const activeMainViewHighlights = computed(() => {
   }
 
   .device-app-demo {
+    --device-frame-height: 760px;
     padding: 8px;
   }
 }
