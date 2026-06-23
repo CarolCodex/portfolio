@@ -1,6 +1,6 @@
 <template>
-  <div class="device-mobile-demo" :class="{ 'is-login': !isAuthenticated }" :data-page="currentMobilePage">
-    <section v-if="!isAuthenticated" class="login-screen" aria-label="设备健康管理登录">
+  <div ref="mobileDemoRef" class="device-mobile-demo" :class="{ 'is-login': !isAuthenticated }" :data-page="currentMobilePage">
+    <section v-if="!isAuthenticated && loginSubpage === 'login'" class="login-screen" aria-label="设备健康管理登录">
       <img
         class="login-bg"
         src="/case-assets/device-health-management-platform/login-bg-mobile.jpg"
@@ -21,10 +21,12 @@
 
       <form class="login-form" @submit.prevent="handleLogin">
         <section class="login-card">
-          <label class="login-field login-field-select">
-            <input v-model="enterpriseName" type="text" autocomplete="organization" placeholder="请选择企业名称" />
-            <img src="/case-assets/device-health-management-platform/login-select-arrow.svg" alt="" aria-hidden="true" />
-          </label>
+          <DeviceSelectDropdown
+            v-model="enterpriseName"
+            name="enterprise"
+            placeholder="请选择企业名称"
+            :options="enterpriseOptions"
+          />
 
           <label class="login-field">
             <input v-model="username" type="text" autocomplete="username" placeholder="请输入用户名" />
@@ -50,7 +52,7 @@
               </span>
               记住密码
             </label>
-            <button type="button">企业配置</button>
+            <button type="button" @click="openEnterpriseConfig">企业配置</button>
           </div>
         </section>
 
@@ -60,23 +62,55 @@
       </form>
     </section>
 
+    <section v-else-if="!isAuthenticated" class="enterprise-config-screen" aria-label="企业配置">
+      <div class="enterprise-status-bar" aria-hidden="true">
+        <span>9:41</span>
+        <div>
+          <i />
+          <i />
+          <i />
+          <span class="enterprise-wifi" />
+          <b />
+        </div>
+      </div>
+
+      <header class="enterprise-config-header">
+        <button class="enterprise-back-button" type="button" aria-label="返回登录页" @click="returnToLogin">
+          <span aria-hidden="true" />
+        </button>
+        <strong>企业配置</strong>
+        <span aria-hidden="true" />
+      </header>
+
+      <main class="enterprise-config-main">
+        <section class="enterprise-config-card">
+          <button class="enterprise-edit-button" type="button">编辑</button>
+          <label v-for="server in enterpriseServers" :key="server.id" class="enterprise-config-field">
+            <input v-model="server.host" type="text" inputmode="decimal" />
+          </label>
+        </section>
+
+        <button class="enterprise-add-button" type="button">添加</button>
+      </main>
+
+      <footer class="enterprise-config-footer">
+        <button type="button" @click="returnToLogin">完成</button>
+        <span aria-hidden="true" />
+      </footer>
+    </section>
+
     <template v-else>
-      <header class="mobile-header">
-        <button
-          class="icon-button menu-button"
-          :class="{ 'back-button': isAboutPage || isNotificationsPage }"
-          type="button"
-          :aria-label="isAboutPage || isNotificationsPage ? '返回上一页' : '打开设备菜单'"
-          @click="handleHeaderLeadingAction"
-        >
-          <img v-if="isAboutPage" src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
-          <img
-            v-else-if="isNotificationsPage"
-            class="notifications-back-icon"
-            src="/case-assets/device-health-management-platform/notifications/figma/back.svg"
-            alt=""
-            aria-hidden="true"
-          />
+      <DeviceMobileHeader
+        v-if="!isInspectionPage && !isDefectPage && !isRepairPage"
+        :title="currentPageTitle"
+        :leading-label="isHeaderBackPage ? '返回上一页' : '打开设备菜单'"
+        :trailing-label="headerActionLabel"
+        :show-trailing="!isAboutPage"
+        @leading="handleHeaderLeadingAction"
+        @trailing="handleHeaderTrailingAction"
+      >
+        <template #leading>
+          <img v-if="isHeaderBackPage" class="header-back-icon" src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
           <img
             v-else-if="activeTab === 'tasks'"
             class="tasks-menu-icon"
@@ -89,36 +123,11 @@
             <span />
             <span />
           </template>
-        </button>
-        <strong>{{ currentPageTitle }}</strong>
-        <button
-          v-if="!isAboutPage"
-          class="icon-button notify-button"
-          type="button"
-          :aria-label="headerActionLabel"
-          @click="handleHeaderTrailingAction"
-        >
+        </template>
+        <template #trailing>
           <img :src="headerActionIcon" alt="" />
-        </button>
-        <span v-else class="header-placeholder" aria-hidden="true" />
-
-        <section v-if="activeTab === 'tasks'" class="tasks-header-banner" aria-label="待办概览">
-          <img
-            class="tasks-banner-art"
-            src="/case-assets/device-health-management-platform/tasks/figma/banner-card.png"
-            alt=""
-            aria-hidden="true"
-          />
-          <div class="tasks-banner-copy">
-            <span>专注处理，高效执行</span>
-            <strong>您有 <b>14</b> 项待办</strong>
-            <small>
-              <img src="/case-assets/device-health-management-platform/tasks/figma/banner-chip.svg" alt="" aria-hidden="true" />
-              合理安排时间，保障稳定运行
-            </small>
-          </div>
-        </section>
-      </header>
+        </template>
+      </DeviceMobileHeader>
 
     <div v-if="searchOpen && !isAboutPage" class="search-panel">
       <input v-model="searchQuery" type="search" placeholder="搜索设备、工单或告警" />
@@ -261,6 +270,23 @@
       </section>
 
       <section v-else-if="activeTab === 'tasks'" class="tasks-page" aria-label="待办事项">
+        <section class="tasks-header-banner" aria-label="待办概览">
+          <img
+            class="tasks-banner-art"
+            src="/case-assets/device-health-management-platform/tasks/figma/banner-card.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <div class="tasks-banner-copy">
+            <span>专注处理，高效执行</span>
+            <strong>您有 <b>14</b> 项待办</strong>
+            <small>
+              <img src="/case-assets/device-health-management-platform/tasks/figma/banner-chip.svg" alt="" aria-hidden="true" />
+              合理安排时间，保障稳定运行
+            </small>
+          </div>
+        </section>
+
         <div class="tasks-tabs" aria-label="待办状态">
           <button
             v-for="filter in taskFilters"
@@ -335,6 +361,189 @@
         </div>
       </section>
 
+      <section v-else-if="isInspectionPage" class="inspection-page" aria-label="点检管理">
+        <article class="inspection-hero subpage-hero">
+          <img
+            class="inspection-page-bg subpage-hero-bg"
+            src="/case-assets/device-health-management-platform/inspection-header-decoration-sharp.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <button class="inspection-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
+            <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
+          </button>
+          <div class="inspection-hero-copy subpage-hero-copy">
+            <strong>点检管理</strong>
+            <span>高效巡检 · 智能管理</span>
+          </div>
+
+          <section class="inspection-profile-card" aria-label="当前用户">
+            <img src="/case-assets/device-health-management-platform/profile-avatar-160.jpg" alt="" aria-hidden="true" />
+            <div>
+              <strong>曹兰</strong>
+              <span>欢迎使用点检管理系统</span>
+            </div>
+          </section>
+        </article>
+
+        <section class="inspection-action-section" aria-label="点检操作">
+          <button v-for="action in inspectionActions" :key="action.label" class="inspection-action-card" type="button">
+            <span>
+              <img
+                :src="action.icon"
+                :style="{ width: `${action.iconWidth}px`, height: `${action.iconHeight}px` }"
+                alt=""
+                aria-hidden="true"
+              />
+            </span>
+            <strong>{{ action.label }}</strong>
+          </button>
+        </section>
+
+        <button class="inspection-device-row" type="button">
+          <span class="inspection-row-icon">
+            <img src="/case-assets/device-health-management-platform/inspection-icon-device.png" alt="" aria-hidden="true" />
+          </span>
+          <strong>本机信息</strong>
+          <span class="inspection-row-chevron" aria-hidden="true" />
+        </button>
+
+        <section class="inspection-settings-card" aria-label="点检设置">
+          <button
+            v-for="setting in inspectionSettings"
+            :key="setting.key"
+            class="inspection-setting-row"
+            type="button"
+            :aria-pressed="setting.enabled"
+            @click="setting.enabled = !setting.enabled"
+          >
+            <span class="inspection-row-icon">
+              <img :src="setting.icon" alt="" aria-hidden="true" />
+            </span>
+            <span class="inspection-setting-copy">
+              <strong>{{ setting.title }}</strong>
+              <small>{{ setting.description }}</small>
+            </span>
+            <span class="inspection-switch" :class="{ active: setting.enabled }" aria-hidden="true">
+              <i />
+            </span>
+          </button>
+        </section>
+
+        <span class="inspection-home-indicator" aria-hidden="true" />
+      </section>
+
+      <section v-else-if="isDefectPage" class="defect-page" aria-label="缺陷管理">
+        <header class="defect-header subpage-hero">
+          <img
+            class="defect-header-bg subpage-hero-bg"
+            src="/case-assets/device-health-management-platform/defect-header-decoration-sharp.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <button class="defect-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
+            <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
+          </button>
+          <div class="defect-heading subpage-hero-copy">
+            <strong>缺陷管理</strong>
+            <span>异常速报 · 全程闭环</span>
+          </div>
+
+          <button class="defect-summary-card" type="button" aria-label="查看全部缺陷工单">
+            <span class="defect-summary-icon" aria-hidden="true">
+              <i />
+            </span>
+            <span class="defect-summary-copy">
+              <strong>{{ defectTickets.length }}</strong>
+              <span>个缺陷工单</span>
+              <small>
+                全部状态
+                <i aria-hidden="true" />
+              </small>
+            </span>
+          </button>
+        </header>
+
+        <section class="defect-list" aria-label="缺陷工单列表">
+          <article v-for="ticket in defectTickets" :key="ticket.id" class="defect-card">
+            <header>
+              <span class="defect-card-icon" aria-hidden="true">
+                <i />
+              </span>
+              <strong>{{ ticket.asset }}</strong>
+              <span class="defect-status" :class="`is-${ticket.status}`">{{ ticket.statusLabel }}</span>
+            </header>
+
+            <p>{{ ticket.description }}</p>
+
+            <footer>
+              <span aria-hidden="true" />
+              <time>{{ ticket.time }}</time>
+            </footer>
+          </article>
+        </section>
+
+        <button class="defect-add-button" type="button" aria-label="新增缺陷工单">+</button>
+        <span class="defect-home-indicator" aria-hidden="true" />
+      </section>
+
+      <section v-else-if="isRepairPage" class="repair-page" aria-label="检修管理">
+        <header class="repair-header subpage-hero">
+          <img
+            class="repair-header-bg subpage-hero-bg"
+            src="/case-assets/device-health-management-platform/repair-header-decoration-sharp.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <button class="repair-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
+            <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
+          </button>
+          <div class="repair-heading subpage-hero-copy">
+            <strong>检修管理</strong>
+            <span>计划排程 · 精准消缺</span>
+          </div>
+
+          <button class="repair-summary-card" type="button" aria-label="查看全部检修工单">
+            <span class="repair-summary-icon" aria-hidden="true">
+              <i />
+            </span>
+            <span class="repair-summary-copy">
+              <strong>{{ repairOrderTotal }}</strong>
+              <span>个检修工单</span>
+              <small>
+                全部状态
+                <i aria-hidden="true" />
+              </small>
+            </span>
+          </button>
+        </header>
+
+        <section class="repair-list" aria-label="检修工单列表">
+          <article v-for="order in repairOrders" :key="order.id" class="repair-card" :class="`is-${order.status}`">
+            <span class="repair-card-icon" aria-hidden="true">
+              <i />
+            </span>
+
+            <div class="repair-card-content">
+              <header>
+                <strong>{{ order.title }}</strong>
+                <span class="repair-status" :class="`is-${order.status}`">{{ order.statusLabel }}</span>
+              </header>
+
+              <p>{{ order.description }}</p>
+
+              <footer>
+                <span aria-hidden="true" />
+                <time>{{ order.time }}</time>
+              </footer>
+            </div>
+          </article>
+        </section>
+
+        <button class="repair-add-button" type="button" aria-label="新增检修工单">+</button>
+        <span class="repair-home-indicator" aria-hidden="true" />
+      </section>
+
       <section v-else-if="isWorkbenchVisiblePage" class="workbench-page">
         <article class="workbench-hero">
           <img
@@ -401,7 +610,13 @@
 
       <section v-else-if="isNotificationsPage" class="notifications-page" aria-label="消息中心">
         <div class="notifications-list">
-          <article v-for="message in notificationMessages" :key="message.id" class="notification-card">
+          <button
+            v-for="message in notificationMessages"
+            :key="message.id"
+            class="notification-card"
+            type="button"
+            @click="openNotificationDetail(message)"
+          >
             <span class="notification-icon">
               <img :src="message.icon" alt="" aria-hidden="true" />
             </span>
@@ -419,7 +634,7 @@
               </div>
               <p>{{ message.description }}</p>
             </div>
-          </article>
+          </button>
         </div>
 
         <div class="notifications-bottom-action">
@@ -553,7 +768,43 @@
       </section>
     </main>
 
-    <nav v-if="!isAboutPage && !isNotificationsPage" class="mobile-tabbar" aria-label="设备健康 APP 导航">
+    <div
+      v-if="isNotificationsPage && activeNotification"
+      class="notification-detail-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="notification-detail-title"
+      @click.self="closeNotificationDetail"
+    >
+      <article class="notification-detail-dialog">
+        <header class="notification-detail-heading">
+          <strong id="notification-detail-title">消息详情</strong>
+          <span v-if="activeNotification.important" class="notification-important">
+            <img src="/case-assets/device-health-management-platform/notifications/figma/important.svg" alt="" aria-hidden="true" />
+            重要
+          </span>
+        </header>
+
+        <dl class="notification-detail-content">
+          <div>
+            <dt>主题：</dt>
+            <dd>{{ activeNotification.title }}</dd>
+          </div>
+          <div>
+            <dt>内容：</dt>
+            <dd>{{ activeNotification.description }}</dd>
+          </div>
+          <div>
+            <dt>时间：</dt>
+            <dd>{{ notificationDetailTime }}</dd>
+          </div>
+        </dl>
+
+        <button type="button" @click="closeNotificationDetail">关闭</button>
+      </article>
+    </div>
+
+    <nav v-if="!isAboutPage && !isNotificationsPage && !isInspectionPage && !isDefectPage && !isRepairPage" class="mobile-tabbar" aria-label="设备健康 APP 导航">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -581,7 +832,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import DeviceMobileHeader from './DeviceMobileHeader.vue'
+import DeviceSelectDropdown from './DeviceSelectDropdown.vue'
 
 type TabKey = 'home' | 'tasks' | 'workbench' | 'profile'
 type PlaceholderPageKey = 'inspection' | 'defect' | 'repair'
@@ -592,8 +845,11 @@ type HealthModeKey = 'stable' | 'observe' | 'risk'
 type TaskFilterKey = 'pending' | 'inProgress' | 'done'
 type TaskPriorityKey = 'urgent' | 'normal' | 'low'
 type StatusKey = 'running' | 'warning' | 'offline'
+type DefectStatusKey = 'pending' | 'new'
+type RepairStatusKey = 'pending' | 'new' | 'processing' | 'dispatch'
 type ProfileSubpageKey = 'main' | 'about'
 type WorkbenchEntryKey = PlaceholderPageKey | 'equipment'
+type LoginSubpageKey = 'login' | 'enterpriseConfig'
 
 type NotificationMessage = {
   id: string
@@ -634,6 +890,39 @@ type WorkbenchEntry = {
   icon: string
   iconWidth: number
   iconHeight: number
+}
+
+type InspectionAction = {
+  label: string
+  icon: string
+  iconWidth: number
+  iconHeight: number
+}
+
+type InspectionSetting = {
+  key: 'workMode' | 'autoDevice' | 'autoItem'
+  title: string
+  description: string
+  icon: string
+  enabled: boolean
+}
+
+type DefectTicket = {
+  id: string
+  asset: string
+  status: DefectStatusKey
+  statusLabel: string
+  description: string
+  time: string
+}
+
+type RepairOrder = {
+  id: string
+  title: string
+  status: RepairStatusKey
+  statusLabel: string
+  description: string
+  time: string
 }
 
 type WorkbenchSection = {
@@ -683,9 +972,20 @@ const tabs: Array<{ key: TabKey; label: string; icon: string; activeIcon: string
   },
 ]
 
+const enterpriseOptions = [
+  { label: '企业名称 1', value: 'enterprise-1' },
+  { label: '企业名称 2', value: 'enterprise-2' },
+]
+
+const enterpriseServers = reactive([
+  { id: 'primary', host: '121.199.7.47' },
+  { id: 'backup', host: '121.199.7.47' },
+])
+
 const activeTab = ref<MobileContentKey>(initialTab)
 const previousNotificationPage = ref<MobileContentKey>(initialTab)
 const profileSubpage = ref<ProfileSubpageKey>('main')
+const loginSubpage = ref<LoginSubpageKey>('login')
 const isAuthenticated = ref(initialTab !== 'home')
 const menuOpen = ref(false)
 const searchOpen = ref(false)
@@ -702,6 +1002,127 @@ const selectedAlertId = ref('a1')
 const activeTaskFilter = ref<TaskFilterKey>('pending')
 const taskSearchQuery = ref('')
 const compatibilityMode = ref(true)
+const activeNotification = ref<NotificationMessage | null>(null)
+const mobileDemoRef = ref<HTMLElement | null>(null)
+const scrollHintSelector = [
+  '.mobile-main',
+  '.notifications-list',
+  '.defect-list',
+  '.repair-list',
+  '.enterprise-config-main',
+].join(',')
+const scrollHintContainers = new Set<HTMLElement>()
+const scrollHintCleanups: Array<() => void> = []
+let scrollHintSetupFrame = 0
+let scrollHintIndicatorTimer = 0
+
+const inspectionActions: InspectionAction[] = [
+  {
+    label: '上传',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-upload.png',
+    iconWidth: 48,
+    iconHeight: 48,
+  },
+  {
+    label: '下载',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-download.png',
+    iconWidth: 48,
+    iconHeight: 48,
+  },
+  {
+    label: '设置',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-settings.png',
+    iconWidth: 48,
+    iconHeight: 48,
+  },
+]
+
+const inspectionSettings = reactive<InspectionSetting[]>([
+  {
+    key: 'workMode',
+    title: '工作模式',
+    description: '开启后进入工作模式',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-work-mode.png',
+    enabled: false,
+  },
+  {
+    key: 'autoDevice',
+    title: '自动跳转设备',
+    description: '开启后巡检完成自动跳转下一个设备',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-auto-device.png',
+    enabled: true,
+  },
+  {
+    key: 'autoItem',
+    title: '自动跳转巡检项',
+    description: '开启后巡检完成自动跳转下一个巡检项',
+    icon: '/case-assets/device-health-management-platform/inspection-icon-auto-item.png',
+    enabled: false,
+  },
+])
+
+const defectTickets: DefectTicket[] = [
+  {
+    id: 'd1',
+    asset: '顶级综合设备',
+    status: 'pending',
+    statusLabel: '待处理',
+    description: '缺陷内容描述最多显示两行，超过两行用省略号... 缺陷内容描述最多显示两行，用省略号...',
+    time: '2022-10-02 15:38:45',
+  },
+  {
+    id: 'd2',
+    asset: '五级设备',
+    status: 'new',
+    statusLabel: '新建',
+    description: '这是缺陷内容描述最多显示两行，超过两行用省略号...',
+    time: '2022-10-01 15:38:45',
+  },
+  {
+    id: 'd3',
+    asset: '五级设备',
+    status: 'new',
+    statusLabel: '新建',
+    description: '这是缺陷内容描述最多显示两行，超过两行用省略号...',
+    time: '2022-09-20 15:38:45',
+  },
+]
+
+const repairOrderTotal = 6
+const repairOrders: RepairOrder[] = [
+  {
+    id: 'r1',
+    title: '检修工单',
+    status: 'pending',
+    statusLabel: '待处理',
+    description: '这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述...',
+    time: '2026-10-02 15:38:45',
+  },
+  {
+    id: 'r2',
+    title: '检修工单',
+    status: 'new',
+    statusLabel: '新建',
+    description: '这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述...',
+    time: '2026-10-02 15:38:45',
+  },
+  {
+    id: 'r3',
+    title: '检修工单',
+    status: 'processing',
+    statusLabel: '处理中',
+    description: '这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述...',
+    time: '2026-10-02 15:38:45',
+  },
+  {
+    id: 'r4',
+    title: '检修工单',
+    status: 'dispatch',
+    statusLabel: '待派发',
+    description: '这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述这是一段描述...',
+    time: '2026-10-02 15:38:45',
+  },
+]
 
 const healthModes = [
   {
@@ -1131,10 +1552,16 @@ const trendPoints = [
 
 const isAboutPage = computed(() => activeTab.value === 'profile' && profileSubpage.value === 'about')
 const isNotificationsPage = computed(() => activeTab.value === 'notifications')
+const isInspectionPage = computed(() => activeTab.value === 'inspection')
+const isDefectPage = computed(() => activeTab.value === 'defect')
+const isRepairPage = computed(() => activeTab.value === 'repair')
+const isHeaderBackPage = computed(
+  () => isAboutPage.value || isNotificationsPage.value || isInspectionPage.value || isDefectPage.value || isRepairPage.value,
+)
 const isWorkbenchSubpage = computed(
   () => activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair',
 )
-const isWorkbenchVisiblePage = computed(() => activeTab.value === 'workbench' || isWorkbenchSubpage.value)
+const isWorkbenchVisiblePage = computed(() => activeTab.value === 'workbench')
 const activeWorkbenchEntryKey = computed<WorkbenchEntryKey | undefined>(() =>
   isWorkbenchSubpage.value ? (activeTab.value as PlaceholderPageKey) : undefined,
 )
@@ -1145,6 +1572,18 @@ const currentPageTitle = computed(() => {
 
   if (isNotificationsPage.value) {
     return '消息中心'
+  }
+
+  if (isInspectionPage.value) {
+    return '点检管理'
+  }
+
+  if (isDefectPage.value) {
+    return '缺陷管理'
+  }
+
+  if (isRepairPage.value) {
+    return '检修管理'
   }
 
   if (activeTab.value === 'home') {
@@ -1165,9 +1604,9 @@ const currentPageTitle = computed(() => {
 
   return tabs.find((tab) => tab.key === activeTab.value)?.label ?? activePlaceholderContent.value.label
 })
-const isPlaceholderPage = computed(() => activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair')
+const isPlaceholderPage = computed(() => false)
 const activePlaceholderContent = computed(() => {
-  if (activeTab.value === 'inspection' || activeTab.value === 'defect' || activeTab.value === 'repair') {
+  if (activeTab.value === 'repair') {
     return placeholderPages[activeTab.value]
   }
 
@@ -1179,7 +1618,7 @@ const activePlaceholderContent = computed(() => {
 })
 const currentMobilePage = computed(() => {
   if (!isAuthenticated.value) {
-    return 'login'
+    return loginSubpage.value === 'enterpriseConfig' ? 'enterprise-config' : 'login'
   }
 
   if (isAboutPage.value) {
@@ -1188,6 +1627,18 @@ const currentMobilePage = computed(() => {
 
   if (isNotificationsPage.value) {
     return 'notifications'
+  }
+
+  if (isInspectionPage.value) {
+    return 'inspection'
+  }
+
+  if (isDefectPage.value) {
+    return 'defect'
+  }
+
+  if (isRepairPage.value) {
+    return 'repair'
   }
 
   return isWorkbenchSubpage.value ? 'workbench' : activeTab.value
@@ -1243,6 +1694,143 @@ const visibleTasks = computed(() => {
     return matchesFilter && matchesSearch
   })
 })
+const notificationDetailTime = computed(() => `${activeNotification.value?.date ?? ''} 15:38:45`)
+
+function updateScrollHintState(container: HTMLElement) {
+  const maxScrollTop = container.scrollHeight - container.clientHeight
+  const hasScrollableContent = maxScrollTop > 1
+  const canScrollUp = hasScrollableContent && container.scrollTop > 1
+  const canScrollDown = hasScrollableContent && container.scrollTop < maxScrollTop - 1
+
+  container.classList.toggle('has-scroll-overflow', hasScrollableContent)
+  container.classList.toggle('can-scroll-up', canScrollUp)
+  container.classList.toggle('can-scroll-down', canScrollDown)
+
+  if (!hasScrollableContent) {
+    container.classList.remove('show-scroll-indicator')
+  }
+}
+
+function makeScrollHintUpdater(container: HTMLElement) {
+  let frame = 0
+
+  const update = () => {
+    if (frame) {
+      return
+    }
+
+    frame = window.requestAnimationFrame(() => {
+      frame = 0
+      updateScrollHintState(container)
+    })
+  }
+
+  return {
+    update,
+    cancel: () => {
+      if (frame) {
+        window.cancelAnimationFrame(frame)
+        frame = 0
+      }
+    },
+  }
+}
+
+function teardownScrollHints() {
+  if (scrollHintSetupFrame) {
+    window.cancelAnimationFrame(scrollHintSetupFrame)
+    scrollHintSetupFrame = 0
+  }
+
+  if (scrollHintIndicatorTimer) {
+    window.clearTimeout(scrollHintIndicatorTimer)
+    scrollHintIndicatorTimer = 0
+  }
+
+  scrollHintCleanups.splice(0).forEach((cleanup) => cleanup())
+  scrollHintContainers.forEach((container) => {
+    container.classList.remove(
+      'scroll-hint-surface',
+      'has-scroll-overflow',
+      'can-scroll-up',
+      'can-scroll-down',
+      'show-scroll-indicator',
+    )
+  })
+  scrollHintContainers.clear()
+}
+
+function setupScrollHints() {
+  teardownScrollHints()
+
+  const root = mobileDemoRef.value
+
+  if (!root) {
+    return
+  }
+
+  const containers = Array.from(root.querySelectorAll<HTMLElement>(scrollHintSelector)).filter((container) => {
+    const style = window.getComputedStyle(container)
+
+    return style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflow === 'auto' || style.overflow === 'scroll'
+  })
+
+  containers.forEach((container) => {
+    const { update, cancel } = makeScrollHintUpdater(container)
+    const resizeObserver = new ResizeObserver(update)
+    const mutationObserver = new MutationObserver(update)
+
+    container.classList.add('scroll-hint-surface', 'show-scroll-indicator')
+    scrollHintContainers.add(container)
+    container.addEventListener('scroll', update, { passive: true })
+    resizeObserver.observe(container)
+    mutationObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+    })
+    update()
+
+    scrollHintCleanups.push(() => {
+      cancel()
+      container.removeEventListener('scroll', update)
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    })
+  })
+
+  const updateAll = () => scrollHintContainers.forEach(updateScrollHintState)
+
+  window.addEventListener('resize', updateAll, { passive: true })
+  scrollHintCleanups.push(() => window.removeEventListener('resize', updateAll))
+
+  window.setTimeout(updateAll, 120)
+  window.setTimeout(updateAll, 480)
+  scrollHintIndicatorTimer = window.setTimeout(() => {
+    scrollHintContainers.forEach((container) => container.classList.remove('show-scroll-indicator'))
+    scrollHintIndicatorTimer = 0
+  }, 1500)
+}
+
+function scheduleScrollHintSetup() {
+  if (scrollHintSetupFrame) {
+    window.cancelAnimationFrame(scrollHintSetupFrame)
+  }
+
+  scrollHintSetupFrame = window.requestAnimationFrame(() => {
+    scrollHintSetupFrame = 0
+    setupScrollHints()
+  })
+}
+
+onMounted(() => {
+  nextTick(scheduleScrollHintSetup)
+})
+
+onBeforeUnmount(() => {
+  teardownScrollHints()
+})
 
 watch(
   () => props.previewPage,
@@ -1250,6 +1838,14 @@ watch(
     applyPreviewPage(page)
   },
   { immediate: true },
+)
+
+watch(
+  [currentMobilePage, activeNotification],
+  () => {
+    nextTick(scheduleScrollHintSetup)
+  },
+  { flush: 'post' },
 )
 
 function setActiveTab(tab: TabKey) {
@@ -1276,6 +1872,7 @@ function handleWorkbenchEntryClick(entryKey?: WorkbenchEntryKey) {
 
 function handleLogin() {
   isAuthenticated.value = true
+  loginSubpage.value = 'login'
   activeTab.value = 'home'
   profileSubpage.value = 'main'
   menuOpen.value = false
@@ -1284,6 +1881,7 @@ function handleLogin() {
 
 function handleLogout() {
   isAuthenticated.value = false
+  loginSubpage.value = 'login'
   activeTab.value = 'home'
   profileSubpage.value = 'main'
   menuOpen.value = false
@@ -1298,6 +1896,24 @@ function handleHeaderLeadingAction() {
 
   if (isAboutPage.value) {
     profileSubpage.value = 'main'
+    searchOpen.value = false
+    return
+  }
+
+  if (isInspectionPage.value) {
+    activeTab.value = 'workbench'
+    searchOpen.value = false
+    return
+  }
+
+  if (isDefectPage.value) {
+    activeTab.value = 'workbench'
+    searchOpen.value = false
+    return
+  }
+
+  if (isRepairPage.value) {
+    activeTab.value = 'workbench'
     searchOpen.value = false
     return
   }
@@ -1324,6 +1940,7 @@ function openNotifications() {
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  activeNotification.value = null
 }
 
 function returnFromNotifications() {
@@ -1331,6 +1948,15 @@ function returnFromNotifications() {
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  activeNotification.value = null
+}
+
+function openNotificationDetail(message: NotificationMessage) {
+  activeNotification.value = message
+}
+
+function closeNotificationDetail() {
+  activeNotification.value = null
 }
 
 function handleProfileSetting(key: string) {
@@ -1353,12 +1979,22 @@ function applyPreviewPage(page?: PreviewPageKey) {
 
   if (page === 'login') {
     isAuthenticated.value = false
+    loginSubpage.value = 'login'
     activeTab.value = 'home'
     return
   }
 
   isAuthenticated.value = true
+  loginSubpage.value = 'login'
   activeTab.value = page
+}
+
+function openEnterpriseConfig() {
+  loginSubpage.value = 'enterpriseConfig'
+}
+
+function returnToLogin() {
+  loginSubpage.value = 'login'
 }
 
 function cycleHealthMode() {
@@ -1377,10 +2013,11 @@ function selectDrawerGroup(groupName: string) {
   menuOpen.value = false
 }
 
-function getInitialTab(): TabKey {
-  const tab = new URLSearchParams(window.location.search).get('mobileTab') as TabKey | null
+function getInitialTab(): MobileContentKey {
+  const tab = new URLSearchParams(window.location.search).get('mobileTab') as MobileContentKey | null
+  const directPageKeys: MobileContentKey[] = [...tabKeys, 'inspection', 'defect', 'repair', 'notifications']
 
-  return tab && tabKeys.includes(tab) ? tab : 'home'
+  return tab && directPageKeys.includes(tab) ? tab : 'home'
 }
 </script>
 
@@ -1500,7 +2137,8 @@ function getInitialTab(): TabKey {
   background: #fff;
 }
 
-.login-field + .login-field {
+.login-field + .login-field,
+.device-select-dropdown + .login-field {
   margin-top: 16px;
 }
 
@@ -1521,18 +2159,6 @@ function getInitialTab(): TabKey {
 .login-field input::placeholder {
   color: #9ca3af;
   opacity: 1;
-}
-
-.login-field-select input {
-  padding-right: 41px;
-}
-
-.login-field-select > img {
-  position: absolute;
-  right: 12px;
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
 }
 
 .login-password-field input {
@@ -1640,6 +2266,241 @@ function getInitialTab(): TabKey {
   font-weight: 500;
   line-height: 24px;
   cursor: pointer;
+}
+
+.enterprise-config-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.enterprise-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 25px 0 36px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 20px;
+}
+
+.enterprise-status-bar > div {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+}
+
+.enterprise-status-bar i {
+  display: block;
+  width: 3px;
+  border-radius: 3px;
+  background: #111827;
+}
+
+.enterprise-status-bar i:nth-child(1) {
+  height: 6px;
+}
+
+.enterprise-status-bar i:nth-child(2) {
+  height: 9px;
+}
+
+.enterprise-status-bar i:nth-child(3) {
+  height: 12px;
+}
+
+.enterprise-wifi {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 12px;
+  margin-left: 3px;
+}
+
+.enterprise-wifi::before,
+.enterprise-wifi::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border: 2px solid #111827;
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  content: "";
+}
+
+.enterprise-wifi::before {
+  bottom: 1px;
+  width: 15px;
+  height: 8px;
+}
+
+.enterprise-wifi::after {
+  bottom: 1px;
+  width: 7px;
+  height: 4px;
+}
+
+.enterprise-status-bar b {
+  display: block;
+  width: 25px;
+  height: 12px;
+  margin-left: 4px;
+  border: 2px solid #111827;
+  border-radius: 4px;
+  box-shadow: inset 18px 0 0 #111827;
+}
+
+.enterprise-config-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  background: #fff;
+}
+
+.enterprise-config-header strong {
+  color: #191919;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 28px;
+  text-align: center;
+}
+
+.enterprise-back-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.enterprise-back-button span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-bottom: 3px solid #111827;
+  border-left: 3px solid #111827;
+  transform: rotate(45deg);
+}
+
+.enterprise-config-main {
+  position: absolute;
+  top: 104px;
+  right: 0;
+  bottom: 112px;
+  left: 0;
+  padding: 16px;
+  background: #f3f4f6;
+}
+
+.enterprise-config-card {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding: 64px 16px 18px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.enterprise-edit-button {
+  position: absolute;
+  top: 22px;
+  right: 19px;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.enterprise-config-field {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.enterprise-config-field input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  outline: 0;
+  padding: 0 14px;
+}
+
+.enterprise-add-button {
+  position: absolute;
+  top: 248px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  min-height: 52px;
+  border: 0;
+  border-radius: 10px;
+  background: #2864ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(40, 100, 255, 0.18);
+}
+
+.enterprise-config-footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  gap: 18px;
+  padding: 16px 16px 10px;
+  background: #fff;
+}
+
+.enterprise-config-footer button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 8px;
+  background: #2864ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.enterprise-config-footer span {
+  justify-self: center;
+  width: 134px;
+  height: 5px;
+  border-radius: 999px;
+  background: #000;
 }
 
 .mobile-header {
@@ -1776,6 +2637,68 @@ function getInitialTab(): TabKey {
   min-height: 0;
   overflow: auto;
   padding: 14px 16px 16px;
+}
+
+.mobile-main,
+.notifications-list,
+.defect-list,
+.repair-list,
+.enterprise-config-main {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-main::-webkit-scrollbar,
+.notifications-list::-webkit-scrollbar,
+.defect-list::-webkit-scrollbar,
+.repair-list::-webkit-scrollbar,
+.enterprise-config-main::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.scroll-hint-surface {
+  --scroll-fade-top: 0px;
+  --scroll-fade-bottom: 0px;
+  --scroll-shadow-top: 0 0 0 transparent;
+  --scroll-shadow-bottom: 0 0 0 transparent;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--scroll-fade-top),
+    #000 calc(100% - var(--scroll-fade-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--scroll-fade-top),
+    #000 calc(100% - var(--scroll-fade-bottom)),
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  box-shadow: var(--scroll-shadow-top), var(--scroll-shadow-bottom);
+  overscroll-behavior-y: contain;
+}
+
+.scroll-hint-surface.can-scroll-up {
+  --scroll-fade-top: 24px;
+  --scroll-shadow-top: inset 0 18px 22px -26px rgba(15, 42, 95, 0.16);
+}
+
+.scroll-hint-surface.can-scroll-down {
+  --scroll-fade-bottom: 32px;
+  --scroll-shadow-bottom: inset 0 -22px 26px -30px rgba(15, 42, 95, 0.16);
+}
+
+.scroll-hint-surface.show-scroll-indicator.can-scroll-down {
+  --scroll-fade-bottom: 40px;
+  --scroll-shadow-bottom: inset 0 -24px 28px -28px rgba(15, 108, 232, 0.18);
 }
 
 .page-stack {
@@ -2297,31 +3220,9 @@ function getInitialTab(): TabKey {
 .device-mobile-demo[data-page='tasks'] {
   --mobile-header-bg: linear-gradient(180deg, #e5edff 0%, #f4f7fb 100%);
   --mobile-header-backdrop: none;
-  --mobile-header-title-color: #111827;
-  --mobile-header-title-size: 20px;
-  --mobile-header-title-weight: 500;
-  --mobile-header-title-line-height: 30px;
   --mobile-header-action-width: 20px;
   --mobile-header-action-height: 20px;
-  grid-template-rows: 215px minmax(0, 1fr) 64px;
   background: #f4f7fb;
-}
-
-.device-mobile-demo[data-page='tasks'] .mobile-header {
-  grid-template-rows: 30px 113px;
-  align-items: start;
-  row-gap: 24px;
-  padding: 24px 16px 0;
-}
-
-.device-mobile-demo[data-page='tasks'] .mobile-header strong {
-  align-self: start;
-}
-
-.device-mobile-demo[data-page='tasks'] .icon-button {
-  width: 40px;
-  height: 30px;
-  border-radius: 0;
 }
 
 .tasks-menu-icon {
@@ -2536,7 +3437,7 @@ function getInitialTab(): TabKey {
 
 .figma-task-card {
   display: grid;
-  grid-template-rows: minmax(102px, 1fr) 46px;
+  grid-template-rows: minmax(102px, 1fr) auto;
   min-height: 181px;
   overflow: hidden;
   border: 1px solid #f3f4f6;
@@ -2663,7 +3564,7 @@ function getInitialTab(): TabKey {
 .figma-task-card-footer {
   justify-content: space-between;
   gap: 12px;
-  padding: 13px 16px 0;
+  padding: 13px 16px 12px;
   border-top: 1px solid #f3f4f6;
 }
 
@@ -2810,9 +3711,23 @@ function getInitialTab(): TabKey {
   width: 358px;
   min-height: 81px;
   padding: 16px;
+  border: 0;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.notification-card:hover,
+.notification-card:focus-visible {
+  box-shadow: 0 8px 18px rgba(0, 87, 255, 0.12);
+  outline: 0;
+  transform: translateY(-1px);
 }
 
 .notification-icon {
@@ -2945,6 +3860,87 @@ function getInitialTab(): TabKey {
   cursor: pointer;
 }
 
+.notification-detail-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 0 36px;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(5px);
+}
+
+.notification-detail-dialog {
+  width: 100%;
+  max-width: 312px;
+  padding: 32px 24px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.notification-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.notification-detail-heading strong {
+  color: #000;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 28px;
+}
+
+.notification-detail-content {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+}
+
+.notification-detail-content div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: start;
+  gap: 4px;
+}
+
+.notification-detail-content dt,
+.notification-detail-content dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 28px;
+}
+
+.notification-detail-content dt {
+  color: #999;
+  white-space: nowrap;
+}
+
+.notification-detail-content dd {
+  color: #000;
+}
+
+.notification-detail-dialog > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 144px;
+  height: 52px;
+  margin: 32px auto 0;
+  border: 0;
+  border-radius: 12px;
+  background: #f3f4f6;
+  color: #191919;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 24px;
+  cursor: pointer;
+}
+
 .device-mobile-demo[data-page='workbench'] {
   background:
     linear-gradient(180deg, #d3e5f5 0%, #f4f7fb 20%),
@@ -2954,6 +3950,1175 @@ function getInitialTab(): TabKey {
 .device-mobile-demo[data-page='workbench'] .mobile-main {
   padding: 16px;
   background: transparent;
+}
+
+.device-mobile-demo[data-page='inspection'] {
+  grid-template-rows: minmax(0, 1fr);
+  --mobile-header-bg: linear-gradient(180deg, #d4e5ff 0%, rgba(255, 255, 255, 0.5) 100%);
+  --mobile-header-backdrop: none;
+  --mobile-header-title-color: #0f172a;
+  --mobile-header-title-size: 20px;
+  --mobile-header-title-weight: 600;
+  --mobile-header-title-line-height: 28px;
+  --mobile-header-action-width: 17.5px;
+  --mobile-header-action-height: 20px;
+  background: #f8fbff;
+}
+
+.device-mobile-demo[data-page='inspection'] .mobile-main {
+  padding: 0;
+  background: #f8fbff;
+}
+
+.inspection-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100%;
+  isolation: isolate;
+  overflow: hidden;
+  padding-bottom: 40px;
+  background:
+    linear-gradient(180deg, rgba(213, 230, 255, 0.95) 0%, rgba(239, 247, 255, 0.82) 48%, #f8fbff 100%),
+    #f8fbff;
+}
+
+.inspection-page::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(140, 190, 255, 0.28) 0, rgba(140, 190, 255, 0) 31%),
+    linear-gradient(180deg, rgba(212, 229, 255, 0.72) 0%, rgba(238, 247, 255, 0.46) 58%, rgba(248, 251, 255, 0) 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.inspection-page::after {
+  content: none;
+}
+
+.subpage-hero {
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+
+.inspection-hero {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+.subpage-hero-bg {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: -18px;
+  width: calc(100% + 18px);
+  height: 100%;
+  opacity: 0.92;
+  object-fit: none;
+  object-position: top right;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 34%, rgba(0, 0, 0, 0.12) 44%, rgba(0, 0, 0, 0.78) 56%, #000 68%, #000 93%, rgba(0, 0, 0, 0.24) 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, transparent 34%, rgba(0, 0, 0, 0.12) 44%, rgba(0, 0, 0, 0.78) 56%, #000 68%, #000 93%, rgba(0, 0, 0, 0.24) 100%);
+  pointer-events: none;
+}
+
+.inspection-page-bg {
+  top: -42px;
+  right: -10px;
+  width: 340px;
+  height: 430px;
+  opacity: 1;
+  object-fit: cover;
+  object-position: 58% top;
+}
+
+.subpage-hero::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(213, 230, 255, 0.98) 0%, rgba(226, 239, 255, 0.94) 38%, rgba(234, 244, 255, 0.42) 56%, rgba(234, 244, 255, 0) 72%);
+  content: '';
+  pointer-events: none;
+}
+
+.subpage-hero::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(248, 251, 255, 0) 0%, rgba(248, 251, 255, 0) 36%, rgba(248, 251, 255, 0.66) 66%, #f8fbff 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.subpage-hero-back {
+  position: absolute;
+  z-index: 3;
+  top: 24px;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.subpage-hero-back img {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.subpage-hero-copy {
+  position: absolute;
+  z-index: 2;
+  top: 64px;
+  left: 24px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  width: 342px;
+}
+
+.subpage-hero-copy span {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.subpage-hero-copy strong {
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 39px;
+  letter-spacing: 1.8px;
+}
+
+.inspection-profile-card {
+  position: absolute;
+  z-index: 2;
+  top: 159px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 342px;
+  min-height: 56px;
+}
+
+.inspection-profile-card img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.inspection-profile-card div {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.inspection-profile-card strong {
+  color: #1e293b;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 28px;
+}
+
+.inspection-profile-card span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.inspection-action-section {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: calc(100% - 40px);
+  height: 146px;
+  margin: 247px 20px 0;
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(5px);
+}
+
+.inspection-action-card {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  height: 112px;
+  padding: 16px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(239, 246, 255, 0.5);
+  color: #475569;
+  font: inherit;
+  cursor: pointer;
+}
+
+.inspection-action-card span {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.inspection-action-card img {
+  display: block;
+  object-fit: contain;
+}
+
+.inspection-action-card strong {
+  color: #475569;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.inspection-device-row,
+.inspection-settings-card {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(5px);
+}
+
+.inspection-device-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  align-items: center;
+  width: calc(100% - 40px);
+  height: 74px;
+  margin: 24px 20px 0;
+  padding: 16px 21px;
+  border-radius: 16px;
+  color: #1e293b;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inspection-row-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.inspection-row-icon img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.inspection-device-row strong {
+  padding-left: 16px;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.inspection-row-chevron {
+  justify-self: end;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #c4c7cc;
+  border-right: 2px solid #c4c7cc;
+  transform: rotate(45deg);
+}
+
+.inspection-settings-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  width: calc(100% - 40px);
+  margin: 24px 20px 0;
+  border-radius: 24px;
+}
+
+.inspection-setting-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 44px;
+  align-items: center;
+  height: 81px;
+  width: 100%;
+  padding: 20px;
+  border: 0;
+  border-bottom: 1px solid #f1f5f9;
+  background: transparent;
+  color: #1e293b;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inspection-setting-row:last-child {
+  height: 80px;
+  border-bottom: 0;
+}
+
+.inspection-setting-copy {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  padding-left: 16px;
+}
+
+.inspection-setting-copy strong {
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspection-setting-copy small {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspection-switch {
+  position: relative;
+  justify-self: end;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.inspection-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.22);
+  transition: transform 0.18s ease;
+}
+
+.inspection-switch.active {
+  background: #2864ff;
+  box-shadow: none;
+}
+
+.inspection-switch.active i {
+  transform: translateX(20px);
+}
+
+.inspection-home-indicator {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex: 0 0 auto;
+  width: 134px;
+  height: 5px;
+  margin: auto auto 0;
+  border-radius: 999px;
+  background: #111827;
+}
+
+.device-mobile-demo[data-page='defect'] {
+  grid-template-rows: minmax(0, 1fr);
+  background: #f8fbff;
+}
+
+.device-mobile-demo[data-page='defect'] .mobile-main {
+  padding: 0;
+  background: #f8fbff;
+}
+
+.device-mobile-demo[data-page='repair'] {
+  grid-template-rows: minmax(0, 1fr);
+  background: #f8fbff;
+}
+
+.device-mobile-demo[data-page='repair'] .mobile-main {
+  padding: 0;
+  background: #f8fbff;
+}
+
+.defect-page {
+  position: relative;
+  min-height: 100%;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(229, 236, 255, 0.95) 0%, rgba(229, 236, 255, 0.88) 48%, #e5ecff 100%),
+    #e5ecff;
+  color: #191c1e;
+}
+
+.defect-page::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(140, 190, 255, 0.28) 0, rgba(140, 190, 255, 0) 31%),
+    linear-gradient(180deg, rgba(212, 229, 255, 0.72) 0%, rgba(238, 247, 255, 0.46) 58%, rgba(248, 251, 255, 0) 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.defect-header {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  height: auto;
+  overflow: hidden;
+  background: transparent;
+}
+
+.defect-summary-card {
+  position: absolute;
+  z-index: 2;
+  top: 139px;
+  left: 24px;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  width: 214.8px;
+  height: 90px;
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 4px 20px -2px rgba(0, 87, 255, 0.05),
+    0 0 3px rgba(0, 87, 255, 0.02);
+  backdrop-filter: blur(10px);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  pointer-events: auto;
+  text-align: left;
+}
+
+.defect-summary-icon,
+.defect-card-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.defect-summary-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.defect-summary-icon i,
+.defect-card-icon i {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 24px;
+  border: 2px solid #2864ff;
+  border-radius: 4px;
+}
+
+.defect-summary-icon i::before,
+.defect-card-icon i::before {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  left: 4px;
+  height: 2px;
+  border-radius: 999px;
+  background: #2864ff;
+  box-shadow: 0 6px 0 #2864ff;
+  content: '';
+}
+
+.defect-summary-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  column-gap: 4px;
+  min-width: 0;
+}
+
+.defect-summary-copy > strong {
+  color: #191c1e;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 32px;
+}
+
+.defect-summary-copy > span {
+  align-self: center;
+  color: #42474e;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.defect-summary-copy small {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: #42474e;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.defect-summary-copy small i {
+  width: 6px;
+  height: 6px;
+  border-right: 1.6px solid #42474e;
+  border-bottom: 1.6px solid #42474e;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.defect-list {
+  position: absolute;
+  z-index: 1;
+  top: 245px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: auto;
+  padding: 0 16px 84px;
+  scrollbar-width: none;
+}
+
+.defect-list::-webkit-scrollbar {
+  display: none;
+}
+
+.defect-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: 48px 45.5px 20px;
+  gap: 12px;
+  width: 358px;
+  min-height: 179.5px;
+  padding: 21px;
+  border: 1px solid rgba(241, 244, 247, 0.5);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow:
+    0 4px 20px -2px rgba(0, 87, 255, 0.05),
+    0 0 3px rgba(0, 87, 255, 0.02);
+}
+
+.defect-card header {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 12px;
+}
+
+.defect-card-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.defect-card-icon i {
+  width: 20px;
+  height: 17.5px;
+  border-radius: 3px;
+}
+
+.defect-card-icon i::before {
+  top: 4px;
+  box-shadow: 0 5px 0 #2864ff;
+}
+
+.defect-card header strong {
+  align-self: center;
+  overflow: hidden;
+  color: #191c1e;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.defect-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  height: 26px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.defect-status.is-pending {
+  min-width: 62px;
+  border-color: rgba(186, 26, 26, 0.2);
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.defect-status.is-new {
+  border-color: rgba(255, 141, 0, 0.2);
+  background: #ffdcbe;
+  color: #ff8d00;
+}
+
+.defect-card p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #42474e;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.75px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.defect-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  color: #73777f;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.defect-card footer > span {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.defect-card footer > span::before,
+.defect-card footer > span::after {
+  position: absolute;
+  content: '';
+}
+
+.defect-card footer > span::before {
+  inset: 1px;
+  border: 1.6px solid #73777f;
+  border-radius: 50%;
+}
+
+.defect-card footer > span::after {
+  top: 3px;
+  left: 5.3px;
+  width: 1.5px;
+  height: 4.8px;
+  border-radius: 999px;
+  background: #73777f;
+  transform-origin: bottom center;
+  transform: rotate(-45deg);
+}
+
+.defect-card time {
+  white-space: nowrap;
+}
+
+.defect-add-button {
+  position: absolute;
+  z-index: 3;
+  right: 24px;
+  bottom: 36px;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0 0 4px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa 0%, #0057ff 100%);
+  box-shadow: 0 8px 16px -4px rgba(0, 87, 255, 0.3);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 24px;
+  backdrop-filter: blur(2px);
+}
+
+.defect-home-indicator {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 8px;
+  left: 0;
+  display: block;
+  width: 134px;
+  height: 5px;
+  margin: auto;
+  border-radius: 999px;
+  background: #000;
+}
+
+.repair-page {
+  position: relative;
+  min-height: 100%;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(229, 236, 255, 0.95) 0%, rgba(229, 236, 255, 0.88) 48%, #e5ecff 100%),
+    #e5ecff;
+  color: #1f2937;
+}
+
+.repair-page::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(140, 190, 255, 0.28) 0, rgba(140, 190, 255, 0) 31%),
+    linear-gradient(180deg, rgba(212, 229, 255, 0.72) 0%, rgba(238, 247, 255, 0.46) 58%, rgba(248, 251, 255, 0) 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.repair-header {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  height: auto;
+  overflow: hidden;
+  background: transparent;
+}
+
+.defect-header-bg,
+.repair-header-bg {
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  object-fit: contain;
+  object-position: right top;
+  transform: translateX(102px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.18) 24px, rgba(0, 0, 0, 0.62) 64px, #000 112px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.18) 24px, rgba(0, 0, 0, 0.62) 64px, #000 112px, #000 100%);
+}
+
+.defect-header-bg {
+  transform: translateX(40px);
+}
+
+.defect-header::before,
+.repair-header::before {
+  background:
+    linear-gradient(90deg, rgba(229, 236, 255, 0.96) 0%, rgba(229, 236, 255, 0.82) 18%, rgba(229, 236, 255, 0.42) 30%, rgba(229, 236, 255, 0.14) 41%, rgba(229, 236, 255, 0) 52%);
+}
+
+.defect-header::after,
+.repair-header::after {
+  background:
+    linear-gradient(180deg, rgba(229, 236, 255, 0) 0%, rgba(229, 236, 255, 0) 24%, rgba(229, 236, 255, 0.2) 34%, rgba(229, 236, 255, 0.56) 46%, rgba(229, 236, 255, 0.86) 58%, #e5ecff 72%, #e5ecff 100%);
+}
+
+.repair-summary-card {
+  position: absolute;
+  z-index: 2;
+  top: 139px;
+  left: 24px;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  width: 214.8px;
+  height: 90px;
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 4px 20px -2px rgba(0, 87, 255, 0.05),
+    0 0 3px rgba(0, 87, 255, 0.02);
+  backdrop-filter: blur(10px);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.repair-summary-icon,
+.repair-card-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #eff6ff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.repair-summary-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.repair-summary-icon i,
+.repair-card-icon i {
+  position: relative;
+  display: block;
+  width: 21px;
+  height: 24px;
+  color: #60a5fa;
+}
+
+.repair-summary-icon i::before,
+.repair-card-icon i::before {
+  position: absolute;
+  inset: 0;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  content: '';
+}
+
+.repair-summary-icon i::after,
+.repair-card-icon i::after {
+  position: absolute;
+  top: 7px;
+  left: 5px;
+  width: 11px;
+  height: 6px;
+  border-bottom: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  content: '';
+  transform: rotate(-45deg);
+}
+
+.repair-summary-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  column-gap: 4px;
+  min-width: 0;
+}
+
+.repair-summary-copy > strong {
+  color: #191c1e;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 32px;
+}
+
+.repair-summary-copy > span {
+  align-self: center;
+  color: #42474e;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.repair-summary-copy small {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: #42474e;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.repair-summary-copy small i {
+  width: 6px;
+  height: 6px;
+  border-right: 1.6px solid #42474e;
+  border-bottom: 1.6px solid #42474e;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.repair-list {
+  position: absolute;
+  z-index: 1;
+  top: 245px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: auto;
+  padding: 0 16px 84px;
+  scrollbar-width: none;
+}
+
+.repair-list::-webkit-scrollbar {
+  display: none;
+}
+
+.repair-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 16px;
+  width: 358px;
+  min-height: 132px;
+  padding: 17px;
+  border: 1px solid #f9fafb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.repair-card-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.repair-card.is-pending .repair-card-icon {
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+}
+
+.repair-card.is-new .repair-card-icon {
+  background: linear-gradient(135deg, #ffedcc 0%, #fff7ed 100%);
+}
+
+.repair-card.is-processing .repair-card-icon {
+  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+}
+
+.repair-card.is-dispatch .repair-card-icon {
+  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
+}
+
+.repair-card.is-new .repair-card-icon i {
+  color: #fb923c;
+}
+
+.repair-card.is-processing .repair-card-icon i {
+  color: #f472b6;
+}
+
+.repair-card.is-dispatch .repair-card-icon i {
+  width: 30px;
+  color: #c084fc;
+}
+
+.repair-card-content {
+  display: grid;
+  grid-template-rows: 24px 39px 17px;
+  align-content: space-between;
+  min-width: 0;
+  min-height: 98px;
+  padding: 2px 0;
+}
+
+.repair-card-content header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.repair-card-content header strong {
+  overflow: hidden;
+  padding-right: 8px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repair-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 23px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16.5px;
+  white-space: nowrap;
+}
+
+.repair-status.is-pending {
+  border-color: rgba(255, 77, 79, 0.3);
+  background: #fff1f0;
+  color: #ff4d4f;
+}
+
+.repair-status.is-new {
+  border-color: rgba(250, 173, 20, 0.3);
+  background: #fffbe6;
+  color: #faad14;
+}
+
+.repair-status.is-processing {
+  border-color: rgba(235, 47, 150, 0.3);
+  background: #fff0f6;
+  color: #eb2f96;
+}
+
+.repair-status.is-dispatch {
+  border-color: rgba(114, 46, 209, 0.3);
+  background: #f9f0ff;
+  color: #722ed1;
+}
+
+.repair-card-content p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #888;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 19.5px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.repair-card-content footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #bbb;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16.5px;
+}
+
+.repair-card-content footer > span {
+  position: relative;
+  width: 11px;
+  height: 11px;
+}
+
+.repair-card-content footer > span::before,
+.repair-card-content footer > span::after {
+  position: absolute;
+  content: '';
+}
+
+.repair-card-content footer > span::before {
+  inset: 1px;
+  border: 1.4px solid #bbb;
+  border-radius: 50%;
+}
+
+.repair-card-content footer > span::after {
+  top: 3px;
+  left: 5px;
+  width: 1.3px;
+  height: 4.4px;
+  border-radius: 999px;
+  background: #bbb;
+  transform-origin: bottom center;
+  transform: rotate(-45deg);
+}
+
+.repair-card-content time {
+  white-space: nowrap;
+}
+
+.repair-add-button {
+  position: absolute;
+  z-index: 3;
+  left: 24px;
+  bottom: 41px;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0 0 4px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa 0%, #0057ff 100%);
+  box-shadow: 0 8px 16px -4px rgba(0, 87, 255, 0.3);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 24px;
+}
+
+.repair-home-indicator {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 8px;
+  left: 0;
+  display: block;
+  width: 134px;
+  height: 5px;
+  margin: auto;
+  border-radius: 999px;
+  background: #000;
 }
 
 .workbench-page {
@@ -3085,15 +5250,14 @@ function getInitialTab(): TabKey {
   gap: 2px;
   min-width: 0;
   padding: 8px;
-  border: 2px solid transparent;
+  border: 0;
   border-radius: 12px;
   background: transparent;
   cursor: pointer;
 }
 
 .workbench-entry-grid button.active {
-  border-color: rgba(0, 87, 255, 0.35);
-  background: rgba(239, 246, 255, 0.72);
+  background: #eaf3ff;
 }
 
 .workbench-entry-grid button:focus-visible {
@@ -3133,16 +5297,16 @@ function getInitialTab(): TabKey {
 .workbench-entry-grid small {
   display: block;
   max-width: 100%;
-  height: 14px;
-  overflow: hidden;
+  min-height: 27px;
   margin: 0;
   color: #9ca3af;
   font-size: 9px;
   font-weight: 500;
   line-height: 13.5px;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .profile-card {
