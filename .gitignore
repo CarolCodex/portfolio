@@ -6,3 +6,4 @@ tmp-*.mjs
 .vite
 coverage
 *.tsbuildinfo
+asset-originals/

@@ -7,10 +7,7 @@ const root = new URL('../', import.meta.url)
 const publicDir = new URL('../public/', import.meta.url)
 const minBytes = 1024 * 1024
 
-const excluded = new Set([
-  'images/resume/hero-cover-1920.png',
-  'images/resume/hero-portrait-icons.png',
-])
+const excluded = new Set()
 
 const maxDimensionRules = [
   [/demo-home-assets\/category-icons\//, 320],
