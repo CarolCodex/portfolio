@@ -1,3 +1,6 @@
+@tailwind components;
+@tailwind utilities;
+
 :root {
   color-scheme: light;
   --color-bg: #f3f9ff;
