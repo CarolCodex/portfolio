@@ -72,7 +72,7 @@
             <button type="button">忘记密码？</button>
           </div>
 
-          <a class="pc-login-submit" href="#dashboard" role="button" @click="handleLogin">登录</a>
+          <button class="pc-login-submit" type="submit">登录</button>
 
           <p class="pc-login-policy">
             登录即表示同意
@@ -205,7 +205,7 @@
                 </div>
                 <button type="button" role="menuitem">账号设置</button>
                 <button type="button" role="menuitem">安全中心</button>
-                <a class="is-danger" href="#login" role="menuitem" @click="handleLogout">退出登录</a>
+                <button class="is-danger" type="button" role="menuitem" @click="handleLogout">退出登录</button>
               </div>
             </details>
           </div>
@@ -587,42 +587,21 @@ function updatePreviewScale() {
 }
 
 onMounted(() => {
-  syncAuthFromHash()
   updatePreviewScale()
   window.addEventListener('resize', updatePreviewScale, { passive: true })
-  window.addEventListener('hashchange', syncAuthFromHash)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updatePreviewScale)
-  window.removeEventListener('hashchange', syncAuthFromHash)
 })
 
-function syncAuthFromHash() {
-  const hash = window.location.hash
-
-  isLoggedIn.value = hash !== '#login'
-
-  if (isLoggedIn.value) {
-    passwordVisible.value = false
-
-    if (hash === '#lubrication-items') {
-      activePcPage.value = 'lubrication-items'
-    } else if (hash === '#lubrication-plan') {
-      activePcPage.value = 'lubrication-plan'
-    } else {
-      activePcPage.value = 'dashboard'
-    }
-  }
-}
-
 function handleLogout() {
-  window.location.hash = 'login'
   isLoggedIn.value = false
+  activePcPage.value = 'dashboard'
+  passwordVisible.value = false
 }
 
 function handleLogin() {
-  window.location.hash = 'dashboard'
   isLoggedIn.value = true
   passwordVisible.value = false
 }
@@ -638,19 +617,17 @@ function toggleTheme() {
 function showDashboard(item: string) {
   if (item === activeDashboard) {
     activePcPage.value = 'dashboard'
-    window.location.hash = 'dashboard'
   }
 }
 
 function showLubricationChild(item: string) {
   if (item === '润滑项管理') {
     activePcPage.value = 'lubrication-items'
-    window.location.hash = 'lubrication-items'
+    return
   }
 
   if (item === '润滑计划') {
     activePcPage.value = 'lubrication-plan'
-    window.location.hash = 'lubrication-plan'
   }
 }
 
@@ -1372,10 +1349,12 @@ $pc-card-shadow: 0 1px 2px rgba(23, 33, 60, 0.04), 0 6px 18px rgba(23, 33, 60, 0
   align-items: center;
   justify-content: center;
   margin-top: 24px;
+  border: 0;
   border-radius: 10px;
   background: linear-gradient(135deg, #1671ee 0%, #0b8cf5 100%);
   box-shadow: 0 10px 22px rgba(22, 113, 238, 0.22);
   color: #fff;
+  cursor: pointer;
   font-size: 15px;
   font-weight: 800;
   line-height: 22px;
@@ -1722,8 +1701,12 @@ button {
     height: 34px;
     align-items: center;
     padding: 0 10px;
+    border: 0;
     border-radius: 8px;
+    background: transparent;
     color: #42526a;
+    cursor: pointer;
+    font: inherit;
     font-size: 13px;
     line-height: 18px;
     text-align: left;
