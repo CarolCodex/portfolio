@@ -4,9 +4,11 @@
       <img
         class="cover-art"
         :src="coverArtUrl"
+        srcset="/images/resume/hero-cover-1920-960.jpg 960w, /images/resume/hero-cover-1920-1280.jpg 1280w, /images/resume/hero-cover-1920.jpg 1672w"
+        sizes="100vw"
         alt="曹兰 AI 时代 UI 与前端复合岗封面肖像"
-        width="1672"
-        height="941"
+        width="1280"
+        height="720"
         loading="eager"
         decoding="async"
         fetchpriority="high"
@@ -182,7 +184,7 @@ import { computed, ref } from 'vue'
 import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 import { resume } from '@/data/resume'
 
-const coverArtUrl = '/images/resume/hero-cover-1920.png'
+const coverArtUrl = '/images/resume/hero-cover-1920-1280.jpg'
 
 const heroTags = ['2017-2026', resume.basicInfo.city, 'UI + 前端复合岗', 'Vue / 小程序 / .NET MAUI']
 

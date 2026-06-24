@@ -62,7 +62,7 @@ export const categoryProducts: CategoryProduct[] = [
     id: 3,
     name: '农家土豆 绵软香甜',
     spec: '1kg',
-    image: `${categoryBase}/images/product-potato.jpg`,
+    image: `${categoryBase}/images/product-potato-900.jpg`,
     price: '5.5',
   },
   {
@@ -76,7 +76,7 @@ export const categoryProducts: CategoryProduct[] = [
     id: 5,
     name: '有机生菜 清脆嫩绿',
     spec: '300g',
-    image: `${categoryBase}/images/product-lettuce.jpg`,
+    image: `${categoryBase}/images/product-lettuce-900.jpg`,
     price: '7.8',
   },
   {

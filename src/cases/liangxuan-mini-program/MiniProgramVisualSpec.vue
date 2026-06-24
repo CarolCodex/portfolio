@@ -317,7 +317,7 @@ const productVariants: ProductVariant[] = [
   {
     name: '预售商品卡片',
     type: 'presale',
-    image: '/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-durian.png',
+    image: '/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-durian-900.jpg',
     badge: '正品保障',
     description: '蓝紫保障栏 + 预售价 + 付定金路径。',
     price: 248,
@@ -375,7 +375,7 @@ const cartItem = ref({
   quantity: 1,
   price: 9.9,
   unit: '份',
-  image: '/case-assets/liangxuan-mini-program/demo-category-assets/images/product-lettuce.jpg',
+  image: '/case-assets/liangxuan-mini-program/demo-category-assets/images/product-lettuce-900.jpg',
   tagLabel: '冷藏',
   isSelected: true,
 })

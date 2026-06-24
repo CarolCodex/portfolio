@@ -101,7 +101,7 @@
         <div class="review-images">
           <img :src="displayProduct.image" alt="" loading="lazy" decoding="async" />
           <img src="/case-assets/liangxuan-mini-program/demo-category-assets/images/product-tomato.jpg" alt="" loading="lazy" decoding="async" />
-          <img src="/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-pomelo.png" alt="" loading="lazy" decoding="async" />
+          <img src="/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-pomelo-900.jpg" alt="" loading="lazy" decoding="async" />
         </div>
       </section>
 

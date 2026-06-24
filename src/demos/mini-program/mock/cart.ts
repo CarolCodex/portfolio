@@ -42,7 +42,7 @@ export const initialCartItems: CartItem[] = [
     price: 9.9,
     originPrice: 12.9,
     quantity: 1,
-    image: `${categoryBase}/images/product-lettuce.jpg`,
+    image: `${categoryBase}/images/product-lettuce-900.jpg`,
   },
   {
     id: 1002,
@@ -100,14 +100,14 @@ export const cartRecommendItems: CartRecommendItem[] = [
     name: '农家土豆 绵软香甜',
     spec: '1kg',
     price: '5.5',
-    image: `${categoryBase}/images/product-potato.jpg`,
+    image: `${categoryBase}/images/product-potato-900.jpg`,
     cartItem: {
       id: 2003,
       groupId: 'nextday',
       name: '农家土豆 绵软香甜',
       tag: '鲜蔬',
       price: 5.5,
-      image: `${categoryBase}/images/product-potato.jpg`,
+      image: `${categoryBase}/images/product-potato-900.jpg`,
     },
   },
   {
@@ -130,14 +130,14 @@ export const cartRecommendItems: CartRecommendItem[] = [
     name: '有机生菜 清脆嫩绿',
     spec: '300g',
     price: '7.8',
-    image: `${categoryBase}/images/product-lettuce.jpg`,
+    image: `${categoryBase}/images/product-lettuce-900.jpg`,
     cartItem: {
       id: 2005,
       groupId: 'hourly',
       name: '有机生菜 清脆嫩绿',
       tag: '冷藏',
       price: 7.8,
-      image: `${categoryBase}/images/product-lettuce.jpg`,
+      image: `${categoryBase}/images/product-lettuce-900.jpg`,
     },
   },
   {

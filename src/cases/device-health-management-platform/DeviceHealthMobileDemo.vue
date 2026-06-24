@@ -273,9 +273,11 @@
         <section class="tasks-header-banner" aria-label="待办概览">
           <img
             class="tasks-banner-art"
-            src="/case-assets/device-health-management-platform/tasks/figma/banner-card.png"
+            src="/case-assets/device-health-management-platform/tasks/figma/banner-card-900.jpg"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
           />
           <div class="tasks-banner-copy">
             <span>专注处理，高效执行</span>
@@ -365,9 +367,11 @@
         <article class="inspection-hero subpage-hero">
           <img
             class="inspection-page-bg subpage-hero-bg"
-            src="/case-assets/device-health-management-platform/inspection-header-decoration-sharp.png"
+            src="/case-assets/device-health-management-platform/inspection-header-decoration-sharp.jpg"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
           />
           <button class="inspection-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
             <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
@@ -437,9 +441,11 @@
         <header class="defect-header subpage-hero">
           <img
             class="defect-header-bg subpage-hero-bg"
-            src="/case-assets/device-health-management-platform/defect-header-decoration-sharp.png"
+            src="/case-assets/device-health-management-platform/defect-header-decoration-sharp.jpg"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
           />
           <button class="defect-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
             <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
@@ -491,9 +497,11 @@
         <header class="repair-header subpage-hero">
           <img
             class="repair-header-bg subpage-hero-bg"
-            src="/case-assets/device-health-management-platform/repair-header-decoration-sharp.png"
+            src="/case-assets/device-health-management-platform/repair-header-decoration-sharp.jpg"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
           />
           <button class="repair-back-button subpage-hero-back" type="button" aria-label="返回工作台" @click="handleHeaderLeadingAction">
             <img src="/case-assets/device-health-management-platform/about-back.svg" alt="" aria-hidden="true" />
@@ -548,9 +556,11 @@
         <article class="workbench-hero">
           <img
             class="workbench-hero-bg"
-            src="/case-assets/device-health-management-platform/workbench/banner.png"
+            src="/case-assets/device-health-management-platform/workbench/banner-900.jpg"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
           />
           <div>
             <span>欢迎回来，运维工程师</span>
@@ -833,6 +843,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { rafThrottle } from '@/utils/performance'
 import DeviceMobileHeader from './DeviceMobileHeader.vue'
 import DeviceSelectDropdown from './DeviceSelectDropdown.vue'
 
@@ -1712,27 +1723,10 @@ function updateScrollHintState(container: HTMLElement) {
 }
 
 function makeScrollHintUpdater(container: HTMLElement) {
-  let frame = 0
-
-  const update = () => {
-    if (frame) {
-      return
-    }
-
-    frame = window.requestAnimationFrame(() => {
-      frame = 0
-      updateScrollHintState(container)
-    })
-  }
-
+  const update = rafThrottle(() => updateScrollHintState(container))
   return {
     update,
-    cancel: () => {
-      if (frame) {
-        window.cancelAnimationFrame(frame)
-        frame = 0
-      }
-    },
+    cancel: update.cancel,
   }
 }
 
@@ -1788,7 +1782,6 @@ function setupScrollHints() {
       childList: true,
       subtree: true,
       characterData: true,
-      attributes: true,
     })
     update()
 
@@ -1800,17 +1793,24 @@ function setupScrollHints() {
     })
   })
 
-  const updateAll = () => scrollHintContainers.forEach(updateScrollHintState)
+  const updateAll = rafThrottle(() => scrollHintContainers.forEach(updateScrollHintState))
 
   window.addEventListener('resize', updateAll, { passive: true })
-  scrollHintCleanups.push(() => window.removeEventListener('resize', updateAll))
+  scrollHintCleanups.push(() => {
+    updateAll.cancel()
+    window.removeEventListener('resize', updateAll)
+  })
 
-  window.setTimeout(updateAll, 120)
-  window.setTimeout(updateAll, 480)
+  const firstSettleTimer = window.setTimeout(updateAll, 120)
+  const secondSettleTimer = window.setTimeout(updateAll, 480)
   scrollHintIndicatorTimer = window.setTimeout(() => {
     scrollHintContainers.forEach((container) => container.classList.remove('show-scroll-indicator'))
     scrollHintIndicatorTimer = 0
   }, 1500)
+  scrollHintCleanups.push(() => {
+    window.clearTimeout(firstSettleTimer)
+    window.clearTimeout(secondSettleTimer)
+  })
 }
 
 function scheduleScrollHintSetup() {

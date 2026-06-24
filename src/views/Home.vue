@@ -87,6 +87,7 @@ const contactPopoverStyle = ref<Record<string, string>>({
 const contactCopied = ref(false)
 
 let copyResetTimer: number | undefined
+let isContactPositionListening = false
 
 function updateContactPopoverPosition() {
   const button = contactButtonEl.value
@@ -127,9 +128,27 @@ function updateContactPopoverPosition() {
 
 const scheduleContactPopoverPosition = rafThrottle(updateContactPopoverPosition)
 
+function addContactPositionListeners() {
+  if (isContactPositionListening) return
+
+  window.addEventListener('resize', scheduleContactPopoverPosition, { passive: true })
+  window.addEventListener('scroll', scheduleContactPopoverPosition, { capture: true, passive: true })
+  isContactPositionListening = true
+}
+
+function removeContactPositionListeners() {
+  if (!isContactPositionListening) return
+
+  window.removeEventListener('resize', scheduleContactPopoverPosition)
+  window.removeEventListener('scroll', scheduleContactPopoverPosition, true)
+  scheduleContactPopoverPosition.cancel()
+  isContactPositionListening = false
+}
+
 function closeContactPopover() {
   showContactPopover.value = false
   contactCopied.value = false
+  removeContactPositionListeners()
 }
 
 function handleContactClick(event: MouseEvent) {
@@ -145,6 +164,7 @@ function handleContactClick(event: MouseEvent) {
   contactButtonEl.value = button
   showContactPopover.value = true
   contactCopied.value = false
+  addContactPositionListeners()
   void nextTick(scheduleContactPopoverPosition)
 }
 
@@ -188,16 +208,12 @@ async function copyContactPhone() {
 onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   document.addEventListener('keydown', handleKeydown)
-  window.addEventListener('resize', scheduleContactPopoverPosition, { passive: true })
-  window.addEventListener('scroll', scheduleContactPopoverPosition, { capture: true, passive: true })
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown)
   document.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('resize', scheduleContactPopoverPosition)
-  window.removeEventListener('scroll', scheduleContactPopoverPosition, true)
-  scheduleContactPopoverPosition.cancel()
+  removeContactPositionListeners()
 
   if (copyResetTimer) {
     window.clearTimeout(copyResetTimer)

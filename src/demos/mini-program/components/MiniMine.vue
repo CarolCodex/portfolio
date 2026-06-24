@@ -213,7 +213,7 @@ const recommendProducts = [
     id: 1,
     name: '有机青菜 新鲜采摘',
     price: '8.8',
-    image: `${categoryAssetBase}/images/product-lettuce.jpg`,
+    image: `${categoryAssetBase}/images/product-lettuce-900.jpg`,
   },
   {
     id: 2,
@@ -225,7 +225,7 @@ const recommendProducts = [
     id: 3,
     name: '农家土豆 绵软香甜',
     price: '5.5',
-    image: `${categoryAssetBase}/images/product-potato.jpg`,
+    image: `${categoryAssetBase}/images/product-potato-900.jpg`,
   },
   {
     id: 4,

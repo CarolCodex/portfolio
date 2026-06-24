@@ -172,7 +172,7 @@ const products = ref<DemoProduct[]>([
     category: 'presale',
     title: '猫山王榴莲',
     subtitle: '产地直采 预售锁鲜',
-    image: '/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-durian.png',
+    image: '/case-assets/liangxuan-mini-program/demo-activity-assets/images/product-durian-900.jpg',
     price: 128,
     oldPrice: 159,
     discountLabel: '预售抢鲜',

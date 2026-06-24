@@ -94,7 +94,7 @@ export const promoCards: PromoCard[] = [
     activityType: 'hot',
     products: [
       { image: `${assetBase}/promo-cards/hot-1.jpg`, priceMain: '6', priceDecimal: '.99' },
-      { image: `${assetBase}/promo-cards/hot-2.jpg`, priceMain: '13', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/hot-2-720.jpg`, priceMain: '13', priceDecimal: '.99' },
     ],
   },
   {
@@ -110,8 +110,8 @@ export const promoCards: PromoCard[] = [
     gradient: 'linear-gradient(180deg, #fff0f2 0%, #ffffff 40%)',
     activityType: 'hot',
     products: [
-      { image: `${assetBase}/promo-cards/season-1.jpg`, priceMain: '6', priceDecimal: '.99' },
-      { image: `${assetBase}/promo-cards/season-2.jpg`, priceMain: '13', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/season-1-720.jpg`, priceMain: '6', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/season-2-720.jpg`, priceMain: '13', priceDecimal: '.99' },
     ],
   },
   {
@@ -126,8 +126,8 @@ export const promoCards: PromoCard[] = [
     gradient: 'linear-gradient(180deg, #fff5f0 0%, #ffffff 30%)',
     activityType: 'group',
     products: [
-      { image: `${assetBase}/promo-cards/brand-1.jpg`, priceMain: '6', priceDecimal: '.99' },
-      { image: `${assetBase}/promo-cards/brand-2.jpg`, priceMain: '13', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/brand-1-720.jpg`, priceMain: '6', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/brand-2-720.jpg`, priceMain: '13', priceDecimal: '.99' },
     ],
   },
   {
@@ -142,8 +142,8 @@ export const promoCards: PromoCard[] = [
     gradient: 'linear-gradient(180deg, #f5eeff 0%, #ffffff 40%)',
     activityType: 'presale',
     products: [
-      { image: `${assetBase}/promo-cards/presale-1.jpg`, priceMain: '6', priceDecimal: '.99' },
-      { image: `${assetBase}/promo-cards/presale-2.jpg`, priceMain: '13', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/presale-1-720.jpg`, priceMain: '6', priceDecimal: '.99' },
+      { image: `${assetBase}/promo-cards/presale-2-720.jpg`, priceMain: '13', priceDecimal: '.99' },
     ],
   },
 ]

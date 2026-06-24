@@ -1,5 +1,5 @@
 <template>
-  <section class="hero-cover">
+  <section ref="heroCoverRef" class="hero-cover" :class="{ 'is-visible': isHeroVisible }">
     <div class="hero-cover-inner">
       <div class="hero-cover-copy">
         <h1>
@@ -31,12 +31,18 @@
 
       <div class="hero-cover-visual" aria-label="作品集主视觉">
         <picture class="hero-folder-picture">
-          <source srcset="/images/home/hero-folder.webp" type="image/webp" />
+          <source
+            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w"
+            sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
+            type="image/png"
+          />
           <img
-            src="/images/home/hero-folder.webp"
+            src="/images/home/hero-folder-1280.png"
+            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w"
+            sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             alt="Portfolio 作品集主视觉"
-            width="2092"
-            height="1800"
+            width="1280"
+            height="1101"
             loading="eager"
             decoding="async"
             fetchpriority="high"
@@ -55,11 +61,16 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 defineEmits<{
   contact: [event: MouseEvent]
 }>()
+
+const heroCoverRef = ref<HTMLElement | null>(null)
+const isHeroVisible = ref(true)
+let visibilityObserver: IntersectionObserver | undefined
 
 const entries = [
   { label: '精选案例', value: '电商小程序 / 电子秤终端系统 / 设备健康管理', to: '/cases' },
@@ -67,6 +78,22 @@ const entries = [
   { label: 'AI 工作流', value: 'ChatGPT / Figma Make / Codex', to: '/workflow' },
   { label: '工作经验', value: '9年UI工程师', to: '/resume' },
 ]
+
+onMounted(() => {
+  if (!('IntersectionObserver' in window) || !heroCoverRef.value) return
+
+  visibilityObserver = new IntersectionObserver(
+    ([entry]) => {
+      isHeroVisible.value = entry.isIntersecting
+    },
+    { threshold: 0.02 },
+  )
+  visibilityObserver.observe(heroCoverRef.value)
+})
+
+onBeforeUnmount(() => {
+  visibilityObserver?.disconnect()
+})
 </script>
 
 <style scoped>
@@ -295,6 +322,11 @@ h1 strong {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.hero-cover:not(.is-visible) .hero-folder-picture,
+.hero-cover:not(.is-visible) .hero-cover-visual::before {
+  animation-play-state: paused;
 }
 
 .hero-cover-entrybar {
