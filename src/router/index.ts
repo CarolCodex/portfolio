@@ -9,6 +9,11 @@ const getRouteTitle = (to: { path: string; params: Record<string, unknown>; meta
     return `项目案例｜${miniProgramDemoTitle}`
   }
 
+  if (to.path.startsWith('/cases/') && to.path.endsWith('/mobile-design-system') && typeof to.params.id === 'string') {
+    const item = cases.find((caseItem) => caseItem.id === to.params.id)
+    return item ? `移动端组件规范｜${item.title}` : '移动端组件规范不存在'
+  }
+
   if (to.path.startsWith('/cases/') && to.path.endsWith('/design-spec') && typeof to.params.id === 'string') {
     const item = cases.find((caseItem) => caseItem.id === to.params.id)
     return item ? `设计规范｜${item.title}` : '设计规范不存在'
@@ -41,11 +46,18 @@ const router = createRouter({
       meta: { title: '设备健康 PC 后台预览', hideHeader: true },
     },
     {
+      path: '/cases/:id/mobile-design-system',
+      name: 'case-mobile-design-system',
+      component: () => import('@/views/CaseMobileDesignSpecPage.vue'),
+      props: true,
+      meta: { title: '移动端组件规范', hideHeader: true },
+    },
+    {
       path: '/cases/:id/design-spec',
       name: 'case-design-spec',
       component: () => import('@/views/CaseDesignSpecPage.vue'),
       props: true,
-      meta: { title: '设计规范' },
+      meta: { title: '设计规范', hideHeader: true },
     },
     {
       path: '/cases/:id',

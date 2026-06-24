@@ -22,18 +22,16 @@
 
             <Transition name="device-spec-menu">
               <div v-if="specMenuOpen" class="device-spec-dropdown" role="menu" aria-label="设计规范分类">
-                <button
-                  v-for="option in specSubViewTabs"
-                  :key="option.key"
-                  type="button"
-                  role="menuitemradio"
-                  :aria-checked="activeMainView === 'spec' && activeSpecSubView === option.key"
-                  :class="{ active: activeMainView === 'spec' && activeSpecSubView === option.key }"
-                  @click="setSpecSubView(option.key)"
-                >
-                  <span>{{ option.label }}</span>
-                  <small>{{ option.description }}</small>
-                </button>
+                <template v-for="option in specSubViewTabs" :key="option.key">
+                  <RouterLink
+                    role="menuitem"
+                    :to="option.key === 'mobile' ? `/cases/${item.id}/mobile-design-system` : `/cases/${item.id}/design-spec`"
+                    @click="specMenuOpen = false"
+                  >
+                    <span>{{ option.label }}</span>
+                    <small>{{ option.description }}</small>
+                  </RouterLink>
+                </template>
               </div>
             </Transition>
           </div>
@@ -909,7 +907,8 @@ const activeMainViewHighlights = computed(() => {
   backdrop-filter: blur(18px);
 }
 
-.device-spec-dropdown button {
+.device-spec-dropdown button,
+.device-spec-dropdown a {
   display: grid;
   gap: 3px;
   width: 100%;
@@ -919,6 +918,7 @@ const activeMainViewHighlights = computed(() => {
   background: rgba(242, 248, 255, 0.7);
   color: #17528f;
   font: inherit;
+  text-decoration: none;
   text-align: left;
   cursor: pointer;
   transition:
@@ -928,7 +928,9 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-spec-dropdown button:hover,
-.device-spec-dropdown button.active {
+.device-spec-dropdown button.active,
+.device-spec-dropdown a:hover,
+.device-spec-dropdown a.router-link-active {
   background: linear-gradient(135deg, rgba(15, 108, 232, 0.96), rgba(40, 183, 255, 0.96));
   color: #fff;
   transform: translateY(-1px);
@@ -1739,13 +1741,13 @@ const activeMainViewHighlights = computed(() => {
   }
 
   .device-showcase-row[data-main-view='app'] .device-platform-stage {
-    order: 1;
+    order: 2;
     min-height: var(--device-frame-height);
     transform: none;
   }
 
   .device-app-nav-panel {
-    order: 2;
+    order: 1;
     width: min(100%, 560px);
     margin-top: 0;
     justify-self: center;
@@ -1753,7 +1755,7 @@ const activeMainViewHighlights = computed(() => {
     text-align: center;
   }
 
-  .device-app-nav-panel .device-stage-header {
+  .device-showcase-row[data-main-view='app'] .device-app-nav-panel .device-stage-header {
     justify-items: center;
     text-align: center;
     transform: none;
@@ -1863,6 +1865,10 @@ const activeMainViewHighlights = computed(() => {
     gap: 16px;
   }
 
+  .device-showcase-row[data-main-view='app'] .device-platform-stage {
+    min-height: 0;
+  }
+
   .device-app-demo {
     transform: none;
   }
@@ -1892,7 +1898,13 @@ const activeMainViewHighlights = computed(() => {
   }
 
   .device-app-nav-panel {
+    width: 100%;
     justify-items: stretch;
+    text-align: left;
+  }
+
+  .device-showcase-row[data-main-view='app'] .device-app-nav-panel .device-stage-header {
+    justify-items: start;
     text-align: left;
   }
 
