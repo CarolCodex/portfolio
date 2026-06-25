@@ -92,7 +92,7 @@ export const cases: CaseItem[] = [
     year: '2026',
     platform: '.NET MAUI / Touch Terminal',
     tags: ['终端设备', '触屏交互', '.NET MAUI'],
-    priority: 3,
+    priority: 4,
     cover: blueCover('#eef9ff', '#d7f0ff', '#e9f4ff'),
     summary: '展示特殊设备界面设计、软键盘输入、购物称重流程、大屏触控适配与跨端界面落地能力。',
     background:
@@ -147,7 +147,7 @@ export const cases: CaseItem[] = [
     year: '2026',
     platform: 'PC Web / Vue Prototype',
     tags: ['教育后台', '旧项目改版', '组件规范', 'Codex'],
-    priority: 4,
+    priority: 5,
     cover: blueCover('#f0f8ff', '#dcefff', '#eef1ff'),
     summary: '展示旧项目重构思路、后台系统视觉升级、组件规范沉淀，以及 Codex 辅助页面改版过程。',
     background:
@@ -171,7 +171,7 @@ export const cases: CaseItem[] = [
     year: '2024',
     platform: 'Mobile App / PC Web',
     tags: ['IoT', '安全管理', 'APP', 'PC 协同'],
-    priority: 5,
+    priority: 6,
     cover: blueCover('#eef8ff', '#d7edff', '#f4f6ff'),
     summary: '展示移动端数据状态、人员设备管理、多端协同，以及 IoT 安全场景下的状态可视化设计。',
     background:
@@ -186,8 +186,6 @@ export const cases: CaseItem[] = [
   },
   {
     id: 'data-screen-visualization',
-    status: 'coming-soon',
-    comingSoon: true,
     title: '数据大屏可视化设计',
     subtitle: '驾驶舱式指标总览、图表布局与暗色科技风视觉表达',
     category: '大屏 / 数据可视化',
@@ -195,7 +193,7 @@ export const cases: CaseItem[] = [
     year: '2024',
     platform: 'Large Screen Dashboard',
     tags: ['大屏', '数据可视化', '驾驶舱', '科技风'],
-    priority: 6,
+    priority: 3,
     cover: blueCover('#eaf6ff', '#d5ecff', '#e9f1ff'),
     summary: '展示暗色科技风、驾驶舱式数据布局、图表层级、指标卡和可视化大屏的整体设计控制力。',
     background:

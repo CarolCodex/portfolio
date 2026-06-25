@@ -8,10 +8,15 @@
     <span class="case-index">{{ displayIndex }}</span>
     <span
       class="case-cover"
-      :class="{ 'case-cover--liangxuan': isLiangxuanCase, 'case-cover--image': hasCoverImage }"
+      :class="{
+        'case-cover--liangxuan': isLiangxuanCase,
+        'case-cover--data-screen': isDataScreenCase,
+        'case-cover--image': hasCoverImage,
+      }"
       :style="coverStyle"
     >
-      <DeviceHealthCaseCoverVisual v-if="isDeviceHealthCase" />
+      <DataScreenCaseCoverVisual v-if="isDataScreenCase" />
+      <DeviceHealthCaseCoverVisual v-else-if="isDeviceHealthCase" />
       <img
         v-else-if="hasCoverImage"
         class="case-cover-image"
@@ -37,6 +42,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import DataScreenCaseCoverVisual from '@/cases/data-screen-visualization/DataScreenCaseCoverVisual.vue'
 import DeviceHealthCaseCoverVisual from '@/cases/device-health-management-platform/DeviceHealthCaseCoverVisual.vue'
 import LiangxuanCaseCoverVisual from '@/cases/liangxuan-mini-program/LiangxuanCaseCoverVisual.vue'
 import type { CaseItem } from '@/data/cases'
@@ -50,8 +56,11 @@ const displayIndex = computed(() => String((props.index ?? 0) + 1).padStart(2, '
 const isComingSoon = computed(() => props.item.comingSoon || props.item.status === 'coming-soon')
 const isLiangxuanCase = computed(() => props.item.id === 'liangxuan-mini-program' || props.item.id === 'mini-program')
 const isDeviceHealthCase = computed(() => props.item.id === 'device-health-management-platform')
+const isDataScreenCase = computed(() => props.item.id === 'data-screen-visualization')
 const hasCoverImage = computed(() => Boolean(props.item.coverImage))
-const coverStyle = computed(() => (isLiangxuanCase.value || hasCoverImage.value ? undefined : { background: props.item.cover }))
+const coverStyle = computed(() =>
+  isLiangxuanCase.value || isDataScreenCase.value || hasCoverImage.value ? undefined : { background: props.item.cover },
+)
 const cardComponent = computed(() => (isComingSoon.value ? 'article' : RouterLink))
 const cardAttrs = computed(() =>
   isComingSoon.value
@@ -157,12 +166,18 @@ const cardAttrs = computed(() =>
   background: transparent;
 }
 
+.case-cover--data-screen {
+  background: #061533;
+}
+
 .case-cover--image {
   background: #f7fbff;
 }
 
 .case-cover--liangxuan::before,
 .case-cover--liangxuan::after,
+.case-cover--data-screen::before,
+.case-cover--data-screen::after,
 .case-cover--image::before,
 .case-cover--image::after {
   display: none;
