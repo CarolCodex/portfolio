@@ -6,7 +6,7 @@
         :src="coverArtUrl"
         srcset="/images/resume/hero-cover-1920-960.jpg 960w, /images/resume/hero-cover-1920-1280.jpg 1280w, /images/resume/hero-cover-1920.jpg 1672w"
         sizes="100vw"
-        alt="曹兰 AI 时代 UI 与前端复合岗封面肖像"
+        alt="曹兰 AI 前端开发工程师封面肖像"
         width="1280"
         height="720"
         loading="eager"
@@ -19,7 +19,7 @@
           <span v-for="tag in heroTags" :key="tag">{{ tag }}</span>
         </div>
         <p class="cover-name">{{ resume.basicInfo.name }}</p>
-        <h1 id="resume-cover-title">UI+前端复合岗</h1>
+        <h1 id="resume-cover-title">AI 前端开发工程师</h1>
         <div class="print-profile-meta" aria-label="打印简历个人信息">
           <p>
             {{ resume.basicInfo.gender }} | 年龄：{{ resume.basicInfo.age }} | 电话：{{ resume.basicInfo.phone }} | 邮箱：{{ resume.basicInfo.email }}
@@ -186,7 +186,7 @@ import { resume } from '@/data/resume'
 
 const coverArtUrl = '/images/resume/hero-cover-1920-1280.jpg'
 
-const heroTags = ['2017-2026', resume.basicInfo.city, 'UI + 前端复合岗', 'Vue / 小程序 / .NET MAUI']
+const heroTags = ['2017–2026', resume.basicInfo.city, 'AI 前端开发', 'Vue / React / 小程序 / .NET MAUI']
 
 const heroStats = computed(() => [
   { label: '学历', value: resume.education.degree },
@@ -198,23 +198,23 @@ const heroStats = computed(() => [
 
 const personalAdvantages = [
   {
-    title: '产品需求分析',
-    description: '能快速理解业务需求，梳理页面逻辑和使用场景，把抽象需求转成清晰、可落地的设计方案。',
+    title: '前端页面落地',
+    description: '熟悉管理后台、大屏可视化、移动端和小程序页面开发，能独立完成页面结构、交互状态、多端适配和设计还原。',
     icon: '/images/resume/icon-analysis.svg',
   },
   {
-    title: 'UI 设计经验',
-    description: '9 年 UI/UX 设计经验，做过工业互联网、电商、小程序、物联网等项目，熟悉从 0 到 1 的界面设计流程。',
+    title: '组件化开发',
+    description: '有组件拆分、样式规范、页面复用和性能优化意识，项目整理 DESIGN.md 文档，保证页面结构清晰、规范可追踪，后续维护也更顺畅。',
     icon: '/images/resume/icon-ui.svg',
   },
   {
-    title: '前端能力',
-    description: '熟悉 HTML、CSS、XML、WXML、小程序和 .NET MAUI，能配合开发落地，也能独立完成部分页面实现。',
+    title: 'UI +产品理解',
+    description: '9 年 UI / 视觉设计背景，能快速看懂需求和设计稿，主动补齐页面逻辑、交互细节和信息层级。',
     icon: '/images/resume/icon-frontend.svg',
   },
   {
-    title: 'AI工具赋能',
-    description: '日常使用 Codex、Figma Make、ChatGPT 等 AI 工具，辅助界面设计、页面生成、方案优化和效率提升。',
+    title: 'AI 工具提效',
+    description: '日常使用 Codex、Figma Make、ChatGPT 等 AI 工具，把需求、设计稿和组件快速转成可运行页面，提升开发和交付效率。',
     icon: '/images/resume/icon-ai.svg',
   },
 ]

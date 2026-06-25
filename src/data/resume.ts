@@ -6,12 +6,12 @@ export const resume = {
     phone: '13683407964',
     email: '1229834964@qq.com',
     experience: '9年',
-    intention: '前端开发工程师 / UI+前端复合岗',
+    intention: 'AI 前端开发工程师',
     salary: '13-16K',
     city: '成都',
   },
   summary:
-    '9 年 UI/视觉设计经验，熟悉 Web、移动端、小程序和大屏项目，能独立完成从设计到前端实现的全流程。',
+    '9 年 UI / 前端复合项目经验，目前主做 Web、移动端、小程序，懂设计和产品逻辑，能用 AI 工具把需求、设计稿和组件快速变成可运行页面。',
   advantages: [
     {
       title: 'UI/UED 设计经验',
