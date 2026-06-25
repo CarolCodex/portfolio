@@ -406,7 +406,11 @@
 
         <button class="inspection-device-row" type="button">
           <span class="inspection-row-icon">
-            <img src="/case-assets/device-health-management-platform/inspection-icon-device.png" alt="" aria-hidden="true" />
+            <img
+              :src="inspectionDeviceIcon"
+              alt=""
+              aria-hidden="true"
+            />
           </span>
           <strong>本机信息</strong>
           <span class="inspection-row-chevron" aria-hidden="true" />
@@ -457,24 +461,24 @@
 
           <button class="defect-summary-card" type="button" aria-label="查看全部缺陷工单">
             <span class="defect-summary-icon" aria-hidden="true">
-              <i />
+              <img :src="defectSummaryIcon" alt="" />
             </span>
             <span class="defect-summary-copy">
               <strong>{{ defectTickets.length }}</strong>
               <span>个缺陷工单</span>
               <small>
                 全部状态
-                <i aria-hidden="true" />
+                <img :src="defectChevronIcon" alt="" aria-hidden="true" />
               </small>
             </span>
           </button>
         </header>
 
         <section class="defect-list" aria-label="缺陷工单列表">
-          <article v-for="ticket in defectTickets" :key="ticket.id" class="defect-card">
+          <article v-for="ticket in defectTickets" :key="ticket.id" class="defect-card" :class="`is-${ticket.status}`">
             <header>
               <span class="defect-card-icon" aria-hidden="true">
-                <i />
+                <img :src="defectStatusIcons[ticket.status]" alt="" />
               </span>
               <strong>{{ ticket.asset }}</strong>
               <span class="defect-status" :class="`is-${ticket.status}`">{{ ticket.statusLabel }}</span>
@@ -483,7 +487,7 @@
             <p>{{ ticket.description }}</p>
 
             <footer>
-              <span aria-hidden="true" />
+              <img :src="defectTimeIcon" alt="" aria-hidden="true" />
               <time>{{ ticket.time }}</time>
             </footer>
           </article>
@@ -513,14 +517,14 @@
 
           <button class="repair-summary-card" type="button" aria-label="查看全部检修工单">
             <span class="repair-summary-icon" aria-hidden="true">
-              <i />
+              <img :src="repairSummaryIcon" alt="" />
             </span>
             <span class="repair-summary-copy">
               <strong>{{ repairOrderTotal }}</strong>
               <span>个检修工单</span>
               <small>
                 全部状态
-                <i aria-hidden="true" />
+                <img :src="repairChevronIcon" alt="" aria-hidden="true" />
               </small>
             </span>
           </button>
@@ -529,7 +533,7 @@
         <section class="repair-list" aria-label="检修工单列表">
           <article v-for="order in repairOrders" :key="order.id" class="repair-card" :class="`is-${order.status}`">
             <span class="repair-card-icon" aria-hidden="true">
-              <i />
+              <img :src="repairStatusIcons[order.status]" alt="" />
             </span>
 
             <div class="repair-card-content">
@@ -541,7 +545,7 @@
               <p>{{ order.description }}</p>
 
               <footer>
-                <span aria-hidden="true" />
+                <img :src="repairTimeIcon" alt="" aria-hidden="true" />
                 <time>{{ order.time }}</time>
               </footer>
             </div>
@@ -852,6 +856,7 @@ type PlaceholderPageKey = 'inspection' | 'defect' | 'repair'
 type AuxiliaryPageKey = 'notifications'
 type MobileContentKey = TabKey | PlaceholderPageKey | AuxiliaryPageKey
 type PreviewPageKey = MobileContentKey | 'login'
+type DevicePanelPageKey = Exclude<PreviewPageKey, AuxiliaryPageKey>
 type HealthModeKey = 'stable' | 'observe' | 'risk'
 type TaskFilterKey = 'pending' | 'inProgress' | 'done'
 type TaskPriorityKey = 'urgent' | 'normal' | 'low'
@@ -948,6 +953,9 @@ type WorkbenchSection = {
 const tabKeys: TabKey[] = ['home', 'tasks', 'workbench', 'profile']
 const initialTab = getInitialTab()
 const props = defineProps<{ previewPage?: PreviewPageKey }>()
+const emit = defineEmits<{
+  'page-change': [page: DevicePanelPageKey]
+}>()
 
 const statIcons: Record<string, string> = {
   total: '/case-assets/device-health-management-platform/stat-total.svg',
@@ -955,6 +963,24 @@ const statIcons: Record<string, string> = {
   warning: '/case-assets/device-health-management-platform/stat-warning.svg',
   task: '/case-assets/device-health-management-platform/stat-task.svg',
 }
+
+const defectStatusIcons: Record<DefectStatusKey, string> = {
+  pending: '/case-assets/device-health-management-platform/defect/figma/defect-card-pending.svg',
+  new: '/case-assets/device-health-management-platform/defect/figma/defect-card-new.svg',
+}
+const defectSummaryIcon = '/case-assets/device-health-management-platform/defect/figma/defect-summary.svg'
+const defectChevronIcon = '/case-assets/device-health-management-platform/defect/figma/defect-chevron-down.svg'
+const defectTimeIcon = '/case-assets/device-health-management-platform/defect/figma/defect-time.svg'
+
+const repairStatusIcons: Record<RepairStatusKey, string> = {
+  pending: '/case-assets/device-health-management-platform/repair/figma/repair-order-pending.svg',
+  new: '/case-assets/device-health-management-platform/repair/figma/repair-order-new.svg',
+  processing: '/case-assets/device-health-management-platform/repair/figma/repair-order-processing.svg',
+  dispatch: '/case-assets/device-health-management-platform/repair/figma/repair-order-dispatch.svg',
+}
+const repairSummaryIcon = '/case-assets/device-health-management-platform/repair/figma/repair-summary.svg'
+const repairChevronIcon = '/case-assets/device-health-management-platform/repair/figma/repair-chevron-down.svg'
+const repairTimeIcon = '/case-assets/device-health-management-platform/repair/figma/repair-time.svg'
 
 const tabs: Array<{ key: TabKey; label: string; icon: string; activeIcon: string }> = [
   {
@@ -1030,44 +1056,46 @@ let scrollHintIndicatorTimer = 0
 const inspectionActions: InspectionAction[] = [
   {
     label: '上传',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-upload.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-upload.svg',
     iconWidth: 48,
     iconHeight: 48,
   },
   {
     label: '下载',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-download.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-download.svg',
     iconWidth: 48,
     iconHeight: 48,
   },
   {
     label: '设置',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-settings.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-settings.svg',
     iconWidth: 48,
     iconHeight: 48,
   },
 ]
+
+const inspectionDeviceIcon = '/case-assets/device-health-management-platform/inspection/figma/inspection-device.svg'
 
 const inspectionSettings = reactive<InspectionSetting[]>([
   {
     key: 'workMode',
     title: '工作模式',
     description: '开启后进入工作模式',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-work-mode.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-work-mode.svg',
     enabled: false,
   },
   {
     key: 'autoDevice',
     title: '自动跳转设备',
     description: '开启后巡检完成自动跳转下一个设备',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-auto-device.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-auto-device.svg',
     enabled: true,
   },
   {
     key: 'autoItem',
     title: '自动跳转巡检项',
     description: '开启后巡检完成自动跳转下一个巡检项',
-    icon: '/case-assets/device-health-management-platform/inspection-icon-auto-item.png',
+    icon: '/case-assets/device-health-management-platform/inspection/figma/inspection-auto-item.svg',
     enabled: false,
   },
 ])
@@ -1079,7 +1107,7 @@ const defectTickets: DefectTicket[] = [
     status: 'pending',
     statusLabel: '待处理',
     description: '缺陷内容描述最多显示两行，超过两行用省略号... 缺陷内容描述最多显示两行，用省略号...',
-    time: '2022-10-02 15:38:45',
+    time: '2026-10-02 15:38:45',
   },
   {
     id: 'd2',
@@ -1087,7 +1115,7 @@ const defectTickets: DefectTicket[] = [
     status: 'new',
     statusLabel: '新建',
     description: '这是缺陷内容描述最多显示两行，超过两行用省略号...',
-    time: '2022-10-01 15:38:45',
+    time: '2026-10-01 15:38:45',
   },
   {
     id: 'd3',
@@ -1095,7 +1123,7 @@ const defectTickets: DefectTicket[] = [
     status: 'new',
     statusLabel: '新建',
     description: '这是缺陷内容描述最多显示两行，超过两行用省略号...',
-    time: '2022-09-20 15:38:45',
+    time: '2026-09-20 15:38:45',
   },
 ]
 
@@ -1244,7 +1272,7 @@ const notificationMessages: NotificationMessage[] = [
   {
     id: 'transfer-1009',
     title: '调拨单系统消息',
-    date: '2022-10-09',
+    date: '2026-10-09',
     description: '您有一条调拨单待审批，请及时前往处理！',
     icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
     unread: true,
@@ -1252,7 +1280,7 @@ const notificationMessages: NotificationMessage[] = [
   {
     id: 'transfer-1002',
     title: '调拨单系统消息',
-    date: '2022-10-02',
+    date: '2026-10-02',
     description: '您有一条调拨单待审批，请及时前往处理！',
     icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
     unread: true,
@@ -1260,7 +1288,7 @@ const notificationMessages: NotificationMessage[] = [
   {
     id: 'inbound-0902',
     title: '入库单系统消息',
-    date: '2022-09-02',
+    date: '2026-09-02',
     description: '您有一条入库单待审批，请及时前往处理！',
     icon: '/case-assets/device-health-management-platform/notifications/figma/inbound.svg',
     unread: true,
@@ -1269,7 +1297,7 @@ const notificationMessages: NotificationMessage[] = [
   {
     id: 'inbound-0901',
     title: '入库单系统消息',
-    date: '2022-09-01',
+    date: '2026-09-01',
     description: '您有一条入库单待审批，请及时前往处理！',
     icon: '/case-assets/device-health-management-platform/notifications/figma/inbound.svg',
     important: true,
@@ -1277,7 +1305,7 @@ const notificationMessages: NotificationMessage[] = [
   {
     id: 'transfer-0802',
     title: '调拨单系统消息',
-    date: '2022-08-02',
+    date: '2026-08-02',
     description: '您有一条调拨单待审批，请及时前往处理！',
     icon: '/case-assets/device-health-management-platform/notifications/figma/transfer.svg',
     unread: true,
@@ -1338,7 +1366,7 @@ const tasks = reactive<TaskItem[]>([
     priorityLabel: '低级',
     priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-priority.svg',
     title: '季度检查',
-    deadline: '2023年10月15日',
+    deadline: '2026年10月15日',
     timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-time.svg',
     location: '配电室 - 主楼',
     locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card3-location.svg',
@@ -1358,7 +1386,7 @@ const tasks = reactive<TaskItem[]>([
     priorityLabel: '普通',
     priorityIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-priority.svg',
     title: '水位过低',
-    deadline: '2023年10月16日',
+    deadline: '2026年10月16日',
     timeIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-time.svg',
     location: '屋顶平台 - 冷却塔区',
     locationIcon: '/case-assets/device-health-management-platform/tasks/figma/card4-location.svg',
@@ -1824,8 +1852,24 @@ function scheduleScrollHintSetup() {
   })
 }
 
+function resetCurrentScrollPosition() {
+  const root = mobileDemoRef.value
+
+  if (!root) {
+    return
+  }
+
+  root.querySelectorAll<HTMLElement>(scrollHintSelector).forEach((container) => {
+    container.scrollTop = 0
+    container.scrollLeft = 0
+  })
+}
+
 onMounted(() => {
-  nextTick(scheduleScrollHintSetup)
+  nextTick(() => {
+    resetCurrentScrollPosition()
+    scheduleScrollHintSetup()
+  })
 })
 
 onBeforeUnmount(() => {
@@ -1841,7 +1885,18 @@ watch(
 )
 
 watch(
-  [currentMobilePage, activeNotification],
+  currentMobilePage,
+  () => {
+    nextTick(() => {
+      resetCurrentScrollPosition()
+      scheduleScrollHintSetup()
+    })
+  },
+  { flush: 'post' },
+)
+
+watch(
+  activeNotification,
   () => {
     nextTick(scheduleScrollHintSetup)
   },
@@ -1853,6 +1908,7 @@ function setActiveTab(tab: TabKey) {
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  emit('page-change', tab)
 }
 
 function isMobileTabActive(tab: TabKey) {
@@ -1864,10 +1920,13 @@ function handleWorkbenchEntryClick(entryKey?: WorkbenchEntryKey) {
     return
   }
 
-  activeTab.value = entryKey === 'equipment' ? 'workbench' : entryKey
+  const nextPage = entryKey === 'equipment' ? 'workbench' : entryKey
+
+  activeTab.value = nextPage
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  emit('page-change', nextPage)
 }
 
 function handleLogin() {
@@ -1877,6 +1936,7 @@ function handleLogin() {
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  emit('page-change', 'home')
 }
 
 function handleLogout() {
@@ -1886,6 +1946,7 @@ function handleLogout() {
   profileSubpage.value = 'main'
   menuOpen.value = false
   searchOpen.value = false
+  emit('page-change', 'login')
 }
 
 function handleHeaderLeadingAction() {
@@ -1903,18 +1964,21 @@ function handleHeaderLeadingAction() {
   if (isInspectionPage.value) {
     activeTab.value = 'workbench'
     searchOpen.value = false
+    emit('page-change', 'workbench')
     return
   }
 
   if (isDefectPage.value) {
     activeTab.value = 'workbench'
     searchOpen.value = false
+    emit('page-change', 'workbench')
     return
   }
 
   if (isRepairPage.value) {
     activeTab.value = 'workbench'
     searchOpen.value = false
+    emit('page-change', 'workbench')
     return
   }
 
@@ -3188,11 +3252,19 @@ function getInitialTab(): MobileContentKey {
 
 .priority-pill {
   display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 100%;
   margin-bottom: 7px;
   padding: 3px 7px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .priority-pill.urgent {
@@ -3501,13 +3573,17 @@ function getInitialTab(): MobileContentKey {
 .figma-priority-pill {
   flex: 0 0 auto;
   gap: 4px;
+  box-sizing: border-box;
   min-width: 48px;
   height: 26px;
+  max-width: 100%;
   justify-content: center;
   border-radius: 999px;
+  padding: 0 9px;
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
+  white-space: nowrap;
 }
 
 .priority-urgent .figma-priority-pill {
@@ -4393,6 +4469,7 @@ function getInitialTab(): MobileContentKey {
 }
 
 .defect-page {
+  --defect-page-inset: 16px;
   position: relative;
   min-height: 100%;
   isolation: isolate;
@@ -4430,20 +4507,21 @@ function getInitialTab(): MobileContentKey {
   position: absolute;
   z-index: 2;
   top: 139px;
-  left: 24px;
+  left: var(--defect-page-inset);
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
   width: 214.8px;
   height: 90px;
   padding: 17px;
+  box-sizing: border-box;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow:
     0 4px 20px -2px rgba(0, 87, 255, 0.05),
     0 0 3px rgba(0, 87, 255, 0.02);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(5px);
   color: inherit;
   cursor: pointer;
   font: inherit;
@@ -4464,27 +4542,10 @@ function getInitialTab(): MobileContentKey {
   height: 56px;
 }
 
-.defect-summary-icon i,
-.defect-card-icon i {
-  position: relative;
+.defect-summary-icon img {
   display: block;
   width: 18px;
   height: 24px;
-  border: 2px solid #2864ff;
-  border-radius: 4px;
-}
-
-.defect-summary-icon i::before,
-.defect-card-icon i::before {
-  position: absolute;
-  top: 5px;
-  right: 4px;
-  left: 4px;
-  height: 2px;
-  border-radius: 999px;
-  background: #2864ff;
-  box-shadow: 0 6px 0 #2864ff;
-  content: '';
 }
 
 .defect-summary-copy {
@@ -4523,12 +4584,10 @@ function getInitialTab(): MobileContentKey {
   line-height: 16px;
 }
 
-.defect-summary-copy small i {
-  width: 6px;
-  height: 6px;
-  border-right: 1.6px solid #42474e;
-  border-bottom: 1.6px solid #42474e;
-  transform: rotate(45deg) translateY(-2px);
+.defect-summary-copy small img {
+  display: block;
+  width: 7px;
+  height: 4px;
 }
 
 .defect-list {
@@ -4542,7 +4601,7 @@ function getInitialTab(): MobileContentKey {
   flex-direction: column;
   gap: 16px;
   overflow: auto;
-  padding: 0 16px 84px;
+  padding: 0 var(--defect-page-inset) 84px;
   scrollbar-width: none;
 }
 
@@ -4555,9 +4614,10 @@ function getInitialTab(): MobileContentKey {
   display: grid;
   grid-template-rows: 48px 45.5px 20px;
   gap: 12px;
-  width: 358px;
+  width: 100%;
   min-height: 179.5px;
   padding: 21px;
+  box-sizing: border-box;
   border: 1px solid rgba(241, 244, 247, 0.5);
   border-radius: 16px;
   background: #fff;
@@ -4578,15 +4638,14 @@ function getInitialTab(): MobileContentKey {
   height: 48px;
 }
 
-.defect-card-icon i {
+.defect-card-icon img {
+  display: block;
   width: 20px;
   height: 17.5px;
-  border-radius: 3px;
 }
 
-.defect-card-icon i::before {
-  top: 4px;
-  box-shadow: 0 5px 0 #2864ff;
+.defect-card.is-new .defect-card-icon {
+  background: #fff7ed;
 }
 
 .defect-card header strong {
@@ -4602,11 +4661,14 @@ function getInitialTab(): MobileContentKey {
 
 .defect-status {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   min-width: 50px;
   height: 26px;
-  padding: 5px 12px;
+  max-width: 100%;
+  padding: 5px 13px;
   border: 1px solid transparent;
   border-radius: 6px;
   font-size: 12px;
@@ -4651,33 +4713,10 @@ function getInitialTab(): MobileContentKey {
   line-height: 16px;
 }
 
-.defect-card footer > span {
-  position: relative;
+.defect-card footer img {
+  display: block;
   width: 12px;
   height: 12px;
-}
-
-.defect-card footer > span::before,
-.defect-card footer > span::after {
-  position: absolute;
-  content: '';
-}
-
-.defect-card footer > span::before {
-  inset: 1px;
-  border: 1.6px solid #73777f;
-  border-radius: 50%;
-}
-
-.defect-card footer > span::after {
-  top: 3px;
-  left: 5.3px;
-  width: 1.5px;
-  height: 4.8px;
-  border-radius: 999px;
-  background: #73777f;
-  transform-origin: bottom center;
-  transform: rotate(-45deg);
 }
 
 .defect-card time {
@@ -4722,6 +4761,7 @@ function getInitialTab(): MobileContentKey {
 }
 
 .repair-page {
+  --repair-page-inset: 16px;
   position: relative;
   min-height: 100%;
   isolation: isolate;
@@ -4789,20 +4829,21 @@ function getInitialTab(): MobileContentKey {
   position: absolute;
   z-index: 2;
   top: 139px;
-  left: 24px;
+  left: var(--repair-page-inset);
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
   width: 214.8px;
   height: 90px;
   padding: 17px;
-  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow:
     0 4px 20px -2px rgba(0, 87, 255, 0.05),
     0 0 3px rgba(0, 87, 255, 0.02);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(5px);
   color: inherit;
   cursor: pointer;
   font: inherit;
@@ -4813,9 +4854,8 @@ function getInitialTab(): MobileContentKey {
 .repair-card-icon {
   display: grid;
   place-items: center;
-  border-radius: 16px;
+  border-radius: 12px;
   background: #eff6ff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .repair-summary-icon {
@@ -4823,35 +4863,10 @@ function getInitialTab(): MobileContentKey {
   height: 56px;
 }
 
-.repair-summary-icon i,
-.repair-card-icon i {
-  position: relative;
+.repair-summary-icon img {
   display: block;
-  width: 21px;
+  width: 18px;
   height: 24px;
-  color: #60a5fa;
-}
-
-.repair-summary-icon i::before,
-.repair-card-icon i::before {
-  position: absolute;
-  inset: 0;
-  border: 2px solid currentColor;
-  border-radius: 4px;
-  content: '';
-}
-
-.repair-summary-icon i::after,
-.repair-card-icon i::after {
-  position: absolute;
-  top: 7px;
-  left: 5px;
-  width: 11px;
-  height: 6px;
-  border-bottom: 2px solid currentColor;
-  border-left: 2px solid currentColor;
-  content: '';
-  transform: rotate(-45deg);
 }
 
 .repair-summary-copy {
@@ -4890,12 +4905,10 @@ function getInitialTab(): MobileContentKey {
   line-height: 16px;
 }
 
-.repair-summary-copy small i {
-  width: 6px;
-  height: 6px;
-  border-right: 1.6px solid #42474e;
-  border-bottom: 1.6px solid #42474e;
-  transform: rotate(45deg) translateY(-2px);
+.repair-summary-copy small img {
+  display: block;
+  width: 7px;
+  height: 4px;
 }
 
 .repair-list {
@@ -4909,7 +4922,7 @@ function getInitialTab(): MobileContentKey {
   flex-direction: column;
   gap: 16px;
   overflow: auto;
-  padding: 0 16px 84px;
+  padding: 0 var(--repair-page-inset) 84px;
   scrollbar-width: none;
 }
 
@@ -4921,9 +4934,10 @@ function getInitialTab(): MobileContentKey {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
   gap: 16px;
-  width: 358px;
+  width: 100%;
   min-height: 132px;
   padding: 17px;
+  box-sizing: border-box;
   border: 1px solid #f9fafb;
   border-radius: 16px;
   background: #fff;
@@ -4935,33 +4949,26 @@ function getInitialTab(): MobileContentKey {
   height: 56px;
 }
 
+.repair-card-icon img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
 .repair-card.is-pending .repair-card-icon {
-  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.5) 0%, rgba(239, 246, 255, 0.5) 100%);
 }
 
 .repair-card.is-new .repair-card-icon {
-  background: linear-gradient(135deg, #ffedcc 0%, #fff7ed 100%);
+  background: linear-gradient(135deg, rgba(255, 237, 213, 0.5) 0%, rgba(255, 247, 237, 0.5) 100%);
 }
 
 .repair-card.is-processing .repair-card-icon {
-  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.5) 0%, rgba(253, 242, 248, 0.5) 100%);
 }
 
 .repair-card.is-dispatch .repair-card-icon {
-  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
-}
-
-.repair-card.is-new .repair-card-icon i {
-  color: #fb923c;
-}
-
-.repair-card.is-processing .repair-card-icon i {
-  color: #f472b6;
-}
-
-.repair-card.is-dispatch .repair-card-icon i {
-  width: 30px;
-  color: #c084fc;
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.5) 0%, rgba(250, 245, 255, 0.5) 100%);
 }
 
 .repair-card-content {
@@ -4994,9 +5001,13 @@ function getInitialTab(): MobileContentKey {
 
 .repair-status {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  width: max-content;
   height: 23px;
+  max-width: 100%;
   padding: 3px 9px;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -5052,33 +5063,10 @@ function getInitialTab(): MobileContentKey {
   line-height: 16.5px;
 }
 
-.repair-card-content footer > span {
-  position: relative;
+.repair-card-content footer img {
+  display: block;
   width: 11px;
   height: 11px;
-}
-
-.repair-card-content footer > span::before,
-.repair-card-content footer > span::after {
-  position: absolute;
-  content: '';
-}
-
-.repair-card-content footer > span::before {
-  inset: 1px;
-  border: 1.4px solid #bbb;
-  border-radius: 50%;
-}
-
-.repair-card-content footer > span::after {
-  top: 3px;
-  left: 5px;
-  width: 1.3px;
-  height: 4.4px;
-  border-radius: 999px;
-  background: #bbb;
-  transform-origin: bottom center;
-  transform: rotate(-45deg);
 }
 
 .repair-card-content time {
@@ -5088,14 +5076,14 @@ function getInitialTab(): MobileContentKey {
 .repair-add-button {
   position: absolute;
   z-index: 3;
-  left: 24px;
-  bottom: 41px;
+  right: 24px;
+  bottom: 36px;
   display: grid;
   place-items: center;
   width: 56px;
   height: 56px;
   padding: 0 0 4px;
-  border: 0;
+  border: 2px solid rgba(255, 255, 255, 0.7);
   border-radius: 50%;
   background: linear-gradient(135deg, #60a5fa 0%, #0057ff 100%);
   box-shadow: 0 8px 16px -4px rgba(0, 87, 255, 0.3);
@@ -5105,6 +5093,7 @@ function getInitialTab(): MobileContentKey {
   font-size: 24px;
   font-weight: 800;
   line-height: 24px;
+  backdrop-filter: blur(2px);
 }
 
 .repair-home-indicator {

@@ -1943,13 +1943,17 @@ button {
 .pc-lube-cycle,
 .pc-lube-status {
   display: inline-flex;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   min-width: 46px;
   height: 29px;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   font-size: 14px;
   line-height: 21px;
+  white-space: nowrap;
 }
 
 .pc-lube-cycle {
@@ -1959,7 +1963,9 @@ button {
 }
 
 .pc-lube-status {
-  width: 52px;
+  width: max-content;
+  min-width: 52px;
+  padding: 0 12px;
   background: rgba(0, 188, 125, 0.15);
   color: #009966;
 
@@ -2215,15 +2221,20 @@ button {
 
 .pc-lube-plan-status {
   display: inline-flex;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   min-width: 66px;
   height: 29px;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
+  padding: 0 12px;
   background: #eaf3ff;
   color: $pc-blue;
   font-size: 14px;
   line-height: 21px;
+  white-space: nowrap;
 
   &.is-pending {
     background: #e8f8f2;
@@ -2348,8 +2359,11 @@ button {
 .pc-running-pill,
 .pc-status {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  max-width: 100%;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
@@ -2359,6 +2373,8 @@ button {
 
 .pc-running-pill {
   gap: 8px;
+  width: max-content;
+  height: 29px;
   padding: 4px 12px;
   background: rgba(0, 188, 125, 0.15);
   color: #009966;

@@ -47,28 +47,42 @@
 
               <span>核心页面</span>
               <div class="device-story-steps" aria-label="产品使用路径">
-                <button
-                  v-for="(step, index) in deviceStorySteps"
-                  :key="step.key"
-                  class="device-story-step"
-                  :class="{ active: activeStoryStep === step.key }"
-                  :aria-current="activeStoryStep === step.key ? 'step' : undefined"
-                  type="button"
-                  @click="setActiveDevicePanel(step.panel)"
-                >
-                  <i>{{ String(index + 1).padStart(2, '0') }}</i>
-                  <span>
-                    <strong>{{ step.label }}</strong>
-                    <small>{{ step.caption }}</small>
-                  </span>
-                </button>
+                <div v-for="(step, index) in deviceStorySteps" :key="step.key" class="device-story-step-group">
+                  <button
+                    class="device-story-step"
+                    :class="{ active: activeStoryStep === step.key }"
+                    :aria-current="activeStoryStep === step.key ? 'step' : undefined"
+                    type="button"
+                    @click="setDemoPage(step.page)"
+                  >
+                    <i>{{ String(index + 1).padStart(2, '0') }}</i>
+                    <span>
+                      <strong>{{ step.label }}</strong>
+                      <small>{{ step.caption }}</small>
+                    </span>
+                  </button>
+
+                  <div v-if="step.key === 'operate'" class="device-story-substeps" aria-label="工作台子功能入口">
+                    <button
+                      v-for="entry in workbenchStoryEntries"
+                      :key="entry.page"
+                      type="button"
+                      :class="{ active: demoPage === entry.page }"
+                      :aria-pressed="demoPage === entry.page"
+                      @click="setDemoPage(entry.page)"
+                    >
+                      <strong>{{ entry.label }}</strong>
+                      <small>{{ entry.caption }}</small>
+                    </button>
+                  </div>
+                </div>
               </div>
             </aside>
 
             <div class="device-platform-stage" :data-main-view="activeMainView" :data-panel="activeDevicePanel">
               <div class="device-app-demo">
                 <div class="device-app-viewport">
-                  <DeviceHealthMobileDemo :preview-page="activeDevicePanel" />
+                  <DeviceHealthMobileDemo :preview-page="activeDevicePanel" @page-change="setActiveDevicePanel" />
                 </div>
               </div>
             </div>
@@ -236,6 +250,7 @@ const DeviceHealthMobileDemo = defineAsyncComponent(() =>
 )
 
 type DevicePanelKey = 'login' | 'home' | 'workbench' | 'tasks' | 'inspection' | 'defect' | 'repair' | 'profile'
+type DemoPageKey = 'login' | 'home' | 'workbench' | 'todo' | 'mine' | 'inspection' | 'defect' | 'repair'
 type MainViewKey = 'app' | 'pc' | 'spec'
 type SpecSubViewKey = 'mobile' | 'pc'
 type DeviceStoryStepKey = 'login' | 'operate' | 'tasks' | 'profile'
@@ -245,7 +260,28 @@ type DeviceInsightCard = {
   description: string
 }
 
-const activeDevicePanel = ref<DevicePanelKey>(getInitialDevicePanel())
+const demoPageToDevicePanel: Record<DemoPageKey, DevicePanelKey> = {
+  login: 'login',
+  home: 'home',
+  workbench: 'workbench',
+  todo: 'tasks',
+  mine: 'profile',
+  inspection: 'inspection',
+  defect: 'defect',
+  repair: 'repair',
+}
+const devicePanelToDemoPage: Record<DevicePanelKey, DemoPageKey> = {
+  login: 'login',
+  home: 'home',
+  workbench: 'workbench',
+  tasks: 'todo',
+  inspection: 'inspection',
+  defect: 'defect',
+  repair: 'repair',
+  profile: 'mine',
+}
+const demoPage = ref<DemoPageKey>(getInitialDemoPage())
+const activeDevicePanel = computed<DevicePanelKey>(() => demoPageToDevicePanel[demoPage.value])
 const activeMainView = ref<MainViewKey>('app')
 const activeSpecSubView = ref<SpecSubViewKey>('mobile')
 const specMenuOpen = ref(false)
@@ -265,11 +301,16 @@ const specSubViewTabs: Array<{ key: SpecSubViewKey; label: string; description: 
   { key: 'mobile', label: '移动端设计规范', description: 'APP 组件、状态与页面规则' },
   { key: 'pc', label: 'PC后台设计规范', description: '后台布局、表格与业务组件规则' },
 ]
-const deviceStorySteps: Array<{ key: DeviceStoryStepKey; panel: DevicePanelKey; label: string; caption: string }> = [
-  { key: 'login', panel: 'login', label: '登录', caption: '身份与企业配置入场' },
-  { key: 'operate', panel: 'workbench', label: '工作台', caption: '设备任务与作业汇聚' },
-  { key: 'tasks', panel: 'tasks', label: '待办', caption: '告警与工单优先处理' },
-  { key: 'profile', panel: 'profile', label: '我的', caption: '组织、站点与系统设置' },
+const deviceStorySteps: Array<{ key: DeviceStoryStepKey; page: DemoPageKey; label: string; caption: string }> = [
+  { key: 'login', page: 'login', label: '登录', caption: '身份与企业配置入场' },
+  { key: 'operate', page: 'workbench', label: '工作台', caption: '设备作业与运维入口' },
+  { key: 'tasks', page: 'todo', label: '待办', caption: '告警与工单优先处理' },
+  { key: 'profile', page: 'mine', label: '我的', caption: '组织、站点与系统设置' },
+]
+const workbenchStoryEntries: Array<{ page: DemoPageKey; label: string; caption: string }> = [
+  { page: 'inspection', label: '点检管理', caption: '点检计划与执行' },
+  { page: 'defect', label: '缺陷管理', caption: '缺陷上报与跟踪' },
+  { page: 'repair', label: '检修管理', caption: '检修计划与记录' },
 ]
 
 const activeStoryStep = computed<DeviceStoryStepKey>(() => {
@@ -335,15 +376,19 @@ const activeDeviceStage = computed(() => {
   return stageMap[activeDevicePanel.value]
 })
 
-function getInitialDevicePanel(): DevicePanelKey {
+function getInitialDemoPage(): DemoPageKey {
   const panel = new URLSearchParams(window.location.search).get('mobileTab') as DevicePanelKey | null
   const validPanels: DevicePanelKey[] = ['login', 'home', 'workbench', 'tasks', 'inspection', 'defect', 'repair', 'profile']
 
-  return panel && validPanels.includes(panel) ? panel : 'login'
+  return panel && validPanels.includes(panel) ? devicePanelToDemoPage[panel] : 'login'
+}
+
+function setDemoPage(page: DemoPageKey) {
+  demoPage.value = page
 }
 
 function setActiveDevicePanel(panel: DevicePanelKey) {
-  activeDevicePanel.value = panel
+  demoPage.value = devicePanelToDemoPage[panel]
 }
 
 function handleMainViewClick(view: MainViewKey) {
@@ -1046,9 +1091,16 @@ const activeMainViewHighlights = computed(() => {
   background: linear-gradient(180deg, transparent, rgba(15, 108, 232, 0.22), transparent);
 }
 
-.device-story-step {
+.device-story-step-group {
   position: relative;
   z-index: 1;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.device-story-step {
+  position: relative;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   gap: 12px;
@@ -1138,6 +1190,74 @@ const activeMainViewHighlights = computed(() => {
   color: #fff;
 }
 
+.device-story-substeps {
+  display: grid;
+  gap: 8px;
+  margin: -2px 0 0 42px;
+}
+
+.device-story-substeps button {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(15, 108, 232, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 10px 24px rgba(43, 112, 198, 0.04);
+  color: rgba(15, 42, 95, 0.56);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.device-story-substeps button:hover {
+  border-color: rgba(15, 108, 232, 0.22);
+  background: rgba(255, 255, 255, 0.58);
+  color: rgba(15, 82, 143, 0.82);
+  transform: translateX(2px);
+}
+
+.device-story-substeps button:focus-visible {
+  outline: 2px solid rgba(40, 100, 255, 0.42);
+  outline-offset: 2px;
+}
+
+.device-story-substeps button.active {
+  border-color: rgba(15, 108, 232, 0.26);
+  background: linear-gradient(135deg, rgba(15, 108, 232, 0.13), rgba(40, 183, 255, 0.1));
+  box-shadow: 0 12px 24px rgba(33, 136, 239, 0.12);
+  color: #0f2a5f;
+}
+
+.device-story-substeps strong {
+  overflow: hidden;
+  color: currentcolor;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-story-substeps small {
+  overflow: hidden;
+  color: currentcolor;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  opacity: 0.62;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .device-switcher {
   display: flex;
   flex-wrap: wrap;
@@ -1213,8 +1333,15 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-current-card > span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   justify-self: start;
-  min-height: 24px;
+  width: max-content;
+  height: 24px;
+  max-width: 100%;
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(36, 137, 239, 0.1);
@@ -1222,6 +1349,7 @@ const activeMainViewHighlights = computed(() => {
   font-size: 12px;
   font-weight: 900;
   line-height: 16px;
+  white-space: nowrap;
 }
 
 .device-current-card h2 {
@@ -1260,7 +1388,7 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-showcase-row[data-main-view='pc'] .device-current-card > span {
-  min-height: 27px;
+  height: 27px;
   padding: 5px 13px;
   border: 1px solid rgba(40, 137, 239, 0.12);
   background: rgba(40, 137, 239, 0.1);
@@ -1338,9 +1466,14 @@ const activeMainViewHighlights = computed(() => {
 .device-showcase-row[data-main-view='pc'] .device-highlights article::before {
   content: '业务架构';
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   justify-self: start;
-  min-height: 26px;
+  width: max-content;
+  max-width: 100%;
+  height: 26px;
   padding: 4px 10px;
   border: 1px solid rgba(40, 137, 239, 0.13);
   border-radius: 999px;
@@ -1349,6 +1482,7 @@ const activeMainViewHighlights = computed(() => {
   font-size: 12px;
   font-weight: 900;
   line-height: 16px;
+  white-space: nowrap;
 }
 
 .device-showcase-row[data-main-view='pc'] .device-highlights article:nth-child(2)::before {
@@ -1445,8 +1579,16 @@ const activeMainViewHighlights = computed(() => {
 }
 
 .device-insight-card > span {
-  width: fit-content;
-  min-height: 22px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  justify-self: start;
+  align-self: start;
+  width: max-content;
+  max-width: 100%;
+  height: 26px;
   padding: 3px 9px;
   border-radius: 999px;
   background: rgba(15, 108, 232, 0.08);
@@ -1454,6 +1596,7 @@ const activeMainViewHighlights = computed(() => {
   font-size: 11px;
   font-weight: 900;
   line-height: 16px;
+  white-space: nowrap;
 }
 
 .device-insight-card h2,
@@ -1785,6 +1928,20 @@ const activeMainViewHighlights = computed(() => {
   .device-story-step.active,
   .device-story-step:hover {
     transform: translateY(-2px);
+  }
+
+  .device-story-substeps {
+    margin: 2px 0 0;
+  }
+
+  .device-story-substeps button {
+    min-height: 42px;
+    padding: 7px 6px;
+    text-align: center;
+  }
+
+  .device-story-substeps button:hover {
+    transform: translateY(-1px);
   }
 
   .device-app-copy {

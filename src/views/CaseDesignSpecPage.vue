@@ -513,7 +513,11 @@ onMounted(() => {
 
 .version-pill {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 100%;
   gap: 9px;
   border: 1px solid rgb(22 113 238 / 28%);
   border-radius: 999px;
@@ -523,6 +527,7 @@ onMounted(() => {
   font-family: 'Roboto Mono', ui-monospace, monospace;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .version-pill i {
@@ -568,8 +573,11 @@ onMounted(() => {
 
 .hero-tags span {
   display: inline-flex;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   height: 26px;
   min-width: auto;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
@@ -580,6 +588,7 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
+  white-space: nowrap;
 }
 
 .is-dark .hero-tags span {
@@ -936,11 +945,25 @@ onMounted(() => {
   color: #0f172a;
 }
 
+.spec-page:not(.is-dark) .ds-btn.primary {
+  border: 0;
+  background: #1671ee;
+  box-shadow: 0 4px 6px rgb(22 113 238 / 28%);
+  color: #fff;
+}
+
 .ds-btn.secondary {
   width: 82px;
   border: 1px solid #5b9bff;
   background: transparent;
   color: #5b9bff;
+}
+
+.spec-page:not(.is-dark) .ds-btn.secondary {
+  border-color: #1671ee;
+  background: transparent;
+  color: #1671ee;
+  padding: 0 17px;
 }
 
 .is-dark .ds-btn.secondary {
@@ -955,6 +978,11 @@ onMounted(() => {
   color: #9aa5b5;
 }
 
+.spec-page:not(.is-dark) .ds-btn.text {
+  background: #f5f7fa;
+  color: #5b6779;
+}
+
 .is-dark .ds-btn.text {
   background: transparent;
   color: #cbd5e1;
@@ -962,6 +990,8 @@ onMounted(() => {
 
 .tag {
   display: inline-flex;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   min-width: auto;
   height: 25px;
   align-items: center;
@@ -973,6 +1003,7 @@ onMounted(() => {
   font-style: normal;
   font-weight: 700;
   line-height: 16.5px;
+  white-space: nowrap;
 }
 
 .tag.success { background: #00bc7d26; color: #009966; }
@@ -1002,6 +1033,8 @@ onMounted(() => {
 
 .capsule-row i {
   display: inline-flex;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   height: 21px;
   min-width: 41px;
   align-items: center;
@@ -1015,6 +1048,7 @@ onMounted(() => {
   font-weight: 700;
   line-height: 16.5px;
   padding: 2px 8px;
+  white-space: nowrap;
 }
 
 .capsule-row i:last-child {
@@ -1026,7 +1060,7 @@ onMounted(() => {
   height: 28px;
   background: #ffffff0d;
   color: #cbd5e1;
-  padding: 0;
+  padding: 0 8px;
 }
 
 .is-dark .capsule-row i:last-child {
