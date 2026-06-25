@@ -24,7 +24,14 @@
         <section class="spec-intro-card">
           <aside class="spec-sidebar" aria-label="移动端设计规范目录">
             <div class="sidebar-mark" aria-hidden="true" />
-            <a v-for="nav in navItems" :key="nav.href" :href="nav.href" :class="{ active: nav.active }">
+            <a
+              v-for="nav in navItems"
+              :key="nav.href"
+              :href="nav.href"
+              :class="{ active: activeNavHref === nav.href }"
+              :aria-current="activeNavHref === nav.href ? 'location' : undefined"
+              @click="handleNavClick(nav.href)"
+            >
               <span aria-hidden="true" />
               {{ nav.label }}
             </a>
@@ -185,24 +192,53 @@
               <h2>状态系统</h2>
             </header>
             <div class="state-grid">
-              <article v-for="state in stateRules" :key="state.name" :class="state.tone">
-                <header>
-                  <span class="state-icon" aria-hidden="true">{{ getStateIcon(state.name) }}</span>
-                  <div>
-                    <strong>{{ state.name }}</strong>
-                    <small>{{ getStateToneLabel(state.tone) }}</small>
-                  </div>
-                  <em>{{ getStateBadge(state.name) }}</em>
+              <article
+                v-for="state in primaryStateCards"
+                :key="state.name"
+                class="state-design-card"
+                :class="`is-${state.tone}`"
+              >
+                <header class="state-card-heading">
+                  <span class="state-title-mark" aria-hidden="true" />
+                  <strong>{{ getStateBadge(state.name) }} {{ state.name }}</strong>
                 </header>
-                <p>{{ state.rule }}</p>
-                <div class="state-preview" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
+                <p class="state-card-copy">{{ state.rule }}</p>
+
+                <div v-if="state.name === '加载'" class="state-demo state-demo-loading" aria-hidden="true">
+                  <span class="state-demo-spinner" />
+                  <div>
+                    <span />
+                    <span />
+                  </div>
                 </div>
-                <footer>
-                  <span>{{ getStateFeedback(state.name) }}</span>
-                  <span>移动端状态反馈</span>
+
+                <div v-else-if="state.name === '空状态'" class="state-demo state-demo-empty" aria-hidden="true">
+                  <span class="state-empty-icon">{{ getStateIcon(state.name) }}</span>
+                  <strong>{{ getStateFeedback(state.name) }}</strong>
+                  <small>{{ state.rule }}</small>
+                </div>
+
+                <div v-else class="state-demo state-demo-error" aria-hidden="true">
+                  <span class="state-error-icon">{{ getStateIcon(state.name) }}</span>
+                  <div>
+                    <strong>{{ getStateFeedback(state.name) }}</strong>
+                    <small>{{ state.rule }}</small>
+                  </div>
+                  <button type="button" tabindex="-1">重试</button>
+                </div>
+              </article>
+
+              <article class="state-design-card state-mapping-card">
+                <header class="state-card-heading">
+                  <span class="state-title-mark" aria-hidden="true" />
+                  <strong>状态色映射 State Mapping</strong>
+                </header>
+                <footer class="state-mapping-list">
+                  <div v-for="state in stateMappingRows" :key="state.name" :class="`is-${state.tone}`">
+                    <i aria-hidden="true" />
+                    <strong>{{ getStateBadge(state.name) }}</strong>
+                    <span>{{ state.rule }}</span>
+                  </div>
                 </footer>
               </article>
             </div>
@@ -219,7 +255,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import avatarCaoLan from '@/assets/avatar-cao-lan-320.jpg'
 import SectionTitle from '@/components/SectionTitle.vue'
@@ -229,14 +265,47 @@ const route = useRoute()
 const item = computed(() => cases.find((caseItem) => caseItem.id === route.params.id))
 
 const navItems = [
-  { label: '概览', href: '#principles', active: false },
-  { label: '基础', href: '#foundation', active: false },
-  { label: '组件', href: '#components', active: true },
-  { label: '布局', href: '#layout', active: false },
-  { label: '映射', href: '#mapping', active: false },
-  { label: '页面', href: '#pages', active: false },
-  { label: '状态', href: '#states', active: false },
+  { label: '概览', href: '#principles' },
+  { label: '基础', href: '#foundation' },
+  { label: '组件', href: '#components' },
+  { label: '布局', href: '#layout' },
+  { label: '映射', href: '#mapping' },
+  { label: '页面', href: '#pages' },
+  { label: '状态', href: '#states' },
 ]
+
+const activeNavHref = ref(navItems[0].href)
+
+const syncActiveNavFromHash = () => {
+    const matchedNav = navItems.find((nav) => nav.href === window.location.hash)
+    activeNavHref.value = matchedNav?.href ?? navItems[0].href
+}
+
+const syncActiveNavFromScroll = () => {
+    const activationOffset = 140
+    const activeItem = [...navItems].reverse().find((nav) => {
+        const section = document.getElementById(nav.href.slice(1))
+        return section ? section.getBoundingClientRect().top <= activationOffset : false
+    })
+
+    activeNavHref.value = activeItem?.href ?? navItems[0].href
+}
+
+const handleNavClick = (href: string) => {
+    activeNavHref.value = href
+}
+
+onMounted(() => {
+    syncActiveNavFromHash()
+    syncActiveNavFromScroll()
+    window.addEventListener('hashchange', syncActiveNavFromHash)
+    window.addEventListener('scroll', syncActiveNavFromScroll, { passive: true })
+})
+
+onUnmounted(() => {
+    window.removeEventListener('hashchange', syncActiveNavFromHash)
+    window.removeEventListener('scroll', syncActiveNavFromScroll)
+})
 
 const overviewCards = [
   {
@@ -360,6 +429,12 @@ const stateFeedbacks: Record<string, string> = {
     成功: '轻量正反馈',
     禁用: '移除交互行为',
 }
+
+const primaryStateCards = computed(() => stateRules.filter((state) => ['加载', '空状态', '错误'].includes(state.name)))
+const stateMappingRows = computed(() => {
+    const order = ['成功', '警告', '错误', '禁用']
+    return order.map((name) => stateRules.find((state) => state.name === name)).filter((state) => state !== undefined)
+})
 
 const getStateIcon = (name: string) => stateIcons[name] ?? '•'
 const getStateBadge = (name: string) => stateBadges[name] ?? 'State'
@@ -978,145 +1053,253 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
   margin: 0;
 }
 
-.state-grid article {
-  --state-accent: #2864ff;
-  --state-soft: #eaf3ff;
-  display: grid;
-  gap: 16px;
-  min-height: 252px;
-  overflow: hidden;
-  position: relative;
+.state-design-card {
+  --state-accent: #1671ee;
+  --state-soft: #f5f7fa;
+  display: flex;
+  min-width: 0;
+  min-height: 160px;
+  flex-direction: column;
+  align-items: stretch;
+  border-color: #f3f4f6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 14px rgba(34, 54, 88, 0.06);
+  padding: 17px;
 }
 
-.state-grid article::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--state-accent);
+.state-design-card.is-danger {
+  --state-accent: #e7000b;
+  --state-soft: #fceaeb;
 }
 
-.state-grid article header {
+.state-design-card.is-neutral {
+  --state-accent: #64748b;
+  --state-soft: #f5f7fa;
+}
+
+.state-card-heading {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
 }
 
-.state-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
+.state-title-mark {
+  display: block;
+  width: 4px;
+  height: 14px;
   flex: 0 0 auto;
+  border-radius: 999px;
+  background: #1671ee;
+}
+
+.state-card-heading strong {
+  min-width: 0;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.state-card-copy {
+  display: -webkit-box;
+  margin: 6px 0 0 12px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: 16px;
+}
+
+.state-demo {
+  margin-top: 12px;
+}
+
+.state-demo-loading {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.state-demo-loading > div {
+  display: grid;
+  gap: 8px;
+}
+
+.state-demo-loading > div span {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: #f5f7fa;
+}
+
+.state-demo-loading > div span:first-child {
+  width: 70%;
+}
+
+.state-demo-loading > div span:last-child {
+  width: 45%;
+}
+
+.state-demo-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(22, 113, 238, 0.16);
+  border-top-color: #1671ee;
+  border-radius: 999px;
+}
+
+.state-demo-empty {
+  display: flex;
+  min-height: 122px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #f5f7fa;
+  padding: 20px;
+  text-align: center;
+}
+
+.state-empty-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
   place-items: center;
-  border-radius: 12px;
-  background: var(--state-soft);
-  color: var(--state-accent);
-  font-size: 18px;
+  color: #c9d0da;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.state-demo-empty strong,
+.state-demo-error strong {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 20px;
+}
+
+.state-demo-empty small,
+.state-demo-error small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 17px;
+}
+
+.state-demo-error {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  border-radius: 8px;
+  background: #fceaeb;
+  padding: 16px;
+}
+
+.state-error-icon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #e7000b;
+  font-size: 14px;
   font-weight: 900;
 }
 
-.state-grid article header div {
-  min-width: 0;
+.state-demo-error strong {
+  color: #e7000b;
 }
 
-.state-grid article small {
-  display: block;
-  color: rgba(0, 0, 0, 0.42);
+.state-demo-error button {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e7000b;
+  border-radius: 999px;
+  background: transparent;
+  color: #e7000b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
-  margin-top: 2px;
+  padding: 0 13px;
+  pointer-events: none;
 }
 
-.state-grid article em {
-  margin-left: auto;
-  border-radius: 999px;
-  background: var(--state-soft);
-  color: var(--state-accent);
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 850;
-  line-height: 18px;
-  padding: 4px 9px;
-}
-
-.state-preview {
+.state-mapping-list {
   display: grid;
-  gap: 9px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 16px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.42)),
-    var(--state-soft);
-  padding: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 12px;
 }
 
-.state-preview span {
-  display: block;
-  height: 8px;
+.state-mapping-card {
+  grid-column: 1 / -1;
+  min-height: 118px;
+}
+
+.state-mapping-list div {
+  --state-accent: #d1d5db;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px 10px;
+  min-height: 54px;
+}
+
+.state-mapping-list div.is-success {
+  --state-accent: #009966;
+}
+
+.state-mapping-list div.is-warning {
+  --state-accent: #e17100;
+}
+
+.state-mapping-list div.is-danger {
+  --state-accent: #e7000b;
+}
+
+.state-mapping-list div.is-neutral {
+  --state-accent: #d1d5db;
+}
+
+.state-mapping-list i {
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.state-preview span:first-child {
-  width: 42%;
   background: var(--state-accent);
 }
 
-.state-preview span:nth-child(2) {
-  width: 72%;
-}
-
-.state-preview span:nth-child(3) {
-  width: 54%;
-}
-
-.state-grid footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.state-grid footer span {
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(0, 0, 0, 0.52);
-  font-size: 11px;
-  font-weight: 800;
+.state-mapping-list strong {
+  color: var(--state-accent);
+  font-size: 12px;
+  font-weight: 700;
   line-height: 18px;
-  padding: 5px 9px;
 }
 
-.state-grid .success {
-  --state-accent: #009966;
-  --state-soft: rgba(0, 153, 102, 0.1);
-  background: rgba(0, 188, 125, 0.08);
-}
-
-.state-grid .warning {
-  --state-accent: #e17100;
-  --state-soft: rgba(255, 185, 0, 0.14);
-  background: rgba(255, 185, 0, 0.1);
-}
-
-.state-grid .danger {
-  --state-accent: #e7000b;
-  --state-soft: rgba(251, 44, 54, 0.1);
-  background: rgba(251, 44, 54, 0.08);
-}
-
-.state-grid .info {
-  --state-accent: #2864ff;
-  --state-soft: #eaf3ff;
-  background: #eaf3ff;
-}
-
-.state-grid .neutral {
-  --state-accent: #64748b;
-  --state-soft: #f3f6fb;
-  background: #f3f6fb;
+.state-mapping-list span {
+  display: -webkit-box;
+  min-width: 0;
+  grid-column: 2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 17px;
 }
 
 @media (max-width: 1180px) {
@@ -1152,6 +1335,10 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
   .page-grid,
   .state-grid,
   .mapping-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .state-mapping-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1213,6 +1400,10 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
   .type-table div {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  .state-mapping-list {
+    grid-template-columns: 1fr;
   }
 }
 </style>
