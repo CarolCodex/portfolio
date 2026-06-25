@@ -1,0 +1,36 @@
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M14 2.625L24.5 7.875L14 13.125L3.5 7.875L14 2.625Z"
+    fill="url(#componentIconTopGradient)"
+  />
+  <path
+    d="M3.5 9.8L13.05 14.575V25.375L3.5 20.6V9.8Z"
+    fill="url(#componentIconLeftGradient)"
+  />
+  <path
+    d="M24.5 9.8L14.95 14.575V25.375L24.5 20.6V9.8Z"
+    fill="url(#componentIconRightGradient)"
+  />
+  <path
+    d="M4.3 7.9L14 12.75L23.7 7.9M14 13.2V24.45"
+    stroke="white"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.78"
+  />
+  <defs>
+    <linearGradient id="componentIconTopGradient" x1="14" y1="2.625" x2="14" y2="13.125" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8BC0FF" />
+      <stop offset="1" stop-color="#4E94FF" />
+    </linearGradient>
+    <linearGradient id="componentIconLeftGradient" x1="8.275" y1="9.8" x2="8.275" y2="25.375" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5AA1FF" />
+      <stop offset="1" stop-color="#1677FF" />
+    </linearGradient>
+    <linearGradient id="componentIconRightGradient" x1="19.725" y1="9.8" x2="19.725" y2="25.375" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FAAFF" />
+      <stop offset="1" stop-color="#2D82FF" />
+    </linearGradient>
+  </defs>
+</svg>
