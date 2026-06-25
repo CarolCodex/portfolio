@@ -3,7 +3,7 @@
     <div class="hero-cover-inner">
       <div class="hero-cover-copy">
         <h1>
-          <span>UI + 前端复合岗</span>
+          <span>AI 前端工程师</span>
           <strong>作品集</strong>
         </h1>
 
@@ -14,8 +14,8 @@
         <div class="hero-year">2017—2026</div>
 
         <p class="hero-description">
-          9 年 UI/UED 设计经验，具备 Vue、小程序、.NET MAUI 前端实现能力，使用 ChatGPT、Figma Make、Codex
-          提升设计探索、页面落地与问题排查效率。
+          9 年 UI与前端页面落地经验，熟悉 Vue、React、小程序和 .NET MAUI。日常使用 ChatGPT、Codex、Cursor、Figma Make
+          等工具，把需求、设计稿和组件更快落成可运行页面。
         </p>
 
         <div class="hero-actions">
@@ -32,17 +32,17 @@
       <div class="hero-cover-visual" aria-label="作品集主视觉">
         <picture class="hero-folder-picture">
           <source
-            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w"
+            srcset="/images/home/hero-folder-original.png 2092w"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             type="image/png"
           />
           <img
-            src="/images/home/hero-folder-1280.png"
-            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w"
+            src="/images/home/hero-folder-original.png"
+            srcset="/images/home/hero-folder-original.png 2092w"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             alt="Portfolio 作品集主视觉"
-            width="1280"
-            height="1101"
+            width="2092"
+            height="1800"
             loading="eager"
             decoding="async"
             fetchpriority="high"
@@ -75,8 +75,8 @@ let visibilityObserver: IntersectionObserver | undefined
 const entries = [
   { label: '精选案例', value: '电商小程序 / 电子秤终端系统 / 设备健康管理', to: '/cases' },
   { label: '前端实现', value: 'Vue / 小程序 / .NET MAUI', to: '/cases/smart-scale-shopping-system' },
-  { label: 'AI 工作流', value: 'ChatGPT / Figma Make / Codex', to: '/workflow' },
-  { label: '工作经验', value: '9年UI工程师', to: '/resume' },
+  { label: 'AI 工作流', value: 'ChatGPT / Codex / Cursor / Figma Make', to: '/workflow' },
+  { label: '工作经验', value: '9 年 UI + 前端落地经验', to: '/resume' },
 ]
 
 onMounted(() => {
@@ -312,7 +312,6 @@ h1 strong {
 .hero-folder-picture {
   display: block;
   width: min(112%, 780px);
-  filter: drop-shadow(0 42px 80px rgba(0, 57, 150, 0.28));
   transform: translateX(30px);
   animation: folder-float 5200ms ease-in-out infinite;
   will-change: transform;

@@ -9,7 +9,7 @@
     <section class="container section core-capabilities-section">
       <SectionTitle
         title="核心能力"
-        description="围绕业务分析、原型设计和多端体验，结合 AI 辅助的设计工作流，实现从需求到可运行界面的完整交付。"
+        description="围绕前端页面落地，结合 UI 设计经验和 AI 工具工作流，把需求、设计稿和代码更顺畅地串起来。"
       />
       <div class="capability-grid">
         <CapabilityCard
@@ -222,28 +222,28 @@ onBeforeUnmount(() => {
 
 const capabilities = [
   {
-    title: 'UI/UED 设计',
-    description: '美术学院视觉传达设计科班出身，精通各类设计软件（figma、Sketch、Axure、Blender、Adobe系列等）。',
+    title: '前端页面落地',
+    description: '熟悉管理后台、数据看板、大屏可视化、移动端和小程序页面开发，能独立完成页面结构、交互状态、多端适配和设计还原。',
   },
   {
-    title: '产品思维能力',
-    description: '具备产品协作意识，能够参与需求拆解、流程梳理、逻辑原型与页面结构设计，使用 Axure 和流程图辅助表达产品方案。',
+    title: '组件化开发',
+    description: '有组件拆分、样式规范、页面复用和性能优化意识，每个项目都会整理 DESIGN.md 文档，让页面开发更稳定、清晰、好维护。',
   },
   {
-    title: '移动端 / 小程序 / 终端体验',
-    description: '面向微信小程序、移动端和行业触屏终端场景，关注页面适配、操作效率、状态反馈与关键流程转化。',
+    title: 'AI 辅助开发',
+    description: '日常使用 ChatGPT、Codex、Cursor、Figma Make 等工具，辅助需求拆解、页面生成、问题排查和效率提升。',
   },
   {
-    title: '前端实现与接口联调',
-    description: '熟悉 Vue、HTML/CSS、微信小程序与 .NET MAUI，能够完成页面还原、组件拆分、自定义控件、接口联调和数据校验。',
+    title: 'UI / 产品理解',
+    description: '有长期 UI项目经验，能快速看懂需求和设计稿，主动补齐页面逻辑、交互细节和信息层级。',
   },
   {
-    title: 'AI工作流提效',
-    description: '将 ChatGPT、Codex、Figma Make、即梦等工具融入日常流程，用于需求拆解、视觉探索、页面生成、问题排查与方案迭代。',
+    title: '接口联调与状态处理',
+    description: '能根据真实数据处理 loading、空状态、异常状态、字段缺失、数据校验和移动端适配问题。',
   },
   {
-    title: '数据可视化大屏',
-    description: '具备可视化大屏、数据看板设计经验，能清晰可读的呈现数据，具有大屏落地经验。',
+    title: '大屏可视化经验',
+    description: '做过数据看板和大屏可视化项目，能兼顾信息展示、视觉层级、屏幕适配和页面性能。',
   },
 ]
 </script>
