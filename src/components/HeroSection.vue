@@ -32,17 +32,17 @@
       <div class="hero-cover-visual" aria-label="作品集主视觉">
         <picture class="hero-folder-picture">
           <source
-            srcset="/images/home/hero-folder-original.png 2092w"
+            srcset="/images/home/hero-folder-960.webp 960w, /images/home/hero-folder-1280.webp 1280w, /images/home/hero-folder-1600.webp 1600w"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
-            type="image/png"
+            type="image/webp"
           />
           <img
-            src="/images/home/hero-folder-original.png"
-            srcset="/images/home/hero-folder-original.png 2092w"
+            src="/images/home/hero-folder-1280.png"
+            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w, /images/home/hero-folder-1600.png 1600w"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             alt="Portfolio 作品集主视觉"
-            width="2092"
-            height="1800"
+            width="1600"
+            height="1377"
             loading="eager"
             decoding="async"
             fetchpriority="high"
