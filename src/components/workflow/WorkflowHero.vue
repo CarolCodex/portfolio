@@ -2,11 +2,11 @@
   <header class="workflow-hero">
     <h1 id="workflow-title">
       <span class="gradient-text">AI</span>
-      不是替我做设计，而是帮我更快完成
-      <span class="gradient-text">判断与落地</span>
+      不是替我写完代码，而是帮我更快把
+      <span class="gradient-text">页面落地</span>
     </h1>
     <p class="workflow-hero__description">
-      日常项目中，我会把 AI 放进需求分析、初稿设计、前端实现和走查修复环节，用它提高效率，但最终的信息取舍、视觉判断和交付质量由我负责。
+      我会把 AI 用在需求梳理、页面生成、组件拆分、问题排查和性能优化上。效率可以交给工具，但页面判断、交互细节和最终质量由我负责。
     </p>
   </header>
 </template>
