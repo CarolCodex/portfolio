@@ -182,14 +182,8 @@
           <section id="states" class="spec-section showcase-card">
             <header class="section-heading">
               <span>07</span>
-              <h2>页面结构与状态</h2>
+              <h2>状态系统</h2>
             </header>
-            <div class="state-page-strip" aria-label="页面结构摘要">
-              <article v-for="page in pageStructures" :key="page.name">
-                <strong>{{ page.name }}</strong>
-                <p>{{ page.rule }}</p>
-              </article>
-            </div>
             <div class="state-grid">
               <article v-for="state in stateRules" :key="state.name" :class="state.tone">
                 <header>
@@ -629,7 +623,6 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
 .doc-card,
 .foundation-card,
 .showcase-card,
-.state-page-strip article,
 .color-grid article,
 .component-grid article,
 .rule-grid article,
@@ -912,8 +905,7 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
 .showcase-card .rule-grid article,
 .showcase-card .page-grid article,
 .showcase-card .mapping-list article,
-.showcase-card .state-grid article,
-.showcase-card .state-page-strip article {
+.showcase-card .state-grid article {
   box-shadow: none;
 }
 
@@ -984,38 +976,6 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
 .mapping-list p {
   grid-column: 1 / -1;
   margin: 0;
-}
-
-.state-page-strip {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.state-page-strip article {
-  min-width: 0;
-  min-height: 138px;
-  padding: 18px;
-}
-
-.state-page-strip strong {
-  display: block;
-  color: #191c1e;
-  font-size: 14px;
-  font-weight: 900;
-  line-height: 20px;
-}
-
-.state-page-strip p {
-  display: -webkit-box;
-  margin: 10px 0 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  overflow: hidden;
-  color: rgba(0, 0, 0, 0.56);
-  font-size: 12px;
-  line-height: 18px;
 }
 
 .state-grid article {
@@ -1191,8 +1151,7 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
   .rule-grid,
   .page-grid,
   .state-grid,
-  .mapping-list,
-  .state-page-strip {
+  .mapping-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1246,8 +1205,7 @@ const getStateFeedback = (name: string) => stateFeedbacks[name] ?? '状态反馈
   .mapping-list,
   .foundation-grid,
   .typography-grid,
-  .overview-grid,
-  .state-page-strip {
+  .overview-grid {
     grid-template-columns: 1fr;
   }
 
