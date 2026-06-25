@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { cases } from '@/data/cases'
 
-const siteTitle = 'UI/UED Designer Portfolio'
+const siteTitle = '曹兰 | AI Frontend Engineer Portfolio'
 const miniProgramDemoTitle = '靓轩电商小程序高保真交互 Demo'
 
 const getRouteTitle = (to: { path: string; params: Record<string, unknown>; meta: Record<string, unknown> }) => {
@@ -84,7 +84,7 @@ const router = createRouter({
       component: () => import('@/components/Demo.vue'),
       meta: { title: '组件 Demo' },
     },
-    { path: '/resume', name: 'resume', component: () => import('@/views/Resume.vue'), meta: { title: '简历' } },
+    { path: '/resume', name: 'resume', component: () => import('@/views/Resume.vue'), meta: { title: siteTitle } },
     { path: '/workflow', name: 'workflow', component: () => import('@/views/Workflow.vue'), meta: { title: 'AI 工作流' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
