@@ -27,10 +27,10 @@
             <a
               v-for="nav in navItems"
               :key="nav.href"
-              :href="nav.href"
+              :href="getNavHref(nav.href)"
               :class="{ active: activeNavHref === nav.href }"
               :aria-current="activeNavHref === nav.href ? 'location' : undefined"
-              @click="handleNavClick(nav.href)"
+              @click.prevent="handleNavClick(nav.href)"
             >
               <span aria-hidden="true" />
               {{ nav.label }}
@@ -255,13 +255,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import avatarCaoLan from '@/assets/avatar-cao-lan-320.jpg'
 import SectionTitle from '@/components/SectionTitle.vue'
 import { cases } from '@/data/cases'
 
 const route = useRoute()
+const router = useRouter()
 const item = computed(() => cases.find((caseItem) => caseItem.id === route.params.id))
 
 const navItems = [
@@ -276,8 +277,10 @@ const navItems = [
 
 const activeNavHref = ref(navItems[0].href)
 
+const getNavHref = (hash: string) => router.resolve({ path: route.path, query: route.query, hash }).href
+
 const syncActiveNavFromHash = () => {
-    const matchedNav = navItems.find((nav) => nav.href === window.location.hash)
+    const matchedNav = navItems.find((nav) => nav.href === route.hash)
     activeNavHref.value = matchedNav?.href ?? navItems[0].href
 }
 
@@ -293,17 +296,18 @@ const syncActiveNavFromScroll = () => {
 
 const handleNavClick = (href: string) => {
     activeNavHref.value = href
+    router.push({ path: route.path, query: route.query, hash: href })
 }
+
+watch(() => route.hash, syncActiveNavFromHash)
 
 onMounted(() => {
     syncActiveNavFromHash()
     syncActiveNavFromScroll()
-    window.addEventListener('hashchange', syncActiveNavFromHash)
     window.addEventListener('scroll', syncActiveNavFromScroll, { passive: true })
 })
 
 onUnmounted(() => {
-    window.removeEventListener('hashchange', syncActiveNavFromHash)
     window.removeEventListener('scroll', syncActiveNavFromScroll)
 })
 

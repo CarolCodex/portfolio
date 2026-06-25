@@ -31,7 +31,11 @@ const router = createRouter({
   history: import.meta.env.PROD
     ? createWebHashHistory(import.meta.env.BASE_URL)
     : createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior() {
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, top: 96, behavior: 'smooth' }
+    }
+
     return { top: 0 }
   },
   routes: [
