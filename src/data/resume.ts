@@ -2,7 +2,7 @@ export const resume = {
   basicInfo: {
     name: '曹兰',
     gender: '女',
-    age: '31岁',
+    age: '30岁',
     phone: '13683407964',
     email: '1229834964@qq.com',
     experience: '9年',

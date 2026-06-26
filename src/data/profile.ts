@@ -17,7 +17,7 @@ export const profile = {
     { label: '城市', value: '成都' },
     { label: '经验', value: '9 年 UI与前端落地经验' },
     { label: '教育', value: '四川师范大学视觉传达设计全日制本科' },
-    { label: '性别年龄', value: '女｜31岁' },
+    { label: '性别年龄', value: '女｜30岁' },
     { label: '联系方式', value: '面试沟通提供' },
     { label: '婚育情况', value: '已婚一子' },
   ],
