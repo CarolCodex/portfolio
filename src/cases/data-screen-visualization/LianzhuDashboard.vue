@@ -787,6 +787,14 @@ onBeforeUnmount(() => {
   left: 72.6%;
 }
 
+.figma-kpi-row.has-extra-kpi .kpi-status {
+  left: 0;
+  width: 12.1%;
+  box-sizing: border-box;
+  justify-content: center;
+  padding-right: 1.1%;
+}
+
 .figma-kpi-row.has-extra-kpi .speed-kpi {
   left: 12.1%;
   width: 12.1%;
@@ -1399,6 +1407,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   display: grid;
+  margin-top: 0.7cqw;
   gap: 0;
 }
 

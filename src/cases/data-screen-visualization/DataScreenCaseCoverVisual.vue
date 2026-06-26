@@ -2,10 +2,10 @@
   <span class="data-screen-cover-visual" aria-hidden="true">
     <img
       class="cover-dashboard"
-      src="/case-assets/data-screen-visualization/cover-dashboard.png"
+      src="/case-assets/data-screen-visualization/lianzhu-dashboard.png"
       alt=""
-      width="1672"
-      height="941"
+      width="1920"
+      height="1080"
       loading="lazy"
       decoding="async"
     />
