@@ -113,7 +113,9 @@
             <h3>{{ item.name }}</h3>
             <div>
               <span>¥{{ item.price }}</span>
-              <button type="button" :aria-label="`加入购物车：${item.name}`" @click="$emit('addToCart')">+</button>
+              <button type="button" :aria-label="`加入购物车：${item.name}`" @click="$emit('addToCart')">
+                <i aria-hidden="true"></i>
+              </button>
             </div>
           </article>
         </div>
@@ -130,8 +132,10 @@
         </div>
         <div class="feature-grid">
           <article v-for="item in features" :key="item.title">
-            <span>{{ item.icon }}</span>
-            <strong>{{ item.title }}</strong>
+            <div class="feature-title">
+              <img :src="item.iconSrc" alt="" loading="lazy" decoding="async" />
+              <strong>{{ item.title }}</strong>
+            </div>
             <p>{{ item.copy }}</p>
           </article>
         </div>
@@ -191,13 +195,14 @@ const displayProduct = computed(() => props.product ?? defaultDetailProduct)
 const unit = computed(() => detailUnitFor(displayProduct.value))
 const shortTitle = computed(() => displayProduct.value.name.split(/[ 　]/)[0] || '精选好物')
 
+const detailIconBase = '/case-assets/liangxuan-mini-program/demo-detail-assets/icons'
 const features = [
-  { icon: '◎', title: '精选产地', copy: '产地直采，风味稳定' },
-  { icon: '☼', title: '光照充足', copy: '自然日照积累糖分' },
-  { icon: '◌', title: '土壤肥沃', copy: '根系健康，口感清爽' },
-  { icon: '✦', title: '糖分充足', copy: '入口清甜，脆嫩多汁' },
-  { icon: '◍', title: '鲜红脆嫩', copy: '果肉饱满，汁水丰盈' },
-  { icon: '☘', title: '细腻多汁', copy: '小巧适口，一次刚好' },
+  { iconSrc: `${detailIconBase}/feature-origin.svg`, title: '精选产地', copy: '产地直采，风味稳定' },
+  { iconSrc: `${detailIconBase}/feature-sunlight.svg`, title: '光照充足', copy: '自然日照积累糖分' },
+  { iconSrc: `${detailIconBase}/feature-soil.svg`, title: '土壤肥沃', copy: '根系健康，口感清爽' },
+  { iconSrc: `${detailIconBase}/feature-sugar.svg`, title: '糖分充足', copy: '入口清甜，脆嫩多汁' },
+  { iconSrc: `${detailIconBase}/feature-crisp.svg`, title: '鲜红脆嫩', copy: '果肉饱满，汁水丰盈' },
+  { iconSrc: `${detailIconBase}/feature-juicy.svg`, title: '细腻多汁', copy: '小巧适口，一次刚好' },
 ]
 </script>
 
@@ -765,15 +770,30 @@ svg {
 }
 
 .related-list button {
-  display: grid;
-  place-items: center;
+  position: relative;
+  flex: 0 0 auto;
   width: 20px;
   height: 20px;
+  padding: 0;
   border-radius: 999px;
   background: #f4341b;
-  color: #fff;
-  font-size: 17px;
-  line-height: 18px;
+}
+
+.related-list button i,
+.related-list button i::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 1.8px;
+  border-radius: 999px;
+  background: #fff;
+  content: '';
+  transform: translate(-50%, -50%);
+}
+
+.related-list button i::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .goods-detail-card {
@@ -834,16 +854,25 @@ svg {
   background: #fafafa;
 }
 
-.feature-grid span {
-  color: #20a14b;
-  font-size: 16px;
+.feature-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
-.feature-grid strong {
-  display: inline-block;
-  margin-left: 6px;
+.feature-title img {
+  display: block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.feature-title strong {
+  display: block;
   color: #030712;
   font-size: 15px;
+  font-weight: 900;
   line-height: 22.5px;
 }
 
