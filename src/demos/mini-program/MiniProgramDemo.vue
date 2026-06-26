@@ -26,6 +26,18 @@
           <section class="current-demo-card" aria-live="polite">
             <span>{{ currentDemo.label }}</span>
             <h2>{{ currentDemo.title }}</h2>
+            <nav v-if="activeDemo === 'activity'" class="activity-entry-links" aria-label="活动入口">
+              <button
+                v-for="item in activityTabs"
+                :key="item.type"
+                type="button"
+                :class="{ active: activeActivityType === item.type }"
+                :aria-current="activeActivityType === item.type ? 'true' : undefined"
+                @click="handleActivityEntry(item.type)"
+              >
+                {{ item.label }}
+              </button>
+            </nav>
             <p>{{ currentDemo.description }}</p>
             <div>
               <strong>交互提示</strong>
@@ -63,11 +75,13 @@ import { computed, ref } from 'vue'
 import MiniProgramVisualSpec from '@/cases/liangxuan-mini-program/MiniProgramVisualSpec.vue'
 import MiniAppShell from './components/MiniAppShell.vue'
 import PhoneFrame from './components/PhoneFrame.vue'
+import { activityTabs, type ActivityType } from './mock/activity'
 
 const appShellRef = ref<InstanceType<typeof MiniAppShell> | null>(null)
 type DemoKey = 'home' | 'category' | 'activity' | 'cart'
 
 const activeDemo = ref<DemoKey>('home')
+const activeActivityType = ref<ActivityType>('hot')
 
 const demoOptions: Array<{ key: DemoKey; label: string }> = [
   { key: 'home', label: '查看首页' },
@@ -125,8 +139,14 @@ function handleDemoSwitch(key: DemoKey) {
   }
 
   if (key === 'activity') {
-    appShellRef.value?.setActivityDemo('hot')
+    appShellRef.value?.setActivityDemo(activeActivityType.value)
   }
+}
+
+function handleActivityEntry(type: ActivityType) {
+  activeDemo.value = 'activity'
+  activeActivityType.value = type
+  appShellRef.value?.setActivityDemo(type)
 }
 </script>
 
@@ -277,6 +297,42 @@ p {
   color: #0f2a5f;
   font-size: 24px;
   line-height: 1.28;
+}
+
+.activity-entry-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -2px;
+}
+
+.activity-entry-links button {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgba(27, 124, 238, 0.18);
+  border-radius: 999px;
+  background: rgba(237, 247, 255, 0.86);
+  color: #17528f;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.activity-entry-links button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(27, 124, 238, 0.32);
+  background: #fff;
+}
+
+.activity-entry-links button.active {
+  border-color: rgba(244, 52, 27, 0.26);
+  background: #fff2ee;
+  color: #f4341b;
 }
 
 .current-demo-card p {

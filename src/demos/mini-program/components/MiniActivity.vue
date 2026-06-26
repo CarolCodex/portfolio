@@ -5,10 +5,6 @@
         <i aria-hidden="true"></i>
       </button>
       <strong>活动商品</strong>
-      <div class="header-capsule" aria-hidden="true">
-        <span>•••</span>
-        <i></i>
-      </div>
     </header>
 
     <div class="activity-scroll">
@@ -355,7 +351,7 @@ onBeforeUnmount(() => {
   position: relative;
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: 48px 1fr 94px;
+  grid-template-columns: 48px 1fr 48px;
   align-items: center;
   height: 44px;
   border-bottom: 1px solid #f3f4f6;
@@ -391,33 +387,6 @@ onBeforeUnmount(() => {
   background: currentColor;
   mask: url('/case-assets/liangxuan-mini-program/demo-activity-assets/icons/arrow-left.svg') center / contain no-repeat;
   -webkit-mask: url('/case-assets/liangxuan-mini-program/demo-activity-assets/icons/arrow-left.svg') center / contain no-repeat;
-}
-
-.header-capsule {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  width: 78px;
-  height: 29px;
-  margin-right: 16px;
-  border: 1px solid #f3f4f6;
-  border-radius: 999px;
-  background: #f9fafb;
-  color: #101828;
-}
-
-.header-capsule span {
-  font-size: 14px;
-  letter-spacing: 1px;
-  line-height: 1;
-}
-
-.header-capsule i {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #101828;
-  border-radius: 999px;
 }
 
 .activity-scroll {
@@ -603,23 +572,32 @@ onBeforeUnmount(() => {
 }
 
 .feature-card button {
+  position: relative;
   align-self: end;
-  display: inline-grid;
-  place-items: center;
+  flex: 0 0 auto;
   width: 24px;
   height: 24px;
+  padding: 0;
   border-radius: 999px;
   background: #f4341b;
-  color: #fff;
   box-shadow: 0 4px 3px #ffc9c9;
 }
 
-.feature-card button i {
-  width: 17px;
-  height: 17px;
-  background: currentColor;
-  mask: url('/case-assets/liangxuan-mini-program/demo-activity-assets/icons/plus.svg') center / contain no-repeat;
-  -webkit-mask: url('/case-assets/liangxuan-mini-program/demo-activity-assets/icons/plus.svg') center / contain no-repeat;
+.feature-card button i,
+.feature-card button i::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: #fff;
+  content: '';
+  transform: translate(-50%, -50%);
+}
+
+.feature-card button i::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .activity-list {
@@ -638,12 +616,12 @@ onBeforeUnmount(() => {
 
 .activity-list.hot {
   gap: 12px;
-  padding: 8px 12px 110px;
+  padding: 8px 12px 16px;
   background: #fff;
 }
 
 .activity-list.seckill {
   gap: 12px;
-  padding: 8px 8px 110px;
+  padding: 8px 8px 16px;
 }
 </style>

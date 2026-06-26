@@ -15,6 +15,7 @@
       />
       <MiniActivity
         v-else-if="currentMiniPage === 'activity'"
+        :key="activeActivityType"
         :initial-type="activeActivityType"
         :cart-count="cartCount"
         @add-to-cart="incrementCart"
