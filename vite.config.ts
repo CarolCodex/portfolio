@@ -23,15 +23,19 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('/node_modules/')) {
+            if (id.includes('/node_modules/@vue/') || id.includes('/node_modules/vue') || id.includes('/node_modules/vue-router')) {
+              return 'vue-core'
+            }
+
+            if (id.includes('/node_modules/echarts/')) {
+              return 'charts'
+            }
+
+            if (id.includes('/node_modules/marked/') || id.includes('/node_modules/highlight.js/')) {
+              return 'markdown'
+            }
+
             return 'vendor'
-          }
-
-          if (id.includes('/src/demos/mini-program/') || id.includes('/src/cases/liangxuan-mini-program/')) {
-            return 'mini-program-demo'
-          }
-
-          if (id.includes('/src/cases/device-health-management-platform/') || id.includes('/src/views/DeviceHealthPcPreview.vue')) {
-            return 'device-health-demo'
           }
         },
       },

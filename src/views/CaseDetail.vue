@@ -1,6 +1,14 @@
 <template>
-  <div v-if="item" class="container page case-detail-page" :class="{ 'device-case-page': isDeviceHealthCase }">
-    <template v-if="isDeviceHealthCase">
+  <div
+    v-if="item"
+    class="container page case-detail-page"
+    :class="{ 'device-case-page': isDeviceHealthCase, 'data-screen-case-page': isDataScreenCase }"
+  >
+    <template v-if="isDataScreenCase">
+      <GalleryPage />
+    </template>
+
+    <template v-else-if="isDeviceHealthCase">
       <section class="device-case-hero">
         <div class="device-case-intro">
           <span class="eyebrow">{{ item.year }} · {{ item.category }}</span>
@@ -237,6 +245,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import GalleryPage from '@/cases/data-screen-visualization/GalleryPage.vue'
 import BeforeAfter from '@/components/BeforeAfter.vue'
 import LaptopMockup from '@/components/LaptopMockup.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
@@ -286,6 +295,7 @@ const activeMainView = ref<MainViewKey>('app')
 const activeSpecSubView = ref<SpecSubViewKey>('mobile')
 const specMenuOpen = ref(false)
 const isDeviceHealthCase = computed(() => item.value?.id === 'device-health-management-platform')
+const isDataScreenCase = computed(() => item.value?.id === 'data-screen-visualization')
 const deviceHealthPcPreviewSrc = computed(() => {
   const previewPath = 'cases/device-health-management-platform/pc-preview'
   const basePath = import.meta.env.BASE_URL || '/'

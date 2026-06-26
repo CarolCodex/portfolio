@@ -9,6 +9,10 @@ const getRouteTitle = (to: { path: string; params: Record<string, unknown>; meta
     return `项目案例｜${miniProgramDemoTitle}`
   }
 
+  if (typeof to.meta.title === 'string' && to.meta.dashboardId) {
+    return to.meta.title
+  }
+
   if (to.path.startsWith('/cases/') && to.path.endsWith('/mobile-design-system') && typeof to.params.id === 'string') {
     const item = cases.find((caseItem) => caseItem.id === to.params.id)
     return item ? `移动端组件规范｜${item.title}` : '移动端组件规范不存在'
@@ -48,6 +52,36 @@ const router = createRouter({
       name: 'device-health-pc-preview',
       component: () => import('@/views/DeviceHealthPcPreview.vue'),
       meta: { title: '设备健康 PC 后台预览', hideHeader: true },
+    },
+    {
+      path: '/cases/lianzhu',
+      name: 'dashboard-lianzhu',
+      component: () => import('@/cases/data-screen-visualization/LianzhuDashboard.vue'),
+      meta: { title: '连铸工艺数字孪生系统', dashboardId: 'lianzhu', hideHeader: true },
+    },
+    {
+      path: '/cases/gaolu',
+      name: 'dashboard-gaolu',
+      component: () => import('@/cases/data-screen-visualization/LianzhuDashboard.vue'),
+      meta: { title: '高炉工艺数字孪生系统', dashboardId: 'gaolu', hideHeader: true },
+    },
+    {
+      path: '/cases/lf',
+      name: 'dashboard-lf',
+      component: () => import('@/cases/data-screen-visualization/LianzhuDashboard.vue'),
+      meta: { title: '精炼LF炉工艺数字孪生系统', dashboardId: 'lf', hideHeader: true },
+    },
+    {
+      path: '/cases/vd',
+      name: 'dashboard-vd',
+      component: () => import('@/cases/data-screen-visualization/LianzhuDashboard.vue'),
+      meta: { title: '精炼VD炉工艺数字孪生系统', dashboardId: 'vd', hideHeader: true },
+    },
+    {
+      path: '/cases/zhuanlu',
+      name: 'dashboard-zhuanlu',
+      component: () => import('@/cases/data-screen-visualization/LianzhuDashboard.vue'),
+      meta: { title: '转炉工艺数字孪生系统', dashboardId: 'zhuanlu', hideHeader: true },
     },
     {
       path: '/cases/:id/mobile-design-system',
