@@ -8,13 +8,6 @@ const zhuanluThumbnail = '/case-assets/data-screen-visualization/zhuanlu-dashboa
 
 export const industrialTwinProjects: Project[] = [
   {
-    id: 'continuous-casting',
-    route: '/cases/lianzhu',
-    title: '连铸工艺',
-    subtitle: '工业可视化大屏',
-    thumbnail: lianzhuThumbnail,
-  },
-  {
     id: 'blast-furnace',
     route: '/cases/gaolu',
     title: '高炉工艺',
@@ -41,5 +34,12 @@ export const industrialTwinProjects: Project[] = [
     title: '转炉工艺',
     subtitle: '工业可视化大屏',
     thumbnail: zhuanluThumbnail,
+  },
+  {
+    id: 'continuous-casting',
+    route: '/cases/lianzhu',
+    title: '连铸工艺',
+    subtitle: '工业可视化大屏',
+    thumbnail: lianzhuThumbnail,
   },
 ]
