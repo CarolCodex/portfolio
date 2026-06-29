@@ -5,14 +5,19 @@
         v-if="shouldUseSceneVideo"
         ref="sceneVideoRef"
         class="scene-image model-video"
-        :src="config.video"
+        :src="sceneVideoSrc"
+        :data-src="config.video"
         :poster="config.poster"
         :aria-label="config.sceneAlt"
         autoplay
         muted
         loop
         playsinline
-        preload="metadata"
+        preload="none"
+        data-lazy="true"
+        @canplay="handleSceneVideoReady"
+        @loadeddata="handleSceneVideoReady"
+        @stalled="handleSceneVideoStall"
         @error="handleSceneVideoError"
       ></video>
       <img
@@ -425,10 +430,24 @@ const config = computed(() => getDashboardConfig(String(route.meta.dashboardId ?
 const { stageRef, getStepStatus, getArrowStatus } = useRealtimeKPI(config)
 const sceneVideoRef = ref<HTMLVideoElement | null>(null)
 const shouldUseSceneVideo = ref(true)
+const sceneVideoSrc = ref<string | undefined>(undefined)
 let sceneVisibilityObserver: IntersectionObserver | undefined
+let sceneLoadTimer: ReturnType<typeof window.setTimeout> | undefined
+let sceneStallTimer: ReturnType<typeof window.setTimeout> | undefined
+let sceneIdleCallbackId: number | undefined
 let sceneIsVisible = true
 let documentIsVisible = true
-let reducedMotionQuery: MediaQueryList | undefined
+
+type WindowWithIdleCallback = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number
+  cancelIdleCallback?: (handle: number) => void
+}
+
+const SCENE_VIDEO_LOAD_DELAY = 1400
+const SCENE_VIDEO_STALL_FALLBACK_DELAY = 8000
 
 const getInfoBodyClass = (panel: DashboardInfoPanel) => ({
   'is-vacuum-gauge-body': config.value?.id === 'vd' && panel.title === '真空系统状态',
@@ -450,9 +469,42 @@ const coolingWaterItems = [
 
 const canPlaySceneVideo = () =>
   shouldUseSceneVideo.value &&
+  Boolean(sceneVideoSrc.value) &&
   documentIsVisible &&
-  sceneIsVisible &&
-  !reducedMotionQuery?.matches
+  sceneIsVisible
+
+const cleanupSceneVideoElement = () => {
+  const video = sceneVideoRef.value
+  if (!video) return
+
+  video.pause()
+  video.removeAttribute('src')
+  video.load()
+}
+
+const clearSceneVideoTimers = () => {
+  if (sceneLoadTimer) {
+    window.clearTimeout(sceneLoadTimer)
+    sceneLoadTimer = undefined
+  }
+
+  if (sceneStallTimer) {
+    window.clearTimeout(sceneStallTimer)
+    sceneStallTimer = undefined
+  }
+
+  if (sceneIdleCallbackId) {
+    ;(window as WindowWithIdleCallback).cancelIdleCallback?.(sceneIdleCallbackId)
+    sceneIdleCallbackId = undefined
+  }
+}
+
+const fallbackToScenePoster = () => {
+  shouldUseSceneVideo.value = false
+  sceneVideoSrc.value = undefined
+  clearSceneVideoTimers()
+  cleanupSceneVideoElement()
+}
 
 const syncSceneVideoPlayback = () => {
   const video = sceneVideoRef.value
@@ -468,6 +520,45 @@ const syncSceneVideoPlayback = () => {
   })
 }
 
+const loadSceneVideo = () => {
+  if (!config.value || !shouldUseSceneVideo.value || sceneVideoSrc.value || !documentIsVisible || !sceneIsVisible) return
+
+  sceneVideoSrc.value = config.value.video
+
+  void nextTick(() => {
+    const video = sceneVideoRef.value
+    if (!video) return
+
+    video.muted = true
+    video.loop = true
+    video.playsInline = true
+    video.load()
+    syncSceneVideoPlayback()
+  })
+}
+
+const scheduleSceneVideoLoad = () => {
+  if (!shouldUseSceneVideo.value || sceneVideoSrc.value || !documentIsVisible || !sceneIsVisible) return
+
+  if (sceneLoadTimer) window.clearTimeout(sceneLoadTimer)
+  sceneLoadTimer = window.setTimeout(() => {
+    sceneLoadTimer = undefined
+    const windowWithIdleCallback = window as WindowWithIdleCallback
+    if (windowWithIdleCallback.requestIdleCallback) {
+      sceneIdleCallbackId = windowWithIdleCallback.requestIdleCallback(
+        () => {
+          sceneIdleCallbackId = undefined
+          loadSceneVideo()
+        },
+        { timeout: 1000 },
+      )
+      return
+    }
+
+    loadSceneVideo()
+  }, SCENE_VIDEO_LOAD_DELAY)
+}
+
 const setupSceneVisibilityObserver = () => {
   sceneVisibilityObserver?.disconnect()
   sceneVisibilityObserver = undefined
@@ -477,7 +568,11 @@ const setupSceneVisibilityObserver = () => {
   sceneVisibilityObserver = new IntersectionObserver(
     ([entry]) => {
       sceneIsVisible = entry.isIntersecting
-      syncSceneVideoPlayback()
+      if (sceneIsVisible) {
+        scheduleSceneVideoLoad()
+      } else {
+        syncSceneVideoPlayback()
+      }
     },
     { threshold: 0.01 },
   )
@@ -486,39 +581,58 @@ const setupSceneVisibilityObserver = () => {
 
 const handleDocumentVisibilityChange = () => {
   documentIsVisible = document.visibilityState !== 'hidden'
+  if (documentIsVisible) {
+    scheduleSceneVideoLoad()
+    syncSceneVideoPlayback()
+  } else {
+    syncSceneVideoPlayback()
+  }
+}
+
+const handleSceneVideoReady = () => {
+  if (sceneStallTimer) {
+    window.clearTimeout(sceneStallTimer)
+    sceneStallTimer = undefined
+  }
   syncSceneVideoPlayback()
 }
 
-const handleReducedMotionChange = () => {
-  syncSceneVideoPlayback()
+const handleSceneVideoStall = () => {
+  if (!sceneVideoSrc.value || sceneStallTimer) return
+
+  sceneStallTimer = window.setTimeout(() => {
+    fallbackToScenePoster()
+  }, SCENE_VIDEO_STALL_FALLBACK_DELAY)
 }
 
 const handleSceneVideoError = () => {
-  shouldUseSceneVideo.value = false
+  fallbackToScenePoster()
 }
 
 watch(config, () => {
+  clearSceneVideoTimers()
+  cleanupSceneVideoElement()
+  sceneVideoSrc.value = undefined
   shouldUseSceneVideo.value = true
   void nextTick(() => {
     setupSceneVisibilityObserver()
-    syncSceneVideoPlayback()
+    scheduleSceneVideoLoad()
   })
 })
 
 onMounted(() => {
   documentIsVisible = document.visibilityState !== 'hidden'
-  reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  shouldUseSceneVideo.value = true
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange)
-  reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
   setupSceneVisibilityObserver()
-  syncSceneVideoPlayback()
+  scheduleSceneVideoLoad()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handleDocumentVisibilityChange)
-  reducedMotionQuery?.removeEventListener('change', handleReducedMotionChange)
   sceneVisibilityObserver?.disconnect()
-  sceneVideoRef.value?.pause()
+  clearSceneVideoTimers()
+  cleanupSceneVideoElement()
 })
 </script>
 

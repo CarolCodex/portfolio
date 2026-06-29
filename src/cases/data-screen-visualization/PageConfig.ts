@@ -9,6 +9,10 @@ import type {
 const thumbnail = '/case-assets/data-screen-visualization/cover-dashboard.png'
 const videoBase = '/case-assets/data-screen-visualization/videos'
 const processIconBase = '/case-assets/data-screen-visualization/process'
+const optimizedVideoIds = new Set(['lianzhu', 'gaolu', 'vd', 'zhuanlu'])
+
+const getSceneVideo = (id: string) =>
+  `${videoBase}/${id}${optimizedVideoIds.has(id) ? '-720' : ''}.mp4`
 
 const nodeSets = {
   leftA: { nodeId: '1:4191', titleNodeId: '1:4183', bodyNodeId: '1:4127' },
@@ -92,7 +96,7 @@ const createDashboardConfig = (
   systemName: `${base.processName}数字孪生系统`,
   status: '系统运行正常',
   environment: '28.6°C / 62%RH / 2.1m/s',
-  video: `${videoBase}/${base.id}.mp4`,
+  video: getSceneVideo(base.id),
   thumbnail,
   kpis: [],
   leftPanels: [],
