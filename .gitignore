@@ -7,3 +7,7 @@ tmp-*.mjs
 coverage
 *.tsbuildinfo
 asset-originals/
+public/case-assets/data-screen-visualization/videos/gaolu.mp4
+public/case-assets/data-screen-visualization/videos/lianzhu.mp4
+public/case-assets/data-screen-visualization/videos/vd.mp4
+public/case-assets/data-screen-visualization/videos/zhuanlu.mp4
