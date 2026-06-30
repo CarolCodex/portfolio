@@ -2,7 +2,7 @@
   <span class="device-health-cover-visual" aria-hidden="true">
     <img
       class="cover-base"
-      src="/case-assets/device-health-management-platform/case-cover.png"
+      :src="coverAssets.cover"
       alt=""
       width="2746"
       height="1706"
@@ -14,7 +14,7 @@
       <span class="cover-icon-stack">
         <span class="cover-icon cover-icon--star">
           <img
-            src="/case-assets/device-health-management-platform/cover-icon-stitch.png"
+            :src="coverAssets.coverIconStitch"
             alt=""
             width="180"
             height="180"
@@ -24,7 +24,7 @@
         </span>
         <span class="cover-icon cover-icon--chat">
           <img
-            src="/case-assets/device-health-management-platform/cover-icon-gemini-front.png"
+            :src="coverAssets.coverIconGeminiFront"
             alt=""
             width="180"
             height="180"
@@ -34,7 +34,7 @@
         </span>
         <span class="cover-icon cover-icon--blue">
           <img
-            src="/case-assets/device-health-management-platform/cover-icon-gemini-back.png"
+            :src="coverAssets.coverIconGeminiBack"
             alt=""
             width="180"
             height="180"
@@ -54,6 +54,12 @@
     </span>
   </span>
 </template>
+
+<script setup lang="ts">
+import { deviceHealthAssets } from '@/shared/assets'
+
+const coverAssets = deviceHealthAssets
+</script>
 
 <style scoped>
 .device-health-cover-visual {

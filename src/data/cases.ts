@@ -1,3 +1,5 @@
+import { deviceHealthAssets } from '@/shared/assets'
+
 export type CaseItem = {
   id: string
   /** 自定义跳转路径；未设置时默认进入 `/cases/:id` 详情页 */
@@ -116,7 +118,7 @@ export const cases: CaseItem[] = [
     tags: ['B端系统', '设备管理', '多端体验一致性'],
     priority: 2,
     cover: blueCover('#edf7ff', '#d8ebff', '#edf3ff'),
-    coverImage: '/case-assets/device-health-management-platform/case-cover.png',
+    coverImage: deviceHealthAssets.cover,
     summary:
       '重新梳理旧版系统的页面结构与业务流程，在保留核心逻辑的基础上，统一视觉风格、组件规范和多端体验。',
     background:
