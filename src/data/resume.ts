@@ -1,3 +1,5 @@
+import { images } from '@/shared/assets'
+
 export const resume = {
   basicInfo: {
     name: '曹兰',
@@ -191,5 +193,5 @@ export const resume = {
   },
   certificates: ['大学英语四级'],
   /** 学历证书图片，放在 public/images/resume/ 下 */
-  diplomaImage: '/images/resume/diploma-preview.webp',
+  diplomaImage: images.resume.diplomaPreview,
 }

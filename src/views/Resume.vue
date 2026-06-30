@@ -4,7 +4,7 @@
       <img
         class="cover-art"
         :src="coverArtUrl"
-        srcset="/images/resume/hero-cover-1920-960.jpg 960w, /images/resume/hero-cover-1920-1280.jpg 1280w, /images/resume/hero-cover-1920.jpg 1672w"
+        :srcset="resumeHeroSrcset"
         sizes="100vw"
         alt="曹兰 AI 前端开发工程师封面肖像"
         width="1280"
@@ -30,7 +30,7 @@
         </div>
         <p class="cover-summary">{{ resume.summary }}</p>
         <button class="download-button" type="button" @click="exportPdf">
-          <img src="/images/resume/icon-download.svg" alt="" aria-hidden="true" decoding="async" />
+          <img :src="images.resume.download" alt="" aria-hidden="true" decoding="async" />
           下载完整简历
         </button>
       </div>
@@ -183,8 +183,9 @@
 import { computed, ref } from 'vue'
 import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 import { resume } from '@/data/resume'
+import { images, resumeHeroSrcset } from '@/shared/assets'
 
-const coverArtUrl = '/images/resume/hero-cover-1920-1280.jpg'
+const coverArtUrl = images.resume.heroCover1280
 
 const heroTags = ['2017–2026', resume.basicInfo.city, 'AI 前端开发', 'Vue / React / 小程序 / .NET MAUI']
 
@@ -200,22 +201,22 @@ const personalAdvantages = [
   {
     title: '前端页面落地',
     description: '熟悉管理后台、大屏可视化、移动端和小程序页面开发，能独立完成页面结构、交互状态、多端适配和设计还原。',
-    icon: '/images/resume/icon-analysis.svg',
+    icon: images.resume.analysis,
   },
   {
     title: '组件化开发',
     description: '有组件拆分、样式规范、页面复用和性能优化意识，项目整理 DESIGN.md 文档，保证页面结构清晰、规范可追踪，后续维护也更顺畅。',
-    icon: '/images/resume/icon-ui.svg',
+    icon: images.resume.ui,
   },
   {
     title: 'UI +产品理解',
     description: '9 年 UI / 视觉设计背景，能快速看懂需求和设计稿，主动补齐页面逻辑、交互细节和信息层级。',
-    icon: '/images/resume/icon-frontend.svg',
+    icon: images.resume.frontend,
   },
   {
     title: 'AI 工具提效',
     description: '日常使用 Codex、Figma Make、ChatGPT 等 AI 工具，把需求、设计稿和组件快速转成可运行页面，提升开发和交付效率。',
-    icon: '/images/resume/icon-ai.svg',
+    icon: images.resume.ai,
   },
 ]
 

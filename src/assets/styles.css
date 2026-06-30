@@ -59,9 +59,24 @@ a {
   text-decoration: none;
 }
 
+img[data-asset-fallback='true'] {
+  background: linear-gradient(135deg, #061733, #1677ff);
+  object-fit: cover;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid rgba(13, 110, 253, 0.42);
+  outline-offset: 3px;
 }
 
 main {
@@ -367,5 +382,16 @@ main {
 
   .detail-cover {
     min-height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

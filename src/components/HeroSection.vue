@@ -32,13 +32,13 @@
       <div class="hero-cover-visual" aria-label="作品集主视觉">
         <picture class="hero-folder-picture">
           <source
-            srcset="/images/home/hero-folder-960.webp 960w, /images/home/hero-folder-1280.webp 1280w, /images/home/hero-folder-1600.webp 1600w"
+            :srcset="heroFolderSrcset"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             type="image/webp"
           />
           <img
-            src="/images/home/hero-folder-1280.png"
-            srcset="/images/home/hero-folder-960.png 960w, /images/home/hero-folder-1280.png 1280w, /images/home/hero-folder-1600.png 1600w"
+            :src="images.home.heroFolder1280"
+            :srcset="heroFolderSrcset"
             sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) min(680px, calc(100vw - 64px)), 780px"
             alt="Portfolio 作品集主视觉"
             width="1600"
@@ -63,6 +63,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { heroFolderSrcset, images } from '@/shared/assets'
 
 defineEmits<{
   contact: [event: MouseEvent]

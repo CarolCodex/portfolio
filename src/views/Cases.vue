@@ -2,7 +2,7 @@
   <div class="container page cases-page">
     <SectionTitle
       title="精选作品案例"
-      description="以目录视角呈现移动端、小程序、终端设备与 B 端系统项目，突出设计判断、结构能力与前端落地过程。"
+      description="以目录化方式呈现移动端、小程序及B端系统项目，展示从信息架构、交互设计到前端实现的完整能力。"
     />
     <div class="cases-showcase-grid">
       <CaseCard v-for="(item, index) in featuredCases" :key="item.id" :item="item" :index="index" />

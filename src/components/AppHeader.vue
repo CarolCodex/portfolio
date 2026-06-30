@@ -164,11 +164,14 @@ watch(
   height: 100%;
   margin: 0 auto;
   gap: 24px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .header-leading {
   display: inline-flex;
   align-items: center;
+  flex: 0 1 auto;
   min-width: 0;
   gap: 16px;
 }
@@ -177,6 +180,8 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 1 auto;
+  max-width: 100%;
   min-height: 36px;
   padding: 8px 14px;
   border: 1px solid rgba(80, 144, 220, 0.18);
@@ -222,6 +227,9 @@ watch(
 .nav-links {
   display: flex;
   align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
   gap: 6px;
   padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -259,6 +267,7 @@ watch(
 }
 
 .nav-links a {
+  flex: 0 0 auto;
   padding: 9px 14px;
   border-radius: 999px;
   color: #31577c;
@@ -314,16 +323,20 @@ watch(
 
   .header-inner {
     width: min(100% - 28px, 1240px);
-    gap: 12px;
+    gap: 10px;
   }
 
   .header-leading {
+    flex: 0 1 auto;
     gap: 10px;
   }
 
   .case-back-link {
+    max-width: clamp(84px, 28vw, 112px);
     min-height: 34px;
     padding: 7px 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 13px;
   }
 
@@ -352,7 +365,7 @@ watch(
 
 @media (max-width: 480px) {
   .header-leading {
-    flex-shrink: 0;
+    flex: 0 1 auto;
   }
 
   .brand {
@@ -364,11 +377,33 @@ watch(
   }
 
   .nav-links {
+    min-width: 86px;
     padding: 5px;
   }
 
   .nav-links a {
     padding: 8px 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-inner {
+    width: min(100% - 20px, 1240px);
+    gap: 6px;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+
+  .case-back-link {
+    max-width: 92px;
+    padding-inline: 8px;
+  }
+
+  .nav-links a {
+    padding-inline: 9px;
   }
 }
 </style>

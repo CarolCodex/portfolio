@@ -65,7 +65,7 @@
             <div class="phone-screen">
               <img
                 class="phone-shot phone-shot-home"
-                src="/case-assets/liangxuan-mini-program/liangxuan-home.webp"
+                :src="liangxuanAssets.home"
                 alt="靓轩小程序首页商品流截图"
               />
             </div>
@@ -77,7 +77,7 @@
             <div class="phone-screen">
               <img
                 class="phone-shot phone-shot-activity"
-                src="/case-assets/liangxuan-mini-program/liangxuan-activity.webp"
+                :src="liangxuanAssets.activity"
                 alt="靓轩小程序活动商品截图"
               />
             </div>
@@ -133,6 +133,7 @@ import { defineComponent, h } from 'vue'
 import { RouterLink } from 'vue-router'
 import MiniProgramScreens from './MiniProgramScreens.vue'
 import MiniProgramVisualSpec from './MiniProgramVisualSpec.vue'
+import { liangxuanAssets } from '@/shared/assets'
 
 const goals = [
   { index: '01', title: '提升商品列表可读性', description: '优化商品图、标题、价格、标签和加购按钮层级，让用户快速判断商品价值。' },
@@ -362,7 +363,7 @@ const CaseTitle = defineComponent({
   pointer-events: none;
 }
 
-/* Figma transparent phone export target: public/case-assets/liangxuan-mini-program/liangxuan-hero-phone.png */
+/* Figma transparent phone export target: public/case-assets/liangxuan-mini-program/liangxuan-home.webp */
 .hero-phones::before {
   position: absolute;
   right: 2%;

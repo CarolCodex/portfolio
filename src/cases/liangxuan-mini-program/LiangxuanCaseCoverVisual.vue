@@ -6,7 +6,7 @@
           <span class="phone-notch"></span>
           <span class="phone-screen">
             <img
-              src="/case-assets/liangxuan-mini-program/liangxuan-home.webp"
+              :src="coverAssets.home"
               alt=""
               width="198"
               height="900"
@@ -21,7 +21,7 @@
           <span class="phone-notch"></span>
           <span class="phone-screen">
             <img
-              src="/case-assets/liangxuan-mini-program/liangxuan-activity.webp"
+              :src="coverAssets.activity"
               alt=""
               width="270"
               height="900"
@@ -37,7 +37,7 @@
       <span class="cover-icon-stack">
         <span class="cover-icon cover-icon--rotated">
           <img
-            src="/case-assets/liangxuan-mini-program/cover-icon-rotated.png"
+            :src="coverAssets.coverIconRotated"
             alt=""
             width="160"
             height="160"
@@ -47,7 +47,7 @@
         </span>
         <span class="cover-icon cover-icon--front">
           <img
-            src="/case-assets/liangxuan-mini-program/cover-icon-front.png"
+            :src="coverAssets.coverIconFront"
             alt=""
             width="160"
             height="160"
@@ -66,6 +66,12 @@
     </span>
   </span>
 </template>
+
+<script setup lang="ts">
+import { liangxuanAssets } from '@/shared/assets'
+
+const coverAssets = liangxuanAssets
+</script>
 
 <style scoped>
 .liangxuan-cover-visual {

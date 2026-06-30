@@ -1,11 +1,11 @@
 <template>
   <article class="capability-card">
     <span class="capability-icon" aria-hidden="true">
-      <img v-if="iconName === 'frontend-page'" src="/images/home/capability-frontend-figma.svg" alt="" />
-      <img v-else-if="iconName === 'component-build'" src="/images/home/capability-component-figma.svg" alt="" />
-      <img v-else-if="iconName === 'dashboard-screen'" src="/images/home/capability-dashboard-figma.svg" alt="" />
-      <img v-else-if="iconName === 'interface-state'" src="/images/home/capability-interface-figma.svg" alt="" />
-      <img v-else-if="iconName === 'product-ui'" src="/images/home/capability-product-ui-figma.svg" alt="" />
+      <img v-if="iconName === 'frontend-page'" :src="capabilityIcons.frontendPage" alt="" />
+      <img v-else-if="iconName === 'component-build'" :src="capabilityIcons.componentBuild" alt="" />
+      <img v-else-if="iconName === 'dashboard-screen'" :src="capabilityIcons.dashboardScreen" alt="" />
+      <img v-else-if="iconName === 'interface-state'" :src="capabilityIcons.interfaceState" alt="" />
+      <img v-else-if="iconName === 'product-ui'" :src="capabilityIcons.productUi" alt="" />
       <svg v-else-if="iconName === 'palette'" viewBox="0 0 28 28">
         <path
           d="M14.35 1.75C17.6906 1.75371 20.8933 3.08239 23.2555 5.44455C25.6176 7.8067 26.9463 11.0094 26.95 14.35C26.95 16.926 25.7688 18.725 23.7073 19.278C22.9198 19.4915 22.0833 19.3673 21.2695 19.243C20.006 19.054 18.9228 18.8808 17.997 19.803C17.0695 20.7288 17.3513 21.413 17.7433 22.3545C17.9795 22.9215 18.2228 23.5025 18.158 24.15C17.99 25.8545 16.4973 26.95 14.35 26.95C11.0083 26.95 7.80341 25.6225 5.44045 23.2595C3.0775 20.8966 1.75 17.6917 1.75 14.35C1.75 11.0083 3.0775 7.80341 5.44045 5.44045C7.80341 3.0775 11.0083 1.75 14.35 1.75ZM6.8635 12.705C6.47595 12.705 6.10428 12.859 5.83024 13.133C5.5562 13.407 5.40225 13.7787 5.40225 14.1663C5.40225 14.5538 5.5562 14.9255 5.83024 15.1995C6.10428 15.4735 6.47595 15.6275 6.8635 15.6275C7.25105 15.6275 7.62272 15.4735 7.89676 15.1995C8.1708 14.9255 8.32475 14.5538 8.32475 14.1663C8.32475 13.7787 8.1708 13.407 7.89676 13.133C7.62272 12.859 7.25105 12.705 6.8635 12.705ZM21.4725 10.15C21.085 10.15 20.7133 10.304 20.4392 10.578C20.1652 10.852 20.0113 11.2237 20.0113 11.6113C20.0113 11.9988 20.1652 12.3705 20.4392 12.6445C20.7133 12.9185 21.085 13.0725 21.4725 13.0725C21.8601 13.0725 22.2317 12.9185 22.5058 12.6445C22.7798 12.3705 22.9338 11.9988 22.9338 11.6113C22.9338 11.2237 22.7798 10.852 22.5058 10.578C22.2317 10.304 21.8601 10.15 21.4725 10.15ZM8.68875 7.959C8.3012 7.959 7.92953 8.11295 7.65549 8.38699C7.38145 8.66103 7.2275 9.0327 7.2275 9.42025C7.2275 9.8078 7.38145 10.1795 7.65549 10.4535C7.92953 10.7275 8.3012 10.8815 8.68875 10.8815C9.0763 10.8815 9.44797 10.7275 9.72201 10.4535C9.99605 10.1795 10.15 9.8078 10.15 9.42025C10.15 9.0327 9.99605 8.66103 9.72201 8.38699C9.44797 8.11295 9.0763 7.959 8.68875 7.959ZM18.1842 6.49775C17.7967 6.49775 17.425 6.6517 17.151 6.92574C16.877 7.19978 16.723 7.57145 16.723 7.959C16.723 8.34655 16.877 8.71822 17.151 8.99226C17.425 9.2663 17.7967 9.42025 18.1842 9.42025C18.5718 9.42025 18.9435 9.2663 19.2175 8.99226C19.4915 8.71822 19.6455 8.34655 19.6455 7.959C19.6455 7.57145 19.4915 7.19978 19.2175 6.92574C18.9435 6.6517 18.5718 6.49775 18.1842 6.49775ZM12.341 5.96225C12.1715 6.05644 12.0224 6.18343 11.9025 6.33582C11.7826 6.4882 11.6941 6.66294 11.6424 6.84984C11.5907 7.03674 11.5767 7.23206 11.6012 7.42442C11.6258 7.61679 11.6884 7.80235 11.7853 7.97028C11.8823 8.13821 12.0117 8.28517 12.1661 8.40257C12.3204 8.51998 12.4966 8.60549 12.6843 8.65411C12.872 8.70274 13.0676 8.71352 13.2595 8.68582C13.4514 8.65811 13.6359 8.59248 13.8023 8.49275C14.131 8.29559 14.3692 7.97711 14.4653 7.60599C14.5614 7.23486 14.5079 6.84083 14.3162 6.50883C14.1245 6.17684 13.81 5.93348 13.4405 5.83123C13.071 5.72899 12.6761 5.77604 12.341 5.96225Z"
@@ -88,6 +88,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { images } from '@/shared/assets'
 
 const props = defineProps<{
   title: string
@@ -106,6 +107,14 @@ const iconName = computed<string>(() => {
   if (props.title.includes('AI')) return 'workflow'
   return 'chart'
 })
+
+const capabilityIcons = {
+  frontendPage: images.home.capabilityFrontend,
+  componentBuild: images.home.capabilityComponent,
+  dashboardScreen: images.home.capabilityDashboard,
+  interfaceState: images.home.capabilityInterface,
+  productUi: images.home.capabilityProductUi,
+}
 </script>
 
 <style scoped>
