@@ -16,7 +16,7 @@ async function collectMediaFiles(dir) {
     const fullPath = join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...await collectMediaFiles(fullPath))
+      files.push(...(await collectMediaFiles(fullPath)))
       continue
     }
 
@@ -40,7 +40,7 @@ function formatKB(bytes) {
 
 function recommendation(file) {
   if (['.mp4', '.mov'].includes(file.extension)) {
-    return '转 WebM/MP4 双格式，preload="metadata"，可见后再播放'
+    return '转 WebM/MP4 双格式；poster first，preload="none"，可见后再加载'
   }
 
   if (file.size >= criticalBytes) {
@@ -54,13 +54,11 @@ function recommendation(file) {
   return '确认非首屏懒加载；保持 decoding="async"'
 }
 
-const files = (await Promise.all(
-  scanDirs.map((dir) => collectMediaFiles(fileURLToPath(new URL(`../${dir}`, import.meta.url)))),
-)).flat()
+const files = (
+  await Promise.all(scanDirs.map((dir) => collectMediaFiles(fileURLToPath(new URL(`../${dir}`, import.meta.url)))))
+).flat()
 
-const flagged = files
-  .filter((file) => file.size >= warnBytes)
-  .sort((a, b) => b.size - a.size)
+const flagged = files.filter((file) => file.size >= warnBytes).sort((a, b) => b.size - a.size)
 
 const totalBytes = files.reduce((sum, file) => sum + file.size, 0)
 

@@ -65,20 +65,26 @@ async function settleDashboard(page) {
     if (video.readyState < 1) {
       await new Promise((resolve, reject) => {
         const timer = window.setTimeout(() => reject(new Error('Video metadata timeout')), 10000)
-        video.addEventListener('loadedmetadata', () => {
-          window.clearTimeout(timer)
-          resolve()
-        }, { once: true })
-        video.addEventListener('error', () => {
-          window.clearTimeout(timer)
-          reject(new Error('Video failed to load'))
-        }, { once: true })
+        video.addEventListener(
+          'loadedmetadata',
+          () => {
+            window.clearTimeout(timer)
+            resolve()
+          },
+          { once: true },
+        )
+        video.addEventListener(
+          'error',
+          () => {
+            window.clearTimeout(timer)
+            reject(new Error('Video failed to load'))
+          },
+          { once: true },
+        )
       })
     }
 
-    const targetTime = Number.isFinite(video.duration)
-      ? Math.min(1.2, Math.max(0, video.duration - 0.1))
-      : 1.2
+    const targetTime = Number.isFinite(video.duration) ? Math.min(1.2, Math.max(0, video.duration - 0.1)) : 1.2
 
     await new Promise((resolve) => {
       const done = () => resolve()

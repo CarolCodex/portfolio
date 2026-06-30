@@ -32,7 +32,7 @@ async function listLargePngs(dir) {
     const fullPath = join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...await listLargePngs(fullPath))
+      files.push(...(await listLargePngs(fullPath)))
       continue
     }
 
