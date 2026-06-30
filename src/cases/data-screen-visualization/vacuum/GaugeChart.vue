@@ -1,6 +1,7 @@
 <template>
   <div class="gauge-chart-wrap" aria-hidden="true">
-    <div ref="chartRef" class="gauge-chart"></div>
+    <div v-if="chartFailed" class="gauge-static-card">VAC</div>
+    <div v-else ref="chartRef" class="gauge-chart"></div>
     <div class="scada-scale-labels">
       <span class="scale-start">0</span>
       <span class="scale-mid">50</span>
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<{
 })
 
 const chartRef = ref<HTMLDivElement | null>(null)
+const chartFailed = ref(false)
 const runtime = useInjectedDashboardRuntime()
 let chart: ECharts | null = null
 let resizeObserver: ResizeObserver | null = null
@@ -143,15 +145,21 @@ const createValueOption = (value: number): EChartsCoreOption => ({
 })
 
 const renderChart = async () => {
-  if (!chartRef.value || !visible || (runtime && !runtime.scheduler.running)) {
+  if (chartFailed.value || !chartRef.value || !visible || (runtime && !runtime.scheduler.running)) {
     return
   }
 
-  const echarts = await loadEcharts()
-  if (!mounted || !chartRef.value || !visible) return
+  try {
+    const echarts = await loadEcharts()
+    if (!mounted || !chartRef.value || !visible) return
 
-  chart ??= echarts.init(chartRef.value, undefined, { renderer: 'canvas' })
-  chart.setOption(createOption(normalizedValue.value), { lazyUpdate: true })
+    chart ??= echarts.init(chartRef.value, undefined, { renderer: 'canvas' })
+    chart.setOption(createOption(normalizedValue.value), { lazyUpdate: true })
+  } catch {
+    chartFailed.value = true
+    chart?.dispose()
+    chart = null
+  }
 }
 
 const updateChartValue = () => {
@@ -160,7 +168,13 @@ const updateChartValue = () => {
     return
   }
 
-  chart.setOption(createValueOption(normalizedValue.value), { lazyUpdate: true })
+  try {
+    chart.setOption(createValueOption(normalizedValue.value), { lazyUpdate: true })
+  } catch {
+    chartFailed.value = true
+    chart?.dispose()
+    chart = null
+  }
 }
 
 onMounted(() => {
@@ -217,6 +231,20 @@ onBeforeUnmount(() => {
 
 .gauge-chart {
   z-index: 1;
+}
+
+.gauge-static-card {
+  position: absolute;
+  inset: 12%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  border-radius: 999px 999px 8px 8px;
+  background: rgba(0, 68, 122, 0.28);
+  color: #00d4ff;
+  font-size: clamp(14px, 1.4cqw, 22px);
+  font-weight: 800;
 }
 
 .scada-scale-labels {

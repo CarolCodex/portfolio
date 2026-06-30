@@ -243,7 +243,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, defineComponent, h, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import GalleryPage from '@/cases/data-screen-visualization/GalleryPage.vue'
 import BeforeAfter from '@/components/BeforeAfter.vue'
@@ -254,9 +254,19 @@ import { cases } from '@/data/cases'
 
 const route = useRoute()
 const item = computed(() => cases.find((caseItem) => caseItem.id === route.params.id))
-const DeviceHealthMobileDemo = defineAsyncComponent(() =>
-  import('@/cases/device-health-management-platform/DeviceHealthMobileDemo.vue'),
-)
+const DemoFallback = defineComponent({
+  name: 'DemoFallback',
+  setup() {
+    return () => h('div', { class: 'safe-skeleton', 'aria-label': '项目演示降级显示' })
+  },
+})
+const DeviceHealthMobileDemo = defineAsyncComponent({
+  loader: () => import('@/cases/device-health-management-platform/DeviceHealthMobileDemo.vue'),
+  loadingComponent: DemoFallback,
+  errorComponent: DemoFallback,
+  delay: 120,
+  timeout: 12000,
+})
 
 type DevicePanelKey = 'login' | 'home' | 'workbench' | 'tasks' | 'inspection' | 'defect' | 'repair' | 'profile'
 type DemoPageKey = 'login' | 'home' | 'workbench' | 'todo' | 'mine' | 'inspection' | 'defect' | 'repair'

@@ -3419,7 +3419,10 @@
   align-items: flex-start;
   min-height: 136px;
   padding: 24px;
-  background-image: url('/case-assets/device-health-management-platform/welcome-banner-mobile.jpg');
+  background-color: #eef6ff;
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(219, 234, 254, 0.3)),
+    url('/case-assets/device-health-management-platform/welcome-banner-mobile.jpg');
   background-position: center;
   background-size: cover;
 }

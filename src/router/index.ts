@@ -24,6 +24,7 @@ const router = createRouter({
         keywords: ['曹兰', 'AI Frontend Engineer', 'Vue Portfolio', 'UI UED 作品集'],
       },
     },
+    { path: '/home', redirect: '/' },
     {
       path: '/cases',
       name: 'cases',
@@ -180,6 +181,12 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
+})
+
+router.onError(() => {
+  if (router.currentRoute.value.path !== '/') {
+    void router.replace('/')
+  }
 })
 
 router.afterEach((to) => {

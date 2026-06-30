@@ -59,9 +59,43 @@ a {
   text-decoration: none;
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 img[data-asset-fallback='true'] {
   background: linear-gradient(135deg, #061733, #1677ff);
   object-fit: cover;
+}
+
+video[data-video-fallback='true'] {
+  display: none !important;
+}
+
+[data-asset-background-fallback='true'] {
+  background-color: #eef6ff !important;
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+.safe-skeleton {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(238, 246, 255, 0.96), rgba(219, 234, 254, 0.92));
+}
+
+.safe-static-card {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  border: 1px solid rgba(13, 110, 253, 0.14);
+  border-radius: 8px;
+  background: rgba(238, 246, 255, 0.74);
+  color: #0f2a5f;
+  font-weight: 800;
 }
 
 button,
