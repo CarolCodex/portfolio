@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import ProjectCard from './ProjectCard.vue'
+import ProjectCard from './components/business/ProjectCard.vue'
 import { industrialTwinProjects } from './projects'
 
 const projects = industrialTwinProjects
@@ -25,6 +25,8 @@ const projects = industrialTwinProjects
 <style scoped>
 .industrial-gallery-page {
   padding: 24px 0 72px;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .gallery-hero {
@@ -54,6 +56,7 @@ const projects = industrialTwinProjects
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
   margin-top: 48px;
+  min-width: 0;
 }
 
 @media (max-width: 1120px) {
@@ -67,8 +70,18 @@ const projects = industrialTwinProjects
     padding-top: 16px;
   }
 
+  .gallery-hero h1 {
+    font-size: clamp(40px, 13vw, 58px);
+  }
+
+  .gallery-hero p {
+    overflow-wrap: anywhere;
+    font-size: 16px;
+  }
+
   .project-grid {
     grid-template-columns: 1fr;
+    gap: 22px;
   }
 }
 </style>

@@ -11,13 +11,12 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import * as echarts from 'echarts/core'
-import { GaugeChart as EchartsGaugeChart } from 'echarts/charts'
-import { CanvasRenderer } from 'echarts/renderers'
 import { rafThrottle } from '@/utils/performance'
 import type { ECharts, EChartsCoreOption } from 'echarts/core'
+import { useInjectedDashboardRuntime } from '../hooks/useDashboardRuntime'
 
-echarts.use([EchartsGaugeChart, CanvasRenderer])
+type EchartsCoreModule = typeof import('echarts/core')
+type EchartsRenderersModule = typeof import('echarts/renderers')
 
 const props = withDefaults(defineProps<{
   value: number
@@ -26,9 +25,31 @@ const props = withDefaults(defineProps<{
 })
 
 const chartRef = ref<HTMLDivElement | null>(null)
+const runtime = useInjectedDashboardRuntime()
 let chart: ECharts | null = null
 let resizeObserver: ResizeObserver | null = null
+let visibilityObserver: IntersectionObserver | null = null
+let echartsApi: EchartsCoreModule | null = null
+let echartsLoadPromise: Promise<EchartsCoreModule> | null = null
+let mounted = false
+let visible = true
 const resizeChart = rafThrottle(() => chart?.resize())
+
+const loadEcharts = async () => {
+  if (echartsApi) return echartsApi
+
+  echartsLoadPromise ??= Promise.all([
+    import('echarts/core'),
+    import('echarts/lib/chart/gauge'),
+    import('echarts/renderers'),
+  ]).then(([core, _gauge, renderers]: [EchartsCoreModule, unknown, EchartsRenderersModule]) => {
+    core.use([renderers.CanvasRenderer])
+    echartsApi = core
+    return core
+  })
+
+  return echartsLoadPromise
+}
 
 const normalizedValue = computed(() => {
   if (props.value <= 0) {
@@ -67,10 +88,12 @@ const createOption = (value: number): EChartsCoreOption => ({
         width: 8,
         roundCap: true,
         itemStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+          color: echartsApi
+            ? new echartsApi.graphic.LinearGradient(0, 0, 1, 0, [
             { offset: 0, color: '#00d4ff' },
             { offset: 1, color: 'rgba(0, 212, 255, 0.72)' },
-          ]),
+            ])
+            : '#00d4ff',
           shadowBlur: 8,
           shadowColor: 'rgba(0, 212, 255, 0.56)',
         },
@@ -119,10 +142,13 @@ const createValueOption = (value: number): EChartsCoreOption => ({
   ],
 })
 
-const renderChart = () => {
-  if (!chartRef.value) {
+const renderChart = async () => {
+  if (!chartRef.value || !visible || (runtime && !runtime.scheduler.running)) {
     return
   }
+
+  const echarts = await loadEcharts()
+  if (!mounted || !chartRef.value || !visible) return
 
   chart ??= echarts.init(chartRef.value, undefined, { renderer: 'canvas' })
   chart.setOption(createOption(normalizedValue.value), { lazyUpdate: true })
@@ -130,7 +156,7 @@ const renderChart = () => {
 
 const updateChartValue = () => {
   if (!chart) {
-    renderChart()
+    void renderChart()
     return
   }
 
@@ -138,7 +164,29 @@ const updateChartValue = () => {
 }
 
 onMounted(() => {
-  renderChart()
+  mounted = true
+
+  if ('IntersectionObserver' in window && chartRef.value) {
+    visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting
+        if (visible) {
+          void renderChart()
+        } else {
+          chart?.getZr().animation.stop()
+        }
+      },
+      { rootMargin: '120px', threshold: 0.01 },
+    )
+    visibilityObserver.observe(chartRef.value)
+  } else {
+    void renderChart()
+  }
+
+  runtime?.onPause(() => chart?.getZr().animation.stop())
+  runtime?.onResume(() => {
+    void renderChart()
+  })
 
   if (chartRef.value) {
     resizeObserver = new ResizeObserver(resizeChart)
@@ -149,7 +197,9 @@ onMounted(() => {
 watch(normalizedValue, updateChartValue)
 
 onBeforeUnmount(() => {
+  mounted = false
   resizeChart.cancel()
+  visibilityObserver?.disconnect()
   resizeObserver?.disconnect()
   chart?.dispose()
   chart = null

@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import type { Project } from './types'
+import type { Project } from '../../types'
 
 defineProps<{
   project: Project
@@ -23,6 +23,7 @@ defineProps<{
 <style scoped>
 .project-card {
   display: flex;
+  width: 100%;
   min-width: 0;
   cursor: pointer;
   flex-direction: column;
@@ -49,6 +50,7 @@ defineProps<{
 .project-thumb {
   position: relative;
   display: block;
+  min-width: 0;
   overflow: hidden;
   aspect-ratio: 16 / 9;
   border-radius: 8px;
@@ -65,6 +67,7 @@ defineProps<{
 .project-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   padding: 18px 4px 4px;
 }
 
@@ -76,7 +79,8 @@ defineProps<{
 }
 
 .project-meta small {
-  width: max-content;
+  align-self: flex-start;
+  max-width: 100%;
   margin-top: 12px;
   border: 1px solid rgba(9, 43, 102, 0.14);
   border-radius: 999px;
@@ -84,5 +88,6 @@ defineProps<{
   color: #536a84;
   font-size: 12px;
   font-weight: 760;
+  white-space: normal;
 }
 </style>

@@ -5,14 +5,34 @@ import type {
   DashboardProcessStep,
   DashboardTemplateConfig,
 } from './types'
+import { dataScreenAssets } from '@/shared/assets'
 
-const thumbnail = '/case-assets/data-screen-visualization/cover-dashboard.png'
-const videoBase = '/case-assets/data-screen-visualization/videos'
-const processIconBase = '/case-assets/data-screen-visualization/process'
-const optimizedVideoIds = new Set(['lianzhu', 'gaolu', 'vd', 'zhuanlu'])
+const thumbnail = dataScreenAssets.images.coverDashboard
+const sceneVideos: Record<string, string> = dataScreenAssets.videos
+const sceneWebmVideos: Partial<Record<string, string>> = dataScreenAssets.webmVideos
+const processIcons: Record<string, string> = {
+  'step-01': dataScreenAssets.processIcons.lianzhu[0],
+  'step-02': dataScreenAssets.processIcons.lianzhu[1],
+  'step-03': dataScreenAssets.processIcons.lianzhu[2],
+  'step-04': dataScreenAssets.processIcons.lianzhu[3],
+  'step-05': dataScreenAssets.processIcons.lianzhu[4],
+  'step-06': dataScreenAssets.processIcons.lianzhu[5],
+  'step-07': dataScreenAssets.processIcons.lianzhu[6],
+  'gaolu-step-01': dataScreenAssets.processIcons.gaolu[0],
+  'gaolu-step-02': dataScreenAssets.processIcons.gaolu[1],
+  'gaolu-step-03': dataScreenAssets.processIcons.gaolu[2],
+  'gaolu-step-04': dataScreenAssets.processIcons.gaolu[3],
+  'gaolu-step-05': dataScreenAssets.processIcons.gaolu[4],
+  'gaolu-step-06': dataScreenAssets.processIcons.gaolu[5],
+}
 
 const getSceneVideo = (id: string) =>
-  `${videoBase}/${id}${optimizedVideoIds.has(id) ? '-720' : ''}.mp4`
+  sceneVideos[id] ?? sceneVideos.lianzhu
+
+const getSceneWebmVideo = (id: string) =>
+  sceneWebmVideos[id]
+
+const getProcessIcon = (id: string) => processIcons[id] ?? processIcons['step-01']
 
 const nodeSets = {
   leftA: { nodeId: '1:4191', titleNodeId: '1:4183', bodyNodeId: '1:4127' },
@@ -46,7 +66,7 @@ const createProcessSteps = (labels: string[]): DashboardProcessStep[] => {
   if (labels.length === 7) {
     return labels.map((label, index) => ({
       label,
-      icon: `${processIconBase}/step-${String(index + 1).padStart(2, '0')}.svg?v=2`,
+      icon: getProcessIcon(`step-${String(index + 1).padStart(2, '0')}`),
       left: 1.2 + index * 14.3,
       arrowLeft: index < labels.length - 1 ? 13.62 + index * 14.3 : 0,
       cardNode: `process-7-card-${index + 1}`,
@@ -59,7 +79,7 @@ const createProcessSteps = (labels: string[]): DashboardProcessStep[] => {
   return geometry.map((step, index) => ({
     ...step,
     label: labels[index],
-    icon: `${processIconBase}/step-${String(index + 1).padStart(2, '0')}.svg?v=2`,
+    icon: getProcessIcon(`step-${String(index + 1).padStart(2, '0')}`),
   }))
 }
 
@@ -83,7 +103,7 @@ const createGaoluProcessSteps = (labels: string[]): DashboardProcessStep[] => {
       iconNode: `gaolu-process-icon-${index + 1}`,
       textNode: `gaolu-process-text-${index + 1}`,
       arrowNode: index < labels.length - 1 ? `gaolu-process-arrow-${index + 1}` : '',
-      icon: `${processIconBase}/gaolu-step-${String(index + 1).padStart(2, '0')}.svg?v=1`,
+      icon: getProcessIcon(`gaolu-step-${String(index + 1).padStart(2, '0')}`),
     }
   })
 }
@@ -97,6 +117,7 @@ const createDashboardConfig = (
   status: '系统运行正常',
   environment: '28.6°C / 62%RH / 2.1m/s',
   video: getSceneVideo(base.id),
+  videoWebm: getSceneWebmVideo(base.id),
   thumbnail,
   kpis: [],
   leftPanels: [],
@@ -118,7 +139,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
     route: '/cases/lianzhu',
     processName: '连铸工艺',
     title: '5G+全连接智慧工厂-连铸系统',
-    poster: '/case-assets/data-screen-visualization/lianzhu-scene.png',
+    poster: dataScreenAssets.images.lianzhuScene,
     kpiBar: {
       status: { label: '生成状态', value: '运行中' },
       speed: { label: '铸机拉速', value: '1.68', unit: 'm/min', field: 'speed' },
@@ -161,7 +182,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
     route: '/cases/gaolu',
     processName: '高炉工艺',
     title: '5G+全连接智慧工厂-高炉系统',
-    poster: '/case-assets/data-screen-visualization/gaolu-scene.png',
+    poster: dataScreenAssets.images.gaoluScene,
     kpiBar: {
       status: { label: '炉况状态', value: '稳定' },
       speed: { label: '风量', value: '4312', unit: 'm³/min', field: 'speed' },
@@ -232,7 +253,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
     route: '/cases/lf',
     processName: '精炼LF炉工艺',
     title: '5G+全连接智慧工厂-精炼LF炉系统',
-    poster: '/case-assets/data-screen-visualization/scenes/lf-scene.png',
+    poster: dataScreenAssets.images.lfScene,
     kpiBar: {
       status: { label: '精炼状态', value: '升温中' },
       speed: { label: '电极功率', value: '32.6', unit: 'MW', field: 'speed' },
@@ -295,7 +316,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
     route: '/cases/vd',
     processName: '精炼VD炉工艺',
     title: '5G+全连接智慧工厂-精炼VD炉系统',
-    poster: '/case-assets/data-screen-visualization/scenes/vd-scene.png',
+    poster: dataScreenAssets.images.vdScene,
     kpiBar: {
       status: { label: '生产状态', value: '运行中' },
       speed: { label: '抽真空计时', value: '00:17:49' },
@@ -342,7 +363,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
     route: '/cases/zhuanlu',
     processName: '转炉工艺',
     title: '5G+全连接智慧工厂-转炉系统',
-    poster: '/case-assets/data-screen-visualization/scenes/zhuanlu-scene.png',
+    poster: dataScreenAssets.images.zhuanluScene,
     kpiBar: {
       status: { label: '吹炼状态', value: '进行中' },
       speed: { label: '供氧流量', value: '28400', unit: 'Nm³/h', field: 'speed' },

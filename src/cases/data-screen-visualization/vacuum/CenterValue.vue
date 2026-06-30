@@ -7,6 +7,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useInjectedDashboardRuntime } from '../hooks/useDashboardRuntime'
 
 const props = withDefaults(defineProps<{
   value: number
@@ -18,6 +19,7 @@ const props = withDefaults(defineProps<{
 const numberRef = ref<HTMLElement | null>(null)
 let displayValue = props.value
 let frame = 0
+const runtime = useInjectedDashboardRuntime()
 
 const writeDisplayValue = (value: number) => {
   displayValue = value
@@ -27,7 +29,11 @@ const writeDisplayValue = (value: number) => {
 }
 
 const animateValue = (nextValue: number) => {
-  cancelAnimationFrame(frame)
+  if (runtime) {
+    runtime.scheduler.cancelFrame(frame)
+  } else {
+    cancelAnimationFrame(frame)
+  }
 
   if (!numberRef.value) {
     writeDisplayValue(nextValue)
@@ -44,11 +50,11 @@ const animateValue = (nextValue: number) => {
     writeDisplayValue(startValue + (nextValue - startValue) * eased)
 
     if (progress < 1) {
-      frame = requestAnimationFrame(tick)
+      frame = runtime ? runtime.scheduler.requestFrame(tick) : requestAnimationFrame(tick)
     }
   }
 
-  frame = requestAnimationFrame(tick)
+  frame = runtime ? runtime.scheduler.requestFrame(tick) : requestAnimationFrame(tick)
 }
 
 watch(() => props.value, animateValue, { immediate: true })
@@ -58,7 +64,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(frame)
+  if (runtime) {
+    runtime.scheduler.cancelFrame(frame)
+  } else {
+    cancelAnimationFrame(frame)
+  }
 })
 </script>
 

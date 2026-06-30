@@ -1,4 +1,4 @@
-import { nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import {
   createDashboardDataEngine,
   getProcessArrowStatus,
@@ -8,9 +8,13 @@ import {
   type ProcessState,
 } from '../dataEngine'
 import type { DashboardTemplateConfig } from '../types'
+import type { DashboardRuntime } from './useDashboardRuntime'
 
-export const useRealtimeKPI = (config: Ref<DashboardTemplateConfig | undefined>) => {
-  const stageRef = ref<HTMLElement | null>(null)
+export const useRealtimeKPI = (
+  config: Ref<DashboardTemplateConfig | undefined>,
+  runtime: DashboardRuntime,
+) => {
+  const { stageRef } = runtime
   const kpiElements = new Map<KpiField, HTMLElement[]>()
   const gaugeElements = new Map<KpiField, HTMLElement[]>()
   const chartElements = new Set<HTMLElement>()
@@ -20,11 +24,11 @@ export const useRealtimeKPI = (config: Ref<DashboardTemplateConfig | undefined>)
   let unsubscribeKpi: (() => void) | undefined
   let unsubscribeChart: (() => void) | undefined
   let unsubscribeProcess: (() => void) | undefined
-  let stageVisibilityObserver: IntersectionObserver | undefined
   let mounted = false
-  let isDocumentVisible = true
-  let isStageVisible = true
   let runToken = 0
+  let disposeRuntimePause: (() => void) | undefined
+  let disposeRuntimeResume: (() => void) | undefined
+  let disposeRuntimeDestroy: (() => void) | undefined
 
   const flowFields: KpiField[] = [
     'flowSpeed0',
@@ -150,7 +154,7 @@ export const useRealtimeKPI = (config: Ref<DashboardTemplateConfig | undefined>)
     disposeEngine()
   }
 
-  const canRunEngine = () => mounted && isDocumentVisible && isStageVisible && Boolean(config.value)
+  const canRunEngine = () => mounted && runtime.scheduler.running && Boolean(config.value)
 
   const startEngine = async () => {
     if (!canRunEngine()) return
@@ -165,40 +169,15 @@ export const useRealtimeKPI = (config: Ref<DashboardTemplateConfig | undefined>)
     if (!activeConfig) return
 
     cacheStageElements()
-    dashboardEngine = createDashboardDataEngine(activeConfig.processSteps.length, activeConfig.dataProfile)
+    dashboardEngine = createDashboardDataEngine(
+      activeConfig.processSteps.length,
+      activeConfig.dataProfile,
+      runtime.scheduler,
+    )
     unsubscribeKpi = dashboardEngine.subscribeKpi(writeKpiFrame)
     unsubscribeChart = dashboardEngine.subscribeChart(writeChartFrame)
     unsubscribeProcess = dashboardEngine.subscribeProcess(writeProcessFrame)
     dashboardEngine.start()
-  }
-
-  const syncEngineVisibility = () => {
-    if (canRunEngine()) {
-      if (!dashboardEngine) {
-        void startEngine()
-      }
-      return
-    }
-
-    stopEngine()
-  }
-
-  const handleDocumentVisibilityChange = () => {
-    isDocumentVisible = document.visibilityState !== 'hidden'
-    syncEngineVisibility()
-  }
-
-  const setupStageVisibilityObserver = () => {
-    if (!stageRef.value || !('IntersectionObserver' in window)) return
-
-    stageVisibilityObserver = new IntersectionObserver(
-      ([entry]) => {
-        isStageVisible = entry.isIntersecting
-        syncEngineVisibility()
-      },
-      { threshold: 0.01 },
-    )
-    stageVisibilityObserver.observe(stageRef.value)
   }
 
   const getStepStatus = (index: number) => getProcessStepStatus(index + 1, { currentStep: 1 })
@@ -210,17 +189,19 @@ export const useRealtimeKPI = (config: Ref<DashboardTemplateConfig | undefined>)
 
   onMounted(() => {
     mounted = true
-    isDocumentVisible = document.visibilityState !== 'hidden'
-    setupStageVisibilityObserver()
-    document.addEventListener('visibilitychange', handleDocumentVisibilityChange)
+    disposeRuntimePause = runtime.onPause(stopEngine)
+    disposeRuntimeResume = runtime.onResume(() => {
+      void startEngine()
+    })
+    disposeRuntimeDestroy = runtime.onDestroy(stopEngine)
     void startEngine()
   })
 
   onBeforeUnmount(() => {
     mounted = false
-    document.removeEventListener('visibilitychange', handleDocumentVisibilityChange)
-    stageVisibilityObserver?.disconnect()
-    stageVisibilityObserver = undefined
+    disposeRuntimePause?.()
+    disposeRuntimeResume?.()
+    disposeRuntimeDestroy?.()
     stopEngine()
   })
 

@@ -40,6 +40,7 @@ export type DashboardConfig = {
   status: string
   environment: string
   video: string
+  videoWebm?: string
   thumbnail: string
   kpis: KpiItem[]
   leftPanels: DashboardPanel[]

@@ -2,6 +2,7 @@ import {
   createProcessStateMachine,
   type ProcessState,
 } from './processEngine'
+import type { RuntimeScheduler } from '@/utils/runtimeScheduler'
 
 const KPI_INTERVAL = 2000
 const CHART_INTERVAL = 1500
@@ -273,7 +274,17 @@ const formatFrame = (state: RealtimeState, castSeconds: number, profile: Dashboa
   flowSpeed5: (state.flowSpeeds[5] ?? 0).toFixed(2),
 })
 
-export const createDashboardDataEngine = (totalProcessSteps: number, profile = createDashboardDataProfile()) => {
+const defaultFrameScheduler = (): Pick<RuntimeScheduler, 'now' | 'requestFrame' | 'cancelFrame'> => ({
+  now: () => performance.now(),
+  requestFrame: (callback) => window.requestAnimationFrame(callback),
+  cancelFrame: (id) => window.cancelAnimationFrame(id),
+})
+
+export const createDashboardDataEngine = (
+  totalProcessSteps: number,
+  profile = createDashboardDataProfile(),
+  scheduler = defaultFrameScheduler(),
+) => {
   let fromState = initialRealtimeState(profile)
   let targetState = fromState
   let animationStart = 0
@@ -342,7 +353,7 @@ export const createDashboardDataEngine = (totalProcessSteps: number, profile = c
     }
 
     if (running) {
-      rafId = window.requestAnimationFrame(loop)
+      rafId = scheduler.requestFrame(loop)
     }
   }
 
@@ -350,7 +361,7 @@ export const createDashboardDataEngine = (totalProcessSteps: number, profile = c
     if (running) return
 
     running = true
-    clockStart = performance.now()
+    clockStart = scheduler.now()
     lastKpiUpdate = clockStart
     lastChartUpdate = clockStart
     lastFlowUpdate = clockStart
@@ -359,12 +370,12 @@ export const createDashboardDataEngine = (totalProcessSteps: number, profile = c
     kpiObservers.forEach((observer) => observer(formatFrame(targetState, castStartSeconds, profile)))
     chartObservers.forEach((observer) => observer(formatFrame(targetState, castStartSeconds, profile)))
     emitProcess()
-    rafId = window.requestAnimationFrame(loop)
+    rafId = scheduler.requestFrame(loop)
   }
 
   const stop = () => {
     running = false
-    window.cancelAnimationFrame(rafId)
+    scheduler.cancelFrame(rafId)
   }
 
   const subscribeKpi = (observer: KpiObserver) => {

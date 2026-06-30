@@ -55,6 +55,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { KpiField, KpiFrame } from './dataEngine'
+import { useInjectedDashboardRuntime } from './hooks/useDashboardRuntime'
 
 type ChartVariant = 'panel' | 'argon'
 type ChartFrameEvent = CustomEvent<{ frame: KpiFrame }>
@@ -79,6 +80,7 @@ const series: number[] = []
 let displaySeries: number[] = []
 let updateIndex = 0
 let animationFrame = 0
+const runtime = useInjectedDashboardRuntime()
 
 const geometry = computed(() => {
   if (props.variant === 'argon') {
@@ -187,7 +189,11 @@ const renderSeries = (values: number[]) => {
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3)
 
 const animateSeries = (fromValues: number[], toValues: number[]) => {
-  cancelAnimationFrame(animationFrame)
+  if (runtime) {
+    runtime.scheduler.cancelFrame(animationFrame)
+  } else {
+    cancelAnimationFrame(animationFrame)
+  }
 
   const startTime = performance.now()
   const duration = 1200
@@ -200,11 +206,11 @@ const animateSeries = (fromValues: number[], toValues: number[]) => {
     renderSeries(displaySeries)
 
     if (progress < 1) {
-      animationFrame = requestAnimationFrame(tick)
+      animationFrame = runtime ? runtime.scheduler.requestFrame(tick) : requestAnimationFrame(tick)
     }
   }
 
-  animationFrame = requestAnimationFrame(tick)
+  animationFrame = runtime ? runtime.scheduler.requestFrame(tick) : requestAnimationFrame(tick)
 }
 
 const seedSeries = (value: number) => {
@@ -249,7 +255,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(animationFrame)
+  if (runtime) {
+    runtime.scheduler.cancelFrame(animationFrame)
+  } else {
+    cancelAnimationFrame(animationFrame)
+  }
   chartRoot.value?.removeEventListener('dashboard:chart-frame', handleChartFrame)
 })
 </script>

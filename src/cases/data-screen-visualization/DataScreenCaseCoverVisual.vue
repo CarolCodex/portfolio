@@ -2,7 +2,7 @@
   <span class="data-screen-cover-visual" aria-hidden="true">
     <img
       class="cover-dashboard"
-      src="/case-assets/data-screen-visualization/lianzhu-dashboard.png"
+      :src="coverAssets.lianzhuDashboard"
       alt=""
       width="1920"
       height="1080"
@@ -13,7 +13,7 @@
       <span class="cover-icon-stack">
         <span class="cover-icon cover-icon--rotated" data-node-id="179:246">
           <img
-            src="/case-assets/data-screen-visualization/cover-icon-codex.png"
+            :src="coverAssets.coverIconCodex"
             alt=""
             width="512"
             height="512"
@@ -23,7 +23,7 @@
         </span>
         <span class="cover-icon cover-icon--front" data-node-id="179:247">
           <img
-            src="/case-assets/data-screen-visualization/cover-icon-figma.png"
+            :src="coverAssets.coverIconFigma"
             alt=""
             width="512"
             height="512"
@@ -37,11 +37,17 @@
           <span class="cover-title-chatgpt">ChatGPT</span>
           <span>生成初稿</span>
         </span>
-        <span class="cover-title-subtitle">figma设计大屏，code实现</span>
+        <span class="cover-title-subtitle">Figma设计大屏，Codex实现</span>
       </strong>
     </span>
   </span>
 </template>
+
+<script setup lang="ts">
+import { dataScreenAssets } from '@/shared/assets'
+
+const coverAssets = dataScreenAssets.images
+</script>
 
 <style scoped>
 .data-screen-cover-visual {
