@@ -70,7 +70,7 @@ export const dataScreenAssets = {
   },
   webmVideos: {},
   processIcons: {
-    lianzhu: [
+    shared: [
       dataScreen('process/step-01.svg?v=2'),
       dataScreen('process/step-02.svg?v=2'),
       dataScreen('process/step-03.svg?v=2'),
@@ -78,6 +78,14 @@ export const dataScreenAssets = {
       dataScreen('process/step-05.svg?v=2'),
       dataScreen('process/step-06.svg?v=2'),
       dataScreen('process/step-07.svg?v=2'),
+    ],
+    lianzhu: [
+      dataScreen('process/lianzhu-01.svg?v=2'),
+      dataScreen('process/lianzhu-02.svg?v=2'),
+      dataScreen('process/lianzhu-03.svg?v=2'),
+      dataScreen('process/lianzhu-04.svg?v=2'),
+      dataScreen('process/lianzhu-05.svg?v=2'),
+      dataScreen('process/lianzhu-06.svg?v=2'),
     ],
     gaolu: [
       dataScreen('process/gaolu-step-01.svg?v=2'),

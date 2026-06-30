@@ -11,13 +11,19 @@ const thumbnail = dataScreenAssets.images.coverDashboard
 const sceneVideos: Record<string, string> = dataScreenAssets.videos
 const sceneWebmVideos: Partial<Record<string, string>> = dataScreenAssets.webmVideos
 const processIcons: Record<string, string> = {
-  'step-01': dataScreenAssets.processIcons.lianzhu[0],
-  'step-02': dataScreenAssets.processIcons.lianzhu[1],
-  'step-03': dataScreenAssets.processIcons.lianzhu[2],
-  'step-04': dataScreenAssets.processIcons.lianzhu[3],
-  'step-05': dataScreenAssets.processIcons.lianzhu[4],
-  'step-06': dataScreenAssets.processIcons.lianzhu[5],
-  'step-07': dataScreenAssets.processIcons.lianzhu[6],
+  'step-01': dataScreenAssets.processIcons.shared[0],
+  'step-02': dataScreenAssets.processIcons.shared[1],
+  'step-03': dataScreenAssets.processIcons.shared[2],
+  'step-04': dataScreenAssets.processIcons.shared[3],
+  'step-05': dataScreenAssets.processIcons.shared[4],
+  'step-06': dataScreenAssets.processIcons.shared[5],
+  'step-07': dataScreenAssets.processIcons.shared[6],
+  'lianzhu-01': dataScreenAssets.processIcons.lianzhu[0],
+  'lianzhu-02': dataScreenAssets.processIcons.lianzhu[1],
+  'lianzhu-03': dataScreenAssets.processIcons.lianzhu[2],
+  'lianzhu-04': dataScreenAssets.processIcons.lianzhu[3],
+  'lianzhu-05': dataScreenAssets.processIcons.lianzhu[4],
+  'lianzhu-06': dataScreenAssets.processIcons.lianzhu[5],
   'gaolu-step-01': dataScreenAssets.processIcons.gaolu[0],
   'gaolu-step-02': dataScreenAssets.processIcons.gaolu[1],
   'gaolu-step-03': dataScreenAssets.processIcons.gaolu[2],
@@ -53,7 +59,7 @@ const createPanel = (
   ...options,
 })
 
-const createProcessSteps = (labels: string[]): DashboardProcessStep[] => {
+const createProcessSteps = (labels: string[], iconPrefix = 'step'): DashboardProcessStep[] => {
   const geometry = [
     { left: 1.79, arrowLeft: 15.9, cardNode: '1:3753', iconNode: '1:4060', textNode: '1:3761', arrowNode: '1:3885' },
     { left: 18.53, arrowLeft: 32.63, cardNode: '1:3769', iconNode: '1:4019', textNode: '1:3777', arrowNode: '1:3886' },
@@ -66,7 +72,7 @@ const createProcessSteps = (labels: string[]): DashboardProcessStep[] => {
   if (labels.length === 7) {
     return labels.map((label, index) => ({
       label,
-      icon: getProcessIcon(`step-${String(index + 1).padStart(2, '0')}`),
+      icon: getProcessIcon(`${iconPrefix}-${String(index + 1).padStart(2, '0')}`),
       left: 1.2 + index * 14.3,
       arrowLeft: index < labels.length - 1 ? 13.62 + index * 14.3 : 0,
       cardNode: `process-7-card-${index + 1}`,
@@ -79,7 +85,7 @@ const createProcessSteps = (labels: string[]): DashboardProcessStep[] => {
   return geometry.map((step, index) => ({
     ...step,
     label: labels[index],
-    icon: getProcessIcon(`step-${String(index + 1).padStart(2, '0')}`),
+    icon: getProcessIcon(`${iconPrefix}-${String(index + 1).padStart(2, '0')}`),
   }))
 }
 
@@ -174,7 +180,7 @@ export const dashboardConfigs: DashboardTemplateConfig[] = [
       ], nodeSets.rightB),
     ],
     flowSpeedTitle: '各流拉速（m/min)',
-    processSteps: createProcessSteps(['01 钢水接收', '02 结晶凝固', '03 二次冷却', '04 拉矫矫直', '05 切割定尺', '06 成品输送']),
+    processSteps: createProcessSteps(['01 钢水接收', '02 结晶凝固', '03 二次冷却', '04 拉矫矫直', '05 切割定尺', '06 成品输送'], 'lianzhu'),
     dataProfile: createDashboardDataProfile(),
   }),
   createDashboardConfig({
