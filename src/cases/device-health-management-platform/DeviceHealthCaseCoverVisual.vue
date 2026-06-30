@@ -95,9 +95,12 @@ const coverAssets = deviceHealthAssets
 .cover-icon-stack {
   position: absolute;
   top: 6px;
-  right: 5px;
+  right: 15px;
+  z-index: 5;
   width: 110px;
   height: 58px;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .cover-icon {
@@ -107,55 +110,56 @@ const coverAssets = deviceHealthAssets
   height: 36px;
   overflow: hidden;
   border: 1px solid #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.4);
 }
 
 .cover-icon--star {
-  top: 6px;
-  left: 4px;
+  top: 14px;
+  left: 0;
   z-index: 1;
-  transform: rotate(44.58deg);
-}
-
-.cover-icon--chat {
-  top: 3px;
-  left: 32px;
-  z-index: 2;
   transform: rotate(-20deg);
 }
 
+.cover-icon--chat {
+  top: 0;
+  left: 36px;
+  z-index: 2;
+}
+
 .cover-icon--blue {
-  top: 15px;
-  left: 70px;
+  top: 12px;
+  right: 0;
   z-index: 3;
+  transform: rotate(44.58deg);
 }
 
 .cover-icon img {
   position: absolute;
+  top: 50%;
+  left: 50%;
   display: block;
-  object-fit: cover;
+  width: 124%;
+  height: 124%;
+  max-width: none;
+  border-radius: inherit;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
 }
 
 .cover-icon--star img {
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
+  width: 168%;
+  height: 168%;
 }
 
 .cover-icon--chat img {
-  top: -9.5%;
-  left: -9.5%;
-  width: 119%;
-  height: 119%;
+  width: 152%;
+  height: 152%;
 }
 
 .cover-icon--blue img {
-  top: -17.5%;
-  left: -17.5%;
-  width: 135%;
-  height: 135%;
+  width: 150%;
+  height: 150%;
 }
 
 .cover-title,

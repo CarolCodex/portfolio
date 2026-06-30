@@ -98,8 +98,11 @@ const coverAssets = dataScreenAssets.images
   position: absolute;
   top: 9px;
   right: 15px;
+  z-index: 5;
   width: 74px;
   height: 51px;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .cover-icon {
@@ -109,7 +112,7 @@ const coverAssets = dataScreenAssets.images
   height: 36px;
   overflow: hidden;
   border: 1px solid #fff;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .cover-icon--rotated {
@@ -127,22 +130,15 @@ const coverAssets = dataScreenAssets.images
 
 .cover-icon img {
   position: absolute;
+  top: 50%;
+  left: 50%;
   display: block;
-  max-width: none;
-}
-
-.cover-icon--rotated img {
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-}
-
-.cover-icon--front img {
-  top: -12%;
-  left: -12%;
   width: 124%;
   height: 124%;
+  max-width: none;
+  border-radius: inherit;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
 }
 
 .cover-title {

@@ -37,20 +37,20 @@
       <span class="cover-icon-stack">
         <span class="cover-icon cover-icon--rotated">
           <img
-            :src="coverAssets.coverIconRotated"
+            :src="iconAssets.coverIconCodex"
             alt=""
-            width="160"
-            height="160"
+            width="512"
+            height="512"
             loading="lazy"
             decoding="async"
           />
         </span>
         <span class="cover-icon cover-icon--front">
           <img
-            :src="coverAssets.coverIconFront"
+            :src="iconAssets.coverIconFigma"
             alt=""
-            width="160"
-            height="160"
+            width="512"
+            height="512"
             loading="lazy"
             decoding="async"
           />
@@ -68,9 +68,10 @@
 </template>
 
 <script setup lang="ts">
-import { liangxuanAssets } from '@/shared/assets'
+import { dataScreenAssets, liangxuanAssets } from '@/shared/assets'
 
 const coverAssets = liangxuanAssets
+const iconAssets = dataScreenAssets.images
 </script>
 
 <style scoped>
@@ -176,8 +177,11 @@ const coverAssets = liangxuanAssets
   position: absolute;
   top: 9px;
   right: 15px;
+  z-index: 5;
   width: 74px;
   height: 51px;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .cover-icon {
@@ -187,7 +191,7 @@ const coverAssets = liangxuanAssets
   height: 36px;
   overflow: hidden;
   border: 1px solid #fff;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .cover-icon--rotated {
@@ -205,22 +209,15 @@ const coverAssets = liangxuanAssets
 
 .cover-icon img {
   position: absolute;
+  top: 50%;
+  left: 50%;
   display: block;
   width: 124%;
   height: 124%;
-  object-fit: cover;
-}
-
-.cover-icon--rotated img {
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-}
-
-.cover-icon--front img {
-  top: -12%;
-  left: -12%;
+  max-width: none;
+  border-radius: inherit;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
 }
 
 .cover-title,
