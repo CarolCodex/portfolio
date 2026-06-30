@@ -1,70 +1,27 @@
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-
-function normalizeBasePath(basePath: string) {
-  if (!basePath) return '/'
-
-  const withLeadingSlash = basePath.startsWith('/') ? basePath : `/${basePath}`
-  return withLeadingSlash.endsWith('/') ? withLeadingSlash : `${withLeadingSlash}/`
-}
-
-function rewritePublicAssetBase(source: string, basePath: string) {
-  const base = normalizeBasePath(basePath)
-
-  if (base === '/') return source
-
-  return source.replace(/(["'(\s])\/(case-assets|images)\//g, `$1${base}$2/`)
-}
+import path from 'node:path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   build: {
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('/node_modules/')) {
-            if (id.includes('/node_modules/@vue/') || id.includes('/node_modules/vue') || id.includes('/node_modules/vue-router')) {
-              return 'vue-core'
-            }
-
-            if (id.includes('/node_modules/echarts/')) {
-              return 'charts'
-            }
-
-            if (id.includes('/node_modules/marked/') || id.includes('/node_modules/highlight.js/')) {
-              return 'markdown'
-            }
-
-            return 'vendor'
-          }
+          if (id.includes('node_modules/echarts')) return 'charts'
+          if (id.includes('node_modules/vue') || id.includes('node_modules/vue-router')) return 'vue-vendor'
+          if (id.includes('src/cases/data-screen-visualization')) return 'case-data-screen'
+          if (id.includes('src/cases/device-health-management-platform')) return 'case-device-health'
+          if (id.includes('src/cases/liangxuan-mini-program')) return 'case-liangxuan'
+          if (id.includes('node_modules')) return 'vendor'
         },
       },
-    },
-  },
-  plugins: [
-    vue(),
-    {
-      name: 'rewrite-public-asset-base',
-      apply: 'build',
-      generateBundle(_, bundle) {
-        const basePath = process.env.VITE_BASE_PATH || '/'
-
-        for (const asset of Object.values(bundle)) {
-          if (asset.type === 'chunk') {
-            asset.code = rewritePublicAssetBase(asset.code, basePath)
-            continue
-          }
-
-          if (typeof asset.source === 'string') {
-            asset.source = rewritePublicAssetBase(asset.source, basePath)
-          }
-        }
-      },
-    },
-  ],
-  resolve: {
-    alias: {
-      '@': '/src',
     },
   },
 })

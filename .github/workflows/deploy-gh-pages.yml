@@ -42,11 +42,14 @@ jobs:
         run: |
           test -f dist/index.html
           test -f dist/404.html
+          test -f dist/robots.txt
+          test -f dist/sitemap.xml
           test -d dist/assets
           grep -Eq 'src="/portfolio/assets/[^"]+\.js"' dist/index.html
           grep -Eq 'href="/portfolio/assets/[^"]+\.css"' dist/index.html
           grep -Fq 'const base = "/portfolio/"' dist/404.html
           grep -Fq 'window.location.replace' dist/404.html
+          grep -Fq 'Sitemap:' dist/robots.txt
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4

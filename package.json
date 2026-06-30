@@ -5,10 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && npm run generate:pages-404",
+    "build": "vue-tsc --noEmit && vite build && npm run generate:pages-404 && npm run generate:seo",
     "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint src scripts --ext .ts,.vue,.mjs",
+    "format:check": "prettier --check \"scripts/**/*.mjs\" \"*.{json,js}\"",
+    "check:imports": "node scripts/check-imports.mjs",
+    "check:assets": "node scripts/check-assets.mjs",
+    "test:smoke": "node scripts/smoke-test.mjs",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:imports && npm run check:assets",
     "audit:assets": "node scripts/audit-assets.mjs",
+    "optimize:videos": "node scripts/convert-dashboard-videos-to-webm.mjs",
     "generate:pages-404": "node scripts/generate-pages-404.mjs",
+    "generate:seo": "node scripts/generate-seo-files.mjs",
     "export:figma": "node scripts/export-design-screenshots.mjs"
   },
   "dependencies": {
@@ -21,13 +30,18 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/typography": "^0.5.20",
     "autoprefixer": "^10.5.1",
+    "eslint": "^10.6.0",
+    "eslint-plugin-vue": "^10.9.2",
     "playwright": "^1.60.0",
     "postcss": "^8.5.15",
+    "prettier": "^3.9.4",
     "sass": "^1.100.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.62.1",
     "vue-tsc": "^2.2.10"
   }
 }
