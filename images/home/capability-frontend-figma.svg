@@ -1,0 +1,25 @@
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="20" height="20" rx="3.4" fill="url(#frontendIconGradient)" />
+  <path
+    d="M11.45 10.9L8.4 14L11.45 17.1"
+    stroke="white"
+    stroke-width="1.85"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M16.55 10.9L19.6 14L16.55 17.1"
+    stroke="white"
+    stroke-width="1.85"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M14.9 10.35L13.1 17.65" stroke="white" stroke-width="1.55" stroke-linecap="round" opacity="0.72" />
+  <path d="M7.6 20.1H20.4" stroke="white" stroke-width="1.35" stroke-linecap="round" opacity="0.45" />
+  <defs>
+    <linearGradient id="frontendIconGradient" x1="14" y1="4" x2="14" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FAAFF" />
+      <stop offset="1" stop-color="#1677FF" />
+    </linearGradient>
+  </defs>
+</svg>
