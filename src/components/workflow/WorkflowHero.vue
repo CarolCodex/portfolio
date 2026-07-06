@@ -2,11 +2,14 @@
   <header class="workflow-hero">
     <h1 id="workflow-title">
       <span class="gradient-text">AI</span>
-      不是替我写完代码，而是帮我更快把
-      <span class="gradient-text">页面落地</span>
+      不是替我做设计，而是帮我更快完成
+      <span class="gradient-text">从需求到落地</span>
     </h1>
     <p class="workflow-hero__description">
-      我会把 AI 用在需求梳理、页面生成、组件拆分、问题排查和性能优化上。效率可以交给工具，但页面判断、交互细节和最终质量由我负责。
+      长期使用 ChatGPT、Gemini、Figma Make、Stitch、Codex、Cursor 等 AI
+      工具，把它们融入需求理解、产品梳理、交互原型、视觉方案、组件规范、前端还原和上线走查中。
+      <br />
+      AI 负责提高效率和拓展方案，我负责产品判断、体验取舍、视觉品质和最终交付。
     </p>
   </header>
 </template>
@@ -37,7 +40,7 @@ h1 {
 }
 
 .workflow-hero__description {
-  max-width: 600px;
+  max-width: 760px;
   margin: 22px auto 0;
   color: rgba(190, 205, 230, 0.72);
   font-size: 17px;
