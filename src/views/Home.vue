@@ -9,7 +9,7 @@
     <section class="container section core-capabilities-section">
       <SectionTitle
         title="核心能力"
-        description="围绕前端页面落地，结合 UI 设计经验和 AI 工具工作流，把需求、设计稿和代码更顺畅地串起来。"
+        description="围绕产品界面设计，结合视觉表达、交互体验、前端理解和 AI 工具工作流，把需求、设计稿和页面落地顺畅串联起来。"
       />
       <div class="capability-grid">
         <CapabilityCard
@@ -222,28 +222,34 @@ onBeforeUnmount(() => {
 
 const capabilities = [
   {
+    title: '产品界面设计',
+    description:
+      '熟悉 B端系统、C端产品、移动端 App、小程序、大屏可视化和终端设备等多类型界面设计，能根据业务目标完成页面结构、视觉层级和核心模块设计。',
+  },
+  {
+    title: '视觉表达能力',
+    description:
+      '具备视觉传达设计背景，拥有扎实的版式、色彩、图形、手绘和插画基础，能根据产品定位建立统一、清晰、有品质感的界面视觉风格。',
+  },
+  {
+    title: '交互原型设计',
+    description:
+      '能从需求出发梳理用户路径、信息架构和操作流程，输出低保真 / 高保真原型，并补充按钮状态、弹窗反馈、空状态、异常状态等交互细节。',
+  },
+  {
+    title: 'Design . MD 文档',
+    description:
+      '能整理颜色、字体、间距、按钮、表单、表格、卡片、标签、商品卡、弹窗和状态规范，沉淀可复用组件，提升多页面设计一致性和扩展效率。',
+  },
+  {
     title: '前端页面落地',
-    description: '熟悉管理后台、数据看板、大屏可视化、移动端和小程序页面开发，能独立完成页面结构、交互状态、多端适配和设计还原。',
+    description:
+      '熟悉 HTML/CSS、Vue、微信小程序 / WXML 等前端基础，能理解页面结构、组件拆分、响应式适配和接口数据状态，与研发高效沟通落地细节。',
   },
   {
-    title: '组件化开发',
-    description: '有组件拆分、样式规范、页面复用和性能优化意识，每个项目都会整理 DESIGN.md 文档，让页面开发更稳定、清晰、好维护。',
-  },
-  {
-    title: 'AI 辅助开发',
-    description: '日常使用 ChatGPT、Codex、Cursor、Figma Make 等工具，辅助需求拆解、页面生成、问题排查和效率提升。',
-  },
-  {
-    title: 'UI / 产品理解',
-    description: '有长期 UI项目经验，能快速看懂需求和设计稿，主动补齐页面逻辑、交互细节和信息层级。',
-  },
-  {
-    title: '接口联调与状态处理',
-    description: '能根据真实数据处理 loading、空状态、异常状态、字段缺失、数据校验和移动端适配问题。',
-  },
-  {
-    title: '大屏可视化经验',
-    description: '做过数据看板和大屏可视化项目，能兼顾信息展示、视觉层级、屏幕适配和页面性能。',
+    title: 'AI工具提效',
+    description:
+      '长期使用 Codex、Cursor、Figma Make、ChatGPT、Gemini 等 AI 工具，辅助需求拆解、方案生成、文案优化、页面还原、问题排查和交付走查。',
   },
 ]
 </script>

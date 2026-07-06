@@ -148,6 +148,7 @@ h2 {
   font-size: 22px;
   font-weight: 800;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .profile-summary {

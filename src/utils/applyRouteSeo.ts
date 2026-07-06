@@ -2,7 +2,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { cases } from '@/data/cases'
 import { images } from '@/shared/assets'
 
-const siteTitle = '曹兰 | AI Frontend Engineer Portfolio'
+const siteTitle = '曹兰｜UI设计师作品集'
 const siteDescription = '曹兰个人简历作品集，展示 AI 前端工程、UI/UED 设计、Vue 前端实现、工业大屏可视化和产品设计工作流。'
 const siteKeywords = [
   '曹兰',

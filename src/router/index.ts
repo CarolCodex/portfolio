@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { applyRouteSeo } from '@/utils/applyRouteSeo'
 
-const siteTitle = '曹兰 | AI Frontend Engineer Portfolio'
+const siteTitle = '曹兰｜UI设计师作品集'
 const miniProgramDemoTitle = '靓轩电商小程序高保真交互 Demo'
 
 const router = createRouter({

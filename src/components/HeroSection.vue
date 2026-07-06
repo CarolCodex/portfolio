@@ -3,7 +3,7 @@
     <div class="hero-cover-inner">
       <div class="hero-cover-copy">
         <h1>
-          <span>AI 前端工程师</span>
+          <span>复合型 UI 设计师</span>
           <strong>作品集</strong>
         </h1>
 
@@ -14,8 +14,8 @@
         <div class="hero-year">2017—2026</div>
 
         <p class="hero-description">
-          9 年 UI与前端页面落地经验，熟悉 Vue、React、小程序和 .NET MAUI。日常使用 ChatGPT、Codex、Cursor、Figma Make
-          等工具，把需求、设计稿和组件更快落成可运行页面。
+          9年 UI/UED 设计经验｜B端系统 / C端产品 / 移动端 / 小程序 / 大屏可视化<br />
+          懂前端落地，深度使用 Codex、Cursor、Figma Make、ChatGPT 等 AI 工具提效
         </p>
 
         <div class="hero-actions">
@@ -74,10 +74,10 @@ const isHeroVisible = ref(true)
 let visibilityObserver: IntersectionObserver | undefined
 
 const entries = [
-  { label: '精选案例', value: '电商小程序 / 电子秤终端系统 / 设备健康管理', to: '/cases' },
-  { label: '前端实现', value: 'Vue / 小程序 / .NET MAUI', to: '/cases/smart-scale-shopping-system' },
-  { label: 'AI 工作流', value: 'ChatGPT / Codex / Cursor / Figma Make', to: '/workflow' },
-  { label: '工作经验', value: '9 年 UI + 前端落地经验', to: '/resume' },
+  { label: '精选案例', value: 'B端后台 / 移动端 / 小程序 / 大屏', to: '/cases' },
+  { label: '设计能力', value: '需求理解 / 原型设计 / 视觉设计 / 高保真交付', to: '/cases/smart-scale-shopping-system' },
+  { label: '落地能力', value: 'HTML/CSS / Vue / 小程序 / 接口协同', to: '/workflow' },
+  { label: '效率工具', value: 'Codex / Cursor / Figma Make / ChatGPT', to: '/resume' },
 ]
 
 onMounted(() => {

@@ -6,7 +6,7 @@
         :src="coverArtUrl"
         :srcset="resumeHeroSrcset"
         sizes="100vw"
-        alt="曹兰 AI 前端开发工程师封面肖像"
+        alt="曹兰复合型 UI 设计师封面肖像"
         width="1280"
         height="720"
         loading="eager"
@@ -19,7 +19,7 @@
           <span v-for="tag in heroTags" :key="tag">{{ tag }}</span>
         </div>
         <p class="cover-name">{{ resume.basicInfo.name }}</p>
-        <h1 id="resume-cover-title">AI 前端开发工程师</h1>
+        <h1 id="resume-cover-title">复合型 UI 设计师</h1>
         <div class="print-profile-meta" aria-label="打印简历个人信息">
           <p>
             {{ resume.basicInfo.gender }} | 年龄：{{ resume.basicInfo.age }} | 电话：{{ resume.basicInfo.phone }} | 邮箱：{{ resume.basicInfo.email }}
@@ -31,7 +31,7 @@
         <p class="cover-summary">{{ resume.summary }}</p>
         <button class="download-button" type="button" @click="exportPdf">
           <img :src="images.resume.download" alt="" aria-hidden="true" decoding="async" />
-          下载完整简历
+          导出简历
         </button>
       </div>
       <img class="print-avatar" :src="avatarUrl" alt="曹兰头像" width="320" height="320" loading="lazy" decoding="async" />
@@ -187,35 +187,35 @@ import { images, resumeHeroSrcset } from '@/shared/assets'
 
 const coverArtUrl = images.resume.heroCover1280
 
-const heroTags = ['2017–2026', resume.basicInfo.city, 'AI 前端开发', 'Vue / React / 小程序 / .NET MAUI']
+const heroTags = ['2017-2026', resume.basicInfo.city, 'UI 设计', '产品界面设计', 'B端 / C端 / 小程序 / 大屏', '懂前端落地']
 
 const heroStats = computed(() => [
-  { label: '学历', value: resume.education.degree },
-  { label: '专业', value: '视觉传达设计' },
-  { label: '经验', value: `${resume.basicInfo.experience}+` },
-  { label: '期望薪资', value: resume.basicInfo.salary },
-  { label: '坐标', value: resume.basicInfo.city },
+  { label: '设计经验', value: '9年 UI' },
+  { label: '专业背景', value: '视觉传达设计' },
+  { label: '核心方向', value: 'B端 / C端 / 小程序 / 大屏' },
+  { label: '落地能力', value: '懂前端协作' },
+  { label: '求职城市', value: resume.basicInfo.city },
 ])
 
 const personalAdvantages = [
   {
-    title: '前端页面落地',
-    description: '熟悉管理后台、大屏可视化、移动端和小程序页面开发，能独立完成页面结构、交互状态、多端适配和设计还原。',
+    title: '产品界面设计',
+    description: '覆盖 Web 后台、移动端、小程序、大屏和终端设备界面，能根据业务目标梳理页面结构、信息层级和核心操作路径。',
     icon: images.resume.analysis,
   },
   {
-    title: '组件化开发',
-    description: '有组件拆分、样式规范、页面复用和性能优化意识，项目整理 DESIGN.md 文档，保证页面结构清晰、规范可追踪，后续维护也更顺畅。',
+    title: '交互原型设计',
+    description: '能从需求出发梳理用户路径、业务流程和页面状态，输出低保真 / 高保真原型，并补充状态反馈与操作边界。',
     icon: images.resume.ui,
   },
   {
-    title: 'UI +产品理解',
-    description: '9 年 UI / 视觉设计背景，能快速看懂需求和设计稿，主动补齐页面逻辑、交互细节和信息层级。',
+    title: '视觉规范沉淀',
+    description: '具备视觉传达设计背景，能完成高保真视觉设计，并沉淀颜色、字体、按钮、卡片、表单、表格和状态规范。',
     icon: images.resume.frontend,
   },
   {
-    title: 'AI 工具提效',
-    description: '日常使用 Codex、Figma Make、ChatGPT 等 AI 工具，把需求、设计稿和组件快速转成可运行页面，提升开发和交付效率。',
+    title: '前端理解与 AI 提效',
+    description: '熟悉 HTML/CSS、Vue、微信小程序 / WXML，理解组件拆分和响应式适配；长期使用 Codex、Cursor、Figma Make、ChatGPT 提升交付效率。',
     icon: images.resume.ai,
   },
 ]
@@ -255,6 +255,7 @@ const exportPdf = () => {
   --resume-text: #10233f;
   --resume-muted: #5d728f;
   --resume-section-wide: 1245px;
+  --cover-stats-height: 79px;
   width: min(100% - 40px, 1311px);
   margin-inline: auto;
   padding: 0 0 120px;
@@ -277,7 +278,7 @@ const exportPdf = () => {
   position: relative;
   left: 50%;
   width: 100vw;
-  min-height: 628px;
+  min-height: clamp(704px, 52vw, 760px);
   margin-left: -50vw;
   overflow: hidden;
   border: 0;
@@ -313,7 +314,7 @@ const exportPdf = () => {
 .cover-copy {
   position: absolute;
   z-index: 1;
-  top: 112px;
+  top: clamp(72px, 6.4vw, 96px);
   right: clamp(72px, 5.2vw, 120px);
   width: min(720px, 42vw);
   margin: 0;
@@ -363,6 +364,7 @@ const exportPdf = () => {
   color: rgba(15, 42, 95, 0.66);
   font-size: 18px;
   line-height: 1.72;
+  white-space: pre-line;
 }
 
 .download-button {
@@ -408,7 +410,7 @@ const exportPdf = () => {
   left: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  min-height: 79px;
+  min-height: var(--cover-stats-height);
   padding: 14px 94px;
   border-top: 1px solid rgba(255, 255, 255, 0.74);
   background: rgba(255, 255, 255, 0.82);
