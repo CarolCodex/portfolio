@@ -267,13 +267,19 @@ watch(
 }
 
 .nav-links a {
+  position: relative;
   flex: 0 0 auto;
+  overflow: hidden;
   padding: 9px 14px;
   border-radius: 999px;
   color: #31577c;
   font-size: 14px;
   white-space: nowrap;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.22s ease,
+    transform 0.2s ease;
 }
 
 .app-header--home-banner .nav-links a {
@@ -287,6 +293,8 @@ watch(
 .nav-links a:hover {
   background: rgba(232, 244, 255, 0.72);
   color: #0b4bb3;
+  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.08);
+  transform: translateY(-1px);
 }
 
 .app-header--home-banner .nav-links a:hover {
@@ -302,7 +310,14 @@ watch(
 .nav-links a.router-link-active {
   background: linear-gradient(135deg, #0b4bb3, #0d7cff);
   color: #fff;
-  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.24);
+  box-shadow:
+    0 10px 24px rgba(13, 110, 253, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.24) inset,
+    0 0 26px rgba(13, 110, 253, 0.12);
+}
+
+.nav-links a:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .app-header--home-banner .nav-links a.router-link-active {
@@ -314,6 +329,19 @@ watch(
   background: linear-gradient(135deg, #2f6bff, #27c3ff 58%, #8b5cff);
   color: #fff;
   box-shadow: 0 0 28px rgba(47, 107, 255, 0.34);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a,
+  .case-back-link {
+    transition: none;
+  }
+
+  .nav-links a:hover,
+  .nav-links a:active,
+  .case-back-link:hover {
+    transform: none;
+  }
 }
 
 @media (max-width: 720px) {

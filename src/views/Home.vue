@@ -1,5 +1,5 @@
 <template>
-  <div class="home-page">
+  <div ref="homePageRef" class="home-page">
     <HeroSection @contact="handleContactClick" />
 
     <section class="container section">
@@ -75,6 +75,7 @@ import { rafThrottle } from '@/utils/performance'
 
 const contactPhone = '13683407964'
 const showContactPopover = ref(false)
+const homePageRef = ref<HTMLElement | null>(null)
 const contactButtonEl = ref<HTMLElement | null>(null)
 const contactPopoverRef = ref<HTMLElement | null>(null)
 const contactPlacement = ref<'left' | 'right'>('right')
@@ -88,6 +89,7 @@ const contactCopied = ref(false)
 
 let copyResetTimer: number | undefined
 let isContactPositionListening = false
+let revealObserver: IntersectionObserver | undefined
 
 function updateContactPopoverPosition() {
   const button = contactButtonEl.value
@@ -188,6 +190,31 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+function initRevealSections() {
+  if (!homePageRef.value || !('IntersectionObserver' in window)) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const sections = Array.from(homePageRef.value.querySelectorAll<HTMLElement>(':scope > .section'))
+  sections.forEach((section) => section.classList.add('reveal-section'))
+
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+
+        entry.target.classList.add('is-visible')
+        revealObserver?.unobserve(entry.target)
+      })
+    },
+    {
+      rootMargin: '0px 0px -12% 0px',
+      threshold: 0.12,
+    },
+  )
+
+  sections.forEach((section) => revealObserver?.observe(section))
+}
+
 async function copyContactPhone() {
   try {
     await navigator.clipboard.writeText(contactPhone)
@@ -208,12 +235,14 @@ async function copyContactPhone() {
 onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   document.addEventListener('keydown', handleKeydown)
+  initRevealSections()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown)
   document.removeEventListener('keydown', handleKeydown)
   removeContactPositionListeners()
+  revealObserver?.disconnect()
 
   if (copyResetTimer) {
     window.clearTimeout(copyResetTimer)
@@ -279,6 +308,20 @@ const capabilities = [
     content-visibility: auto;
     contain-intrinsic-size: auto 760px;
   }
+}
+
+.home-page > .section.reveal-section {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.home-page > .section.reveal-section.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .contact-popover {
@@ -599,5 +642,13 @@ const capabilities = [
     font-size: clamp(28px, 9vw, 36px);
   }
 
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page > .section.reveal-section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 </style>
