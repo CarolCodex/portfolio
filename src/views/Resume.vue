@@ -1,5 +1,5 @@
 <template>
-  <div class="resume-page">
+  <div ref="resumePageRef" class="resume-page">
     <section class="resume-cover" aria-labelledby="resume-cover-title">
       <img
         class="cover-art"
@@ -28,7 +28,9 @@
             {{ resume.basicInfo.experience }}工作经验 | 求职意向：{{ resume.basicInfo.intention }} | 期望薪资：{{ resume.basicInfo.salary }} | 期望城市：{{ resume.basicInfo.city }}
           </p>
         </div>
-        <p class="cover-summary">{{ resume.summary }}</p>
+        <div class="cover-summary" aria-label="简历简介">
+          <p v-for="paragraph in coverSummaryParagraphs" :key="paragraph">{{ paragraph }}</p>
+        </div>
         <button class="download-button" type="button" @click="exportPdf">
           <img :src="images.resume.download" alt="" aria-hidden="true" decoding="async" />
           导出简历
@@ -52,7 +54,7 @@
       <div class="advantage-panel">
         <article v-for="item in personalAdvantages" :key="item.title" class="advantage-item">
           <div class="advantage-icon">
-            <img :src="item.icon" alt="" aria-hidden="true" decoding="async" />
+            <img :src="item.icon" :class="item.iconClass" alt="" aria-hidden="true" decoding="async" />
           </div>
           <div>
             <h3>{{ item.title }}</h3>
@@ -132,6 +134,42 @@
       </button>
     </section>
 
+    <section class="resume-print-only resume-print-skills" aria-label="技能能力与 AI 工具能力">
+      <div class="resume-section-title">
+        <h2>技能能力</h2>
+      </div>
+      <div class="print-skill-list">
+        <article v-for="item in resume.advantages" :key="item.title" class="print-skill-item">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+          <div class="print-skill-tags">
+            <span v-for="tag in item.tags" :key="tag">{{ tag }}</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="resume-section-title">
+        <h2>AI 工具能力</h2>
+      </div>
+      <div class="print-skill-list print-ai-list">
+        <article v-for="item in resume.aiWorkflow" :key="item.title" class="print-skill-item">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </article>
+      </div>
+
+      <div class="resume-section-title">
+        <h2>联系方式 / 求职信息</h2>
+      </div>
+      <div class="print-contact-grid">
+        <span>电话：{{ resume.basicInfo.phone }}</span>
+        <span>邮箱：{{ resume.basicInfo.email }}</span>
+        <span>求职意向：{{ resume.basicInfo.intention }}</span>
+        <span>期望薪资：{{ resume.basicInfo.salary }}</span>
+        <span>期望城市：{{ resume.basicInfo.city }}</span>
+      </div>
+    </section>
+
     <Teleport to="body">
       <Transition name="certificate-modal-fade">
         <div
@@ -180,12 +218,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import avatarUrl from '@/assets/avatar-cao-lan-320.jpg'
 import { resume } from '@/data/resume'
 import { images, resumeHeroSrcset } from '@/shared/assets'
 
 const coverArtUrl = images.resume.heroCover1280
+const resumePageRef = ref<HTMLElement | null>(null)
+let revealObserver: IntersectionObserver | undefined
+
+const coverSummaryParagraphs = computed(() => resume.summary.split(/\n{2,}/).filter(Boolean))
 
 const heroTags = ['2017-2026', resume.basicInfo.city, 'UI 设计', '产品界面设计', 'B端 / C端 / 小程序 / 大屏', '懂前端落地']
 
@@ -202,6 +244,7 @@ const personalAdvantages = [
     title: '产品界面设计',
     description: '覆盖 Web 后台、移动端、小程序、大屏和终端设备界面，能根据业务目标梳理页面结构、信息层级和核心操作路径。',
     icon: images.resume.analysis,
+    iconClass: 'is-compact',
   },
   {
     title: '交互原型设计',
@@ -238,9 +281,51 @@ const zoomCertificate = (step: number) => {
   certificateZoom.value = Math.min(maxCertificateZoom, Math.max(minCertificateZoom, certificateZoom.value + step))
 }
 
+const prepareForPrint = () => {
+  resumePageRef.value
+    ?.querySelectorAll<HTMLElement>('.resume-section.reveal-section')
+    .forEach((section) => section.classList.add('is-visible'))
+}
+
 const exportPdf = () => {
+  prepareForPrint()
   window.print()
 }
+
+const initRevealSections = () => {
+  if (!resumePageRef.value || !('IntersectionObserver' in window)) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const sections = Array.from(resumePageRef.value.querySelectorAll<HTMLElement>('.resume-section'))
+  sections.forEach((section) => section.classList.add('reveal-section'))
+
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+
+        entry.target.classList.add('is-visible')
+        revealObserver?.unobserve(entry.target)
+      })
+    },
+    {
+      rootMargin: '0px 0px -10% 0px',
+      threshold: 0.12,
+    },
+  )
+
+  sections.forEach((section) => revealObserver?.observe(section))
+}
+
+onMounted(() => {
+  initRevealSections()
+  window.addEventListener('beforeprint', prepareForPrint)
+})
+
+onBeforeUnmount(() => {
+  revealObserver?.disconnect()
+  window.removeEventListener('beforeprint', prepareForPrint)
+})
 </script>
 
 <style scoped>
@@ -271,6 +356,8 @@ const exportPdf = () => {
     linear-gradient(135deg, rgba(222, 243, 255, 0.94) 0%, rgba(247, 251, 255, 0.95) 45%, rgba(244, 235, 255, 0.9) 100%),
     radial-gradient(circle at 17% 11%, rgba(98, 190, 255, 0.2), transparent 34rem),
     radial-gradient(circle at 86% 16%, rgba(199, 166, 255, 0.22), transparent 30rem);
+  background-size: 100% 100%, 120% 120%, 120% 120%;
+  animation: resume-background-breathe 14s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
@@ -297,6 +384,19 @@ const exportPdf = () => {
   pointer-events: none;
 }
 
+.resume-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 60% 28%, rgba(255, 255, 255, 0.22), transparent 24rem),
+    radial-gradient(circle at 82% 62%, rgba(22, 119, 255, 0.08), transparent 30rem);
+  opacity: 0.56;
+  pointer-events: none;
+  animation: resume-cover-breathe 11s ease-in-out infinite alternate;
+}
+
 .cover-art {
   position: absolute;
   inset: -112px auto auto 0;
@@ -309,6 +409,7 @@ const exportPdf = () => {
   object-position: left top;
   opacity: 0.98;
   pointer-events: none;
+  animation: resume-cover-art-enter 900ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 }
 
 .cover-copy {
@@ -338,6 +439,31 @@ const exportPdf = () => {
   color: var(--resume-blue);
   font-size: 12px;
   font-weight: 700;
+  animation: resume-tag-enter 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-tags span:nth-child(1) {
+  animation-delay: 120ms;
+}
+
+.hero-tags span:nth-child(2) {
+  animation-delay: 180ms;
+}
+
+.hero-tags span:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.hero-tags span:nth-child(4) {
+  animation-delay: 300ms;
+}
+
+.hero-tags span:nth-child(5) {
+  animation-delay: 360ms;
+}
+
+.hero-tags span:nth-child(6) {
+  animation-delay: 420ms;
 }
 
 .cover-name {
@@ -347,6 +473,7 @@ const exportPdf = () => {
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
+  animation: resume-copy-enter 780ms cubic-bezier(0.16, 1, 0.3, 1) 480ms both;
 }
 
 .cover-copy h1 {
@@ -356,6 +483,7 @@ const exportPdf = () => {
   font-weight: 950;
   line-height: 1.08;
   letter-spacing: 0;
+  animation: resume-copy-enter 820ms cubic-bezier(0.16, 1, 0.3, 1) 560ms both;
 }
 
 .cover-summary {
@@ -364,7 +492,23 @@ const exportPdf = () => {
   color: rgba(15, 42, 95, 0.66);
   font-size: 18px;
   line-height: 1.72;
-  white-space: pre-line;
+}
+
+.cover-summary p {
+  margin: 0;
+  animation: resume-copy-enter 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cover-summary p + p {
+  margin-top: 20px;
+}
+
+.cover-summary p:nth-child(1) {
+  animation-delay: 700ms;
+}
+
+.cover-summary p:nth-child(2) {
+  animation-delay: 820ms;
 }
 
 .download-button {
@@ -383,7 +527,8 @@ const exportPdf = () => {
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 18px 38px rgba(22, 119, 255, 0.14);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  animation: resume-button-enter 720ms cubic-bezier(0.16, 1, 0.3, 1) 980ms both;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
 
 .download-button img {
@@ -393,8 +538,13 @@ const exportPdf = () => {
 
 .download-button:hover {
   border-color: rgba(22, 119, 255, 0.38);
+  background: #f8fbff;
   box-shadow: 0 24px 48px rgba(22, 119, 255, 0.22);
   transform: translateY(-2px);
+}
+
+.download-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .print-profile-meta,
@@ -439,6 +589,20 @@ const exportPdf = () => {
 
 .resume-section {
   margin-top: 48px;
+}
+
+.resume-section.reveal-section {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.resume-section.reveal-section.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .resume-section-title {
@@ -512,6 +676,11 @@ const exportPdf = () => {
 .advantage-icon img {
   width: 24px;
   height: 24px;
+}
+
+.advantage-icon img.is-compact {
+  width: 21px;
+  height: 21px;
 }
 
 .advantage-item h3,
@@ -887,6 +1056,80 @@ const exportPdf = () => {
   font-size: 22px;
 }
 
+.resume-print-only {
+  display: none;
+}
+
+@keyframes resume-background-breathe {
+  from {
+    background-position: center, 48% 48%, 52% 52%;
+  }
+
+  to {
+    background-position: center, 52% 50%, 48% 54%;
+  }
+}
+
+@keyframes resume-cover-breathe {
+  from {
+    opacity: 0.42;
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    opacity: 0.66;
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+@keyframes resume-cover-art-enter {
+  from {
+    opacity: 0;
+    filter: saturate(0.95) brightness(1.04);
+  }
+
+  to {
+    opacity: 0.98;
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes resume-tag-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes resume-copy-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes resume-button-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 @media (max-width: 1100px) {
   .cover-copy {
     width: min(52%, 566px);
@@ -1024,15 +1267,59 @@ const exportPdf = () => {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .resume-page::before,
+  .resume-cover::after,
+  .cover-art,
+  .hero-tags span,
+  .cover-name,
+  .cover-copy h1,
+  .cover-summary p,
+  .download-button {
+    animation: none !important;
+  }
+
+  .cover-art,
+  .hero-tags span,
+  .cover-name,
+  .cover-copy h1,
+  .cover-summary p,
+  .download-button,
+  .resume-section.reveal-section {
+    opacity: 1;
+    transform: none;
+  }
+
+  .resume-section.reveal-section {
+    transition: none;
+  }
+}
+
 @media print {
   @page {
     size: A4;
     margin: 10mm 12mm;
   }
 
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
   :global(body) {
     background: #fff !important;
     color: #111;
+  }
+
+  :global(html),
+  :global(body),
+  :global(#app),
+  :global(main) {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
 
   :global(body::before),
@@ -1043,6 +1330,7 @@ const exportPdf = () => {
   .resume-page {
     width: 100%;
     padding: 0;
+    overflow: visible !important;
     color: #111;
     font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
   }
@@ -1127,6 +1415,10 @@ const exportPdf = () => {
     box-shadow: none;
   }
 
+  .resume-cover::after {
+    display: none !important;
+  }
+
   .cover-copy {
     position: static;
     width: 100%;
@@ -1170,6 +1462,10 @@ const exportPdf = () => {
     line-height: 1.85;
   }
 
+  .cover-summary p + p {
+    margin-top: 2mm;
+  }
+
   .print-avatar {
     position: absolute;
     top: 0;
@@ -1185,8 +1481,19 @@ const exportPdf = () => {
 
   .resume-section {
     margin-top: 5mm;
+    opacity: 1 !important;
+    transform: none !important;
+    overflow: visible !important;
     break-inside: auto;
     page-break-inside: auto;
+  }
+
+  .resume-section.reveal-section,
+  .resume-section.reveal-section.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
   }
 
   .resume-section-title,
@@ -1386,6 +1693,73 @@ const exportPdf = () => {
   .more-projects {
     border: 0;
     background: transparent;
+  }
+
+  .resume-print-only {
+    display: block !important;
+    margin-top: 5mm;
+    opacity: 1 !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  .print-skill-list {
+    display: block;
+    margin: 0 0 5mm;
+  }
+
+  .print-skill-item {
+    margin: 0 0 3mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-skill-item h3 {
+    display: inline;
+    margin: 0;
+    color: #111;
+    font-size: 11.2pt;
+    font-weight: 900;
+    line-height: 1.45;
+  }
+
+  .print-skill-item h3::after {
+    content: '：';
+  }
+
+  .print-skill-item p {
+    display: inline;
+    margin: 0;
+    color: #222;
+    font-size: 10pt;
+    line-height: 1.85;
+  }
+
+  .print-skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5mm;
+    margin-top: 1.5mm;
+  }
+
+  .print-skill-tags span {
+    display: inline-flex;
+    padding: 0.8mm 2mm;
+    border-radius: 3px;
+    background: rgba(22, 119, 255, 0.08);
+    color: #1677ff;
+    font-size: 8.6pt;
+    font-weight: 700;
+  }
+
+  .print-contact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5mm 6mm;
+    margin: 0;
+    color: #222;
+    font-size: 10pt;
+    line-height: 1.75;
   }
 }
 </style>
