@@ -76,7 +76,7 @@ export const resume = {
   workExperience: [
     {
       company: '成都和力九垠科技有限公司',
-      role: 'UI 设计师｜产品界面设计',
+      role: 'UI设计师',
       time: '2026.03 - 2026.05',
       duties: [
         '参与小程序及相关业务系统的 UI/UED 设计，负责移动端页面、后台页面和终端设备界面的视觉设计、交互流程与高保真交付。',
